@@ -95,47 +95,64 @@
         }).map((x,id)=>({...x,id}));
         const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)), slider01=v=>(clamp(+v||1,1,100)-1)/99;
         const getDwellMs=()=>clamp(+$("dwell").value||.5,.5,3)*1000;
-        function densitySettings(v){const t=slider01(v);return{decoys:Math.round(2+t*3),gap:2.1-t*.45};}
+        function densitySettings(v){const t=slider01(v);return{maxMobile:Math.round(3+t*3),maxDesktop:Math.round(4+t*5),spawnMin:1700-t*900,spawnJitter:700-t*260,gap:2.1-t*.45};}
         function speedSettings(v){const t=slider01(v);return{move:.65+t*1.65,jitter:.7+t*1.35};}
         let state, hands, stream, raf, roundTimer, gameToken=0, lastFrame=0, lastVideo=-1, hand=null, poseState="none", bursts=[];
         const pick = (a) => a[Math.floor(Math.random()*a.length)], shuffle = (a) => a.sort(()=>Math.random()-.5);
         function start(){
           clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam();
           const now=performance.now(), token=++gameToken;
-          state={score:0,hearts:5,duration:+$("duration").value,level:+$("level").value,density:+$("density").value,speed:+$("speed").value,dwellMs:getDwellMs(),start:now,token,round:null,hover:-1,hoverAt:0,fired:false,bubbles:[]};
-          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; updateHud(); makeRound(); resize(); if($("useCam").checked) startCam(token); else ui.status.textContent="โหมดแตะ/คลิก เลือกฟองคำได้ทันที"; lastFrame=now; loop(now);
+          state={score:0,hearts:5,duration:+$("duration").value,level:+$("level").value,density:+$("density").value,speed:+$("speed").value,dwellMs:getDwellMs(),start:now,token,round:null,hover:-1,hoverAt:0,fired:false,bubbles:[],spawnAt:now,bubbleSeq:0};
+          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; ui.choices.innerHTML=""; updateHud(); makeRound(); renderBubbles(); resize(); if($("useCam").checked) startCam(token); else ui.status.textContent="โหมดแตะ/คลิก: กดค้างบนฟองคำให้แตก ฟองใหม่จะเติมเข้ามาเรื่อย ๆ"; lastFrame=now; loop(now);
         }
         function makeRound(){
           if(!state) return;
-          const pool=words.filter(x=>x.minLevel<=state.level), matras=[...new Set(pool.map(x=>x.m))], target=pick(matras), good=pool.filter(x=>x.m===target);
-          const uncommon=good.filter(x=>!x.d), preferUncommon=state.level===3&&uncommon.length&&Math.random()<.7;
-          state.density=+$("density").value;
-          const ans=pick(preferUncommon?uncommon:good), decoyCount=densitySettings(state.density).decoys, others=shuffle(pool.filter(x=>x.m!==target)).slice(0,decoyCount);
-          state.round={target,answer:ans,options:shuffle([ans,...others]).map((x,i)=>({...x,id:i}))}; state.hover=-1; state.hoverAt=0; state.fired=false; $("mission").textContent=target; renderBubbles();
+          const pool=words.filter(x=>x.minLevel<=state.level), matras=[...new Set(pool.map(x=>x.m))], target=pick(matras);
+          state.round={target}; state.hover=-1; state.hoverAt=0; state.fired=false; $("mission").textContent=target;
         }
         function randomPosition(placed,r){
           const minX=r+10,maxX=Math.max(minX,innerWidth-r-10),minY=Math.max(r+10,innerHeight*.3),maxY=Math.max(minY,innerHeight-r-68); let best={x:(minX+maxX)/2,y:(minY+maxY)/2},bestGap=-1;
           for(let n=0;n<48;n++){const p={x:minX+Math.random()*(maxX-minX),y:minY+Math.random()*(maxY-minY)},gap=placed.length?Math.min(...placed.map(b=>Math.hypot(p.x-b.x,p.y-b.y))):1e9;if(gap>bestGap){best=p;bestGap=gap}if(gap>r*2+20)return p} return best;
         }
         function renderBubbles(){
-          ui.choices.innerHTML=""; const colors=["#ffd76a,#ff9a72","#9ee9ff,#58b9ec","#ffacd4,#e879b5"];
-          state.bubbles=state.round.options.map(o=>({o,vx:(Math.random()<.5?-1:1)*(5+Math.random()*13),vy:(Math.random()<.5?-1:1)*(3+Math.random()*8),phase:Math.random()*9}));
-          state.bubbles.forEach((b,i)=>{const el=document.createElement("button"); el.className="bubble"; el.dataset.id=b.o.id; el.style.background=`radial-gradient(circle at 35% 28%,#fff,${colors[i%colors.length]})`; el.style.animationDelay=Math.floor(Math.random()*140)+"ms"; el.innerHTML=`<span class=tag>${b.o.icon||"ฟองคำ"}</span><span class=word>${b.o.w}</span><span class=hint>กดค้างตามเวลาที่ตั้ง</span>`; let holdTimer=0; const cancel=()=>{clearTimeout(holdTimer);el.classList.remove("hot")}; el.addEventListener("pointerdown",e=>{if(!state?.round)return;e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add("hot");holdTimer=setTimeout(()=>answer(b.o,b),state.dwellMs);}); ["pointerup","pointercancel","pointerleave"].forEach(type=>el.addEventListener(type,cancel)); ui.choices.appendChild(el); b.el=el;});
+          ui.choices.innerHTML=""; state.bubbles=[]; const d=densitySettings(state.density), count=innerWidth<=640?d.maxMobile:d.maxDesktop;
+          for(let i=0;i<count;i++) spawnBubble(performance.now(),i);
+        }
+        function spawnBubble(now,index=0){
+          if(!state?.round) return;
+          const colors=["#ffd76a,#ff9a72","#9ee9ff,#58b9ec","#ffacd4,#e879b5","#a5ffcf,#32d0a0","#d9c2ff,#8d7deb"];
+          const pool=words.filter(x=>x.minLevel<=state.level), good=pool.filter(x=>x.m===state.round.target), decoys=pool.filter(x=>x.m!==state.round.target);
+          const uncommon=good.filter(x=>!x.d), preferUncommon=state.level===3&&uncommon.length&&Math.random()<.45;
+          const item=Math.random()<.45?pick(preferUncommon?uncommon:good):pick(decoys);
+          const b={uid:++state.bubbleSeq,o:item,vx:(Math.random()<.5?-1:1)*(5+Math.random()*13),vy:(Math.random()<.5?-1:1)*(3+Math.random()*8),phase:Math.random()*9,dead:false};
+          const el=document.createElement("button"); el.className="bubble"; el.dataset.id=b.uid; el.style.background=`radial-gradient(circle at 35% 28%,#fff,${pick(colors)})`; el.style.animationDelay=(index*70+Math.floor(Math.random()*110))+"ms"; el.innerHTML=`<span class=tag>${item.icon||"ฟองคำ"}</span><span class=word>${item.w}</span><span class=hint>กดค้างตามเวลาที่ตั้ง</span>`;
+          let holdTimer=0; const cancel=()=>{clearTimeout(holdTimer);el.classList.remove("hot")};
+          el.addEventListener("pointerdown",e=>{if(!state?.round||b.dead)return;e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add("hot");holdTimer=setTimeout(()=>answer(b.o,b),state.dwellMs);});
+          ["pointerup","pointercancel","pointerleave"].forEach(type=>el.addEventListener(type,cancel));
+          ui.choices.appendChild(el); b.el=el; state.bubbles.push(b);
           // bubble size is responsive (178px desktop, 31vw on narrow screens) — measure the
           // real rendered size instead of assuming a fixed desktop pixel value, so boundary
           // clamping and hover-hit-testing stay correct on phones/tablets.
           state.bubbleR = (state.bubbles[0] && state.bubbles[0].el.offsetWidth/2) || 89;
-          const placed=[]; state.bubbles.forEach(b=>{Object.assign(b,randomPosition(placed,state.bubbleR));placed.push(b);b.el.style.left=(b.x-state.bubbleR)+"px";b.el.style.top=(b.y-state.bubbleR)+"px"});
+          Object.assign(b,randomPosition(state.bubbles.filter(x=>x!==b&&!x.dead),state.bubbleR)); b.el.style.left=(b.x-state.bubbleR)+"px"; b.el.style.top=(b.y-state.bubbleR)+"px";
+          const d=densitySettings(state.density); state.spawnAt=now+d.spawnMin+Math.random()*d.spawnJitter;
         }
         function burstBubble(b,ok){
           if(!b)return; b.el.classList.add("pop"); const palette=ok?["#fff35c","#4fffc0","#75d7ff","#ff79be"]:["#ffcf5c","#ff7897","#c99cff","#ffffff"],particles=[];
           for(let i=0;i<22;i++){const angle=Math.PI*2*i/22+(Math.random()-.5)*.2,speed=90+Math.random()*150;particles.push({vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-35,size:3+Math.random()*5,color:pick(palette)})}
           bursts.push({x:b.x,y:b.y,start:performance.now(),life:720,ok,particles});
         }
+        function removeBubble(b){
+          if(!state||!b) return;
+          const i=state.bubbles.indexOf(b); if(i>=0) state.bubbles.splice(i,1);
+          b.el?.remove();
+        }
         function answer(o,bubble){
-          if(!state||!state.round) return; const round=state.round, token=state.token; state.round=null;
-          const ok=o.w===round.answer.w; burstBubble(bubble||state.bubbles.find(b=>b.o.id===o.id),ok); state.score+=ok?10:0; if(!ok) state.hearts--; toast((ok?"ป๊อบ! ถูกต้อง! ":"ป๊อบ! ยังไม่ใช่ • ")+o.r,ok); updateHud();
-          if(state.hearts<=0) return end("หัวใจหมดแล้ว"); roundTimer=setTimeout(()=>{if(state&&state.token===token)makeRound()},ok?750:1100);
+          if(!state||!state.round||!bubble||bubble.dead) return; bubble.dead=true;
+          const ok=o.m===state.round.target; burstBubble(bubble,ok); state.score+=ok?10:0; if(!ok) state.hearts--; toast((ok?"ป๊อบ! ถูกต้อง! ":"ป๊อบ! ยังไม่ใช่ • ")+o.r,ok); updateHud();
+          setTimeout(()=>removeBubble(bubble),330);
+          if(ok) setTimeout(()=>{if(state)makeRound()},520);
+          if(state.hearts<=0) return end("หัวใจหมดแล้ว");
         }
         function updateHud(){ $("score").textContent=state.score; $("hearts").textContent="♥".repeat(state.hearts)+"♡".repeat(5-state.hearts); }
         function toast(t,ok){ ui.toast.textContent=t; ui.toast.style.display="block"; ui.toast.style.color=ok?"#147a57":"#df4775"; setTimeout(()=>ui.toast.style.display="none",850); }
@@ -189,10 +206,10 @@
           if(!hand){state.hover=-1;state.hoverAt=0;state.fired=false;ui.cursor.style.setProperty("--hold","0%");if(hands)ui.status.textContent=poseState==="notPointing"?"เห็นมือแล้ว: เหยียดเฉพาะนิ้วชี้ และพับนิ้วกลาง–นาง–ก้อย":"ยกมือให้เห็นครบ แล้วทำท่าชี้ด้วยนิ้วชี้";return}
           let best=-1, bd=1e9;
           const hitR=(state.bubbleR||89)+61;
-          state.bubbles.forEach(b=>{const d=Math.hypot(hand.x-b.x,hand.y-b.y); if(d<hitR&&d<bd){bd=d;best=b.o.id}});
+          state.bubbles.forEach(b=>{if(b.dead)return;const d=Math.hypot(hand.x-b.x,hand.y-b.y); if(d<hitR&&d<bd){bd=d;best=b.uid}});
           if(best!==state.hover){state.hover=best;state.hoverAt=now;state.fired=false}
           const hold=best>=0?Math.min(100,(now-state.hoverAt)/state.dwellMs*100):0; ui.cursor.style.setProperty("--hold",hold+"%");
-          if(best>=0&&now-state.hoverAt>state.dwellMs&&!state.fired){state.fired=true;const bubble=state.bubbles.find(b=>b.o.id===best);answer(state.round.options.find(o=>o.id===best),bubble)}
+          if(best>=0&&now-state.hoverAt>state.dwellMs&&!state.fired){state.fired=true;const bubble=state.bubbles.find(b=>b.uid===best);answer(bubble?.o,bubble)}
           ui.status.textContent=best>=0?"โดนฟองแล้ว—ป๊อบ!":"ขยับนิ้วชี้ไปแตะฟองคำที่ต้องการ";
         }
         function draw(now){
@@ -202,7 +219,7 @@
         }
         function moveBubbles(dt,now){
           if(!state.round) return; const r=state.bubbleR||89, pad=r+6, s=speedSettings(state.speed);
-          state.bubbles.forEach((b,i)=>{b.x+=b.vx*dt*s.move+Math.sin(now*.001+b.phase)*.35*s.jitter; b.y+=b.vy*dt*s.move+Math.cos(now*.0013+b.phase)*.28*s.jitter; const min=pad,maxX=innerWidth-pad,maxY=innerHeight-pad,minY=innerHeight*.35; if(b.x<min||b.x>maxX)b.vx*=-1; if(b.y<minY||b.y>maxY)b.vy*=-1; b.el.style.left=(b.x-r)+"px"; b.el.style.top=(b.y-r)+"px"; b.el.classList.toggle("hot",state.hover===b.o.id);});
+          state.bubbles.forEach((b,i)=>{if(b.dead)return;b.x+=b.vx*dt*s.move+Math.sin(now*.001+b.phase)*.35*s.jitter; b.y+=b.vy*dt*s.move+Math.cos(now*.0013+b.phase)*.28*s.jitter; const min=pad,maxX=innerWidth-pad,maxY=innerHeight-pad,minY=innerHeight*.35; if(b.x<min||b.x>maxX)b.vx*=-1; if(b.y<minY||b.y>maxY)b.vy*=-1; b.el.style.left=(b.x-r)+"px"; b.el.style.top=(b.y-r)+"px"; b.el.classList.toggle("hot",state.hover===b.uid);});
         }
         let camBusy=false;
         async function processCam(){
@@ -213,7 +230,7 @@
             finally{camBusy=false;}
           }
         }
-        function loop(now){ raf=requestAnimationFrame(loop); draw(now); if(!state)return; state.density=+$("density").value; state.speed=+$("speed").value; state.dwellMs=getDwellMs(); const dt=Math.min(.04,Math.max(0,(now-lastFrame)/1000)); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000); $("time").textContent=Math.ceil(left); $("timebar").style.width=(left/state.duration*100)+"%"; if(left<=0)return end("หมดเวลา"); moveBubbles(dt,now); updateHover(now); processCam(); }
+        function loop(now){ raf=requestAnimationFrame(loop); draw(now); if(!state)return; state.density=+$("density").value; state.speed=+$("speed").value; state.dwellMs=getDwellMs(); const dt=Math.min(.04,Math.max(0,(now-lastFrame)/1000)); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000); $("time").textContent=Math.ceil(left); $("timebar").style.width=(left/state.duration*100)+"%"; if(left<=0)return end("หมดเวลา"); const d=densitySettings(state.density), max=innerWidth<=640?d.maxMobile:d.maxDesktop; if(now>state.spawnAt&&state.bubbles.filter(b=>!b.dead).length<max)spawnBubble(now); moveBubbles(dt,now); updateHover(now); processCam(); }
         function end(reason){ if(!state)return; const finished=state; state=null; gameToken++; clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam(); const final=finished.score+finished.hearts*10; $("final").textContent=final; $("breakdown").textContent=`${reason} • คะแนนคำศัพท์ ${finished.score} + โบนัสหัวใจ ${finished.hearts*10} = ${final}`; ui.hud.style.display="none"; ui.choices.innerHTML=""; ui.result.style.display="grid"; }
         function stopCam(){ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null} ui.video.srcObject=null; ui.cursor.style.display="none"; ui.cursor.style.opacity="0"; ui.cursor.style.setProperty("--hold","0%"); hands=null; hand=null; poseState="none"; lastVideo=-1; }
         function resize(){ ui.fx.width=innerWidth; ui.fx.height=innerHeight; if(state&&state.bubbles&&state.bubbles[0]) state.bubbleR=state.bubbles[0].el.offsetWidth/2; }
