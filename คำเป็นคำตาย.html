@@ -69,6 +69,18 @@
           <span><span class="text-violet-100 font-bold">ควบคุมด้วยมือ</span><br><small class="text-slate-400">ต้องอนุญาตกล้อง</small></span>
           <input id="cameraToggle" type="checkbox" class="toggle toggle-info" aria-label="เปิดการควบคุมด้วยกล้อง">
         </label>
+        <label class="form-control">
+          <span class="label-text text-cyan-100 mb-1">ความหนาแน่น <b id="densityValue" class="badge badge-secondary">45</b></span>
+          <input id="density" type="range" min="1" max="100" value="45" class="range range-secondary" aria-label="ปรับจำนวนอุกกาบาต">
+        </label>
+        <label class="form-control">
+          <span class="label-text text-cyan-100 mb-1">ความเร็ว <b id="speedValue" class="badge badge-accent">35</b></span>
+          <input id="speed" type="range" min="1" max="100" value="35" class="range range-accent" aria-label="ปรับความเร็วอุกกาบาต">
+        </label>
+        <label class="form-control">
+          <span class="label-text text-cyan-100 mb-1">เวลาชี้/กดค้าง <b id="dwellValue" class="badge badge-warning">0.5 วิ</b></span>
+          <input id="dwell" type="range" min="0.5" max="3" step="0.5" value="0.5" class="range range-warning" aria-label="ปรับเวลาค้างก่อนยิง">
+        </label>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mt-6">
@@ -174,6 +186,17 @@
   const SETTINGS = {
     easy:{spawn:2200,speed:4.5,max:6}, medium:{spawn:1650,speed:6.2,max:8}, hard:{spawn:1150,speed:8.2,max:10}
   };
+  const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+  const slider01=value=>(clamp(Number(value)||1,1,100)-1)/99;
+  function runtimeSettings(){
+    const base=SETTINGS[difficulty], density=slider01(ui.density?.value||45), speed=slider01(ui.speed?.value||35);
+    return {
+      spawn:Math.max(520, base.spawn*(1.25-density*.72)),
+      speed:base.speed*(.72+speed*.82),
+      max:Math.round(Math.max(3, base.max-2+density*5)),
+      dwell:clamp(Number(ui.dwell?.value)||.5,.5,3)*1000
+    };
+  }
 
   // สีอุกกาบาตสุ่มอิสระจากชนิดคำ เพื่อให้ผู้เล่นต้องอ่านและแยกคำจริง ๆ
   const METEOR_THEMES = [
@@ -198,7 +221,8 @@
     canvas:$('gameCanvas'), menu:$('mainMenu'), hud:$('hud'), difficulty:$('difficulty'), duration:$('duration'), cameraToggle:$('cameraToggle'),
     score:$('scoreText'), health:$('healthBar'), healthText:$('healthText'), objective:$('objectiveText'), objectiveBox:$('objectiveBox'),
     timer:$('timerText'), missionTimer:$('missionTimerText'), banner:$('banner'), bannerText:$('bannerText'), video:$('cameraPreview'), cursor:$('handCursor'), cursor2:$('handCursor2'),
-    rules:$('rulesModal'), cameraModal:$('cameraModal'), cameraError:$('cameraErrorText'), gameOver:$('gameOverModal'), gameOverReason:$('gameOverReason'), scoreBreakdown:$('scoreBreakdown')
+    rules:$('rulesModal'), cameraModal:$('cameraModal'), cameraError:$('cameraErrorText'), gameOver:$('gameOverModal'), gameOverReason:$('gameOverReason'), scoreBreakdown:$('scoreBreakdown'),
+    density:$('density'), speed:$('speed'), dwell:$('dwell'), densityValue:$('densityValue'), speedValue:$('speedValue'), dwellValue:$('dwellValue')
   };
 
   let scene, camera, renderer, raycaster, pointer, starField;
@@ -291,12 +315,13 @@
     const labelMat=new THREE.SpriteMaterial({map:makeTextTexture(item,{border:'#ffe66d',accent:'#fff2a8'}),transparent:true,depthTest:false});
     const label=new THREE.Sprite(labelMat);label.position.set(0,0,1.8);label.scale.set(3.8,1.9,1);label.renderOrder=5;group.add(label);
     group.position.copy(chooseSpawnPosition());group.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);
-    group.userData={kind:'shield',item,speed:SETTINGS[difficulty].speed*.82,spin:new THREE.Vector3(.5,.75,.35),phase:Math.random()*6.28,pulseAmp:.09,dead:false};
+    group.userData={kind:'shield',item,speed:runtimeSettings().speed*.82,spin:new THREE.Vector3(.5,.75,.35),phase:Math.random()*6.28,pulseAmp:.09,dead:false};
     [core,ring1,ring2,label].forEach(o=>o.userData.asteroid=group);asteroids.push(group);scene.add(group);
   }
 
   function createAsteroid(){
-    if(!gameRunning || asteroids.length>=SETTINGS[difficulty].max) return;
+    const settings=runtimeSettings();
+    if(!gameRunning || asteroids.length>=settings.max) return;
     const hasShield=asteroids.some(a=>a.userData.kind==='shield');
     const shieldChance=health<=80?.13:.045;
     if(!hasShield&&Math.random()<shieldChance){createShieldItem();return;}
@@ -311,7 +336,7 @@
     const label=new THREE.Sprite(spriteMat); label.position.set(0,0,radius+0.42); label.scale.set(4.1,2.05,1); label.renderOrder=4; group.add(label);
     group.position.copy(chooseSpawnPosition());
     group.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);
-    group.userData={kind:'word',item,shape,speed:SETTINGS[difficulty].speed*THREE.MathUtils.randFloat(.88,1.2),spin:new THREE.Vector3((Math.random()-.5)*.8,(Math.random()-.5)*.8,(Math.random()-.5)*.5),phase:Math.random()*6.28,pulseAmp:THREE.MathUtils.randFloat(.015,.06),dead:false};
+    group.userData={kind:'word',item,shape,speed:settings.speed*THREE.MathUtils.randFloat(.88,1.2),spin:new THREE.Vector3((Math.random()-.5)*.8,(Math.random()-.5)*.8,(Math.random()-.5)*.5),phase:Math.random()*6.28,pulseAmp:THREE.MathUtils.randFloat(.015,.06),dead:false};
     rock.traverse(o=>o.userData.asteroid=group);label.userData.asteroid=group;
     asteroids.push(group); scene.add(group);
   }
@@ -376,7 +401,7 @@
 
   // ---------- สถานะเกม ----------
   function startGame(){
-    difficulty=ui.difficulty.value;gameDuration=Number(ui.duration.value);score=0;health=100;correctHits=0;lastSpawnLane=-1;missionStart=performance.now();spawnAccumulator=SETTINGS[difficulty].spawn*.65;lastFrame=missionStart;ui.missionTimer.textContent=gameDuration;
+    difficulty=ui.difficulty.value;gameDuration=Number(ui.duration.value);score=0;health=100;correctHits=0;lastSpawnLane=-1;missionStart=performance.now();spawnAccumulator=runtimeSettings().spawn*.65;lastFrame=missionStart;ui.missionTimer.textContent=gameDuration;
     clearWorld();updateHUD();ui.menu.classList.add('hidden');ui.hud.classList.remove('hidden');ui.gameOver.close();gameRunning=true;chooseObjective(true);ensureAudio();
     if(ui.cameraToggle.checked) startHandTracking(); else stopCamera();
   }
@@ -426,7 +451,7 @@
       hands.forEach((hand,i)=>{
         const cursor=i===0?ui.cursor:ui.cursor2;
         const index=hand[8], aim={x:index.x,y:index.y};
-        const state=handStates[i]||{pointFrames:0,releaseFrames:0,wasPointing:false,lastShotAt:0,aimX:null,aimY:null};
+        const state=handStates[i]||{pointFrames:0,releaseFrames:0,wasPointing:false,lastShotAt:0,aimX:null,aimY:null,pointStartAt:0};
         const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,(a.z-b.z)*.5);
         const rawPalmSize=Math.max(dist(hand[0],hand[9]),dist(hand[5],hand[17]));
         // บางครั้งโมเดลคืน landmark ใกล้ (0,0) ชั่วขณะ ทำให้เคอร์เซอร์กระโดดไปมุมจอ
@@ -445,14 +470,16 @@
         const indexExtended=fingerExtended(8,5), middleExtended=fingerExtended(12,9), ringExtended=fingerExtended(16,13), pinkyExtended=fingerExtended(20,17);
         // ชี้เป้าเมื่อชูนิ้วชี้และพับนิ้วอื่นอย่างน้อย 2 นิ้ว
         const pointingShape=indexExtended&&[middleExtended,ringExtended,pinkyExtended].filter(Boolean).length<=1;
-        if(pointingShape) state.pointFrames=Math.min(6,state.pointFrames+1); else state.pointFrames=Math.max(0,state.pointFrames-1);
+        if(pointingShape){ state.pointFrames=Math.min(6,state.pointFrames+1); if(!state.pointStartAt) state.pointStartAt=now; }
+        else { state.pointFrames=Math.max(0,state.pointFrames-1); state.pointStartAt=0; }
         state.releaseFrames=indexExtended?0:Math.min(3,state.releaseFrames+1);
-        const isPointing=state.wasPointing?state.releaseFrames<3:state.pointFrames>=4;
+        const dwellMs=runtimeSettings().dwell;
+        const isPointing=state.wasPointing?state.releaseFrames<3:(pointingShape&&state.pointStartAt&&now-state.pointStartAt>=dwellMs);
         cursor.style.borderColor=isPointing?'#ffe66d':'#fff';
         cursor.style.boxShadow=isPointing?'0 0 22px #ffe66d,inset 0 0 14px #ffe66d':'0 0 18px #37e8ff,inset 0 0 12px #37e8ff';
         // ยิงหนึ่งครั้งต่อการชี้หนึ่งครั้ง ต้องลดนิ้วลงก่อนจึงจะยิงครั้งต่อไป
         if(isPointing&&!state.wasPointing&&now-state.lastShotAt>500){
-          state.lastShotAt=now;cursor.animate([{transform:'scale(1)'},{transform:'scale(.62)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:240});shootAt(x,y,92);
+          state.lastShotAt=now;state.pointStartAt=0;cursor.animate([{transform:'scale(1)'},{transform:'scale(.62)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:240});shootAt(x,y,92);
         }
         state.wasPointing=isPointing;
         handStates[i]=state;
@@ -472,7 +499,8 @@
       const missionElapsed=(now-missionStart)/1000,missionRemaining=Math.max(0,gameDuration-missionElapsed);
       ui.missionTimer.textContent=Math.ceil(missionRemaining);
       if(missionRemaining<=0){endGame('หมดเวลาภารกิจ');return;}
-      spawnAccumulator+=dt*1000;if(spawnAccumulator>=SETTINGS[difficulty].spawn){spawnAccumulator=0;createAsteroid();}
+      const settings=runtimeSettings();
+      spawnAccumulator+=dt*1000;if(spawnAccumulator>=settings.spawn){spawnAccumulator=0;createAsteroid();}
       const elapsed=(now-objectiveStart)/1000;if(elapsed>=20)chooseObjective();ui.timer.textContent=Math.max(0,Math.ceil(20-elapsed));
       for(let i=asteroids.length-1;i>=0;i--){const a=asteroids[i],d=a.userData;a.position.z+=d.speed*dt;a.rotation.x+=d.spin.x*dt;a.rotation.y+=d.spin.y*dt;a.rotation.z+=d.spin.z*dt;
         const pulse=1+Math.sin(now*.004+d.phase)*d.pulseAmp;a.scale.setScalar(pulse);
@@ -485,12 +513,17 @@
   }
 
   // ---------- Events / Responsive ----------
-  ui.canvas.addEventListener('pointerdown',e=>{e.preventDefault();shootAt(e.clientX,e.clientY);},{passive:false});
+  let pointerHoldTimer=0,pointerHoldPos=null;
+  ui.canvas.addEventListener('pointerdown',e=>{e.preventDefault();pointerHoldPos={x:e.clientX,y:e.clientY};clearTimeout(pointerHoldTimer);pointerHoldTimer=setTimeout(()=>{if(pointerHoldPos)shootAt(pointerHoldPos.x,pointerHoldPos.y)},runtimeSettings().dwell);},{passive:false});
+  ui.canvas.addEventListener('pointermove',e=>{if(pointerHoldPos)pointerHoldPos={x:e.clientX,y:e.clientY};},{passive:false});
+  ['pointerup','pointercancel','pointerleave'].forEach(type=>ui.canvas.addEventListener(type,()=>{clearTimeout(pointerHoldTimer);pointerHoldTimer=0;pointerHoldPos=null;}));
   $('startBtn').addEventListener('click',startGame);$('rulesBtn').addEventListener('click',()=>ui.rules.showModal());
   $('restartBtn').addEventListener('click',startGame);$('menuBtn').addEventListener('click',()=>{gameRunning=false;ui.gameOver.close();clearWorld();ui.hud.classList.add('hidden');ui.menu.classList.remove('hidden');});
   addEventListener('keydown',e=>{if(e.key==='Escape'&&gameRunning){gameRunning=false;stopCamera();clearWorld();ui.hud.classList.add('hidden');ui.menu.classList.remove('hidden');}});
   addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)lastFrame=performance.now();});
+  function updateSettingLabels(){ui.densityValue.textContent=ui.density.value;ui.speedValue.textContent=ui.speed.value;ui.dwellValue.textContent=Number(ui.dwell.value).toFixed(1)+' วิ';}
+  ui.density.addEventListener('input',updateSettingLabels);ui.speed.addEventListener('input',updateSettingLabels);ui.dwell.addEventListener('input',updateSettingLabels);updateSettingLabels();
 
   initThree();
 })();

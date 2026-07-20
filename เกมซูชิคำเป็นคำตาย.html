@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>ซูชิสายพาน คำเป็นคำตาย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" />
     <script>
       window.createMediapipeSolutionsPackedAssets =
         window.createMediapipeSolutionsPackedAssets || {};
@@ -42,8 +44,9 @@
       #menu .card{width:min(760px,calc(100vw - 26px));text-align:center}
       h1{font-size:clamp(2.15rem,7vw,4.8rem);line-height:1.05;margin:.15em 0;color:#c53242;text-shadow:0 3px #fff,0 10px 22px #68232640}
       .lead{font-size:clamp(1rem,2.6vw,1.2rem);color:#6b4c4b;line-height:1.55}
-      .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;text-align:left}
-      label,select,button{font:inherit}.field{display:grid;gap:6px}.field select,.check{width:100%;border:2px solid #f09b73;border-radius:14px;background:white;padding:12px;color:#4d3333}
+      .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0;text-align:left}
+      label,select,button,input{font:inherit}.field{display:grid;gap:6px}.field select,.check,.rangebox{width:100%;border:2px solid #f09b73;border-radius:14px;background:white;padding:12px;color:#4d3333}
+      .rangebox{display:grid;gap:8px}.range-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.range-value{background:#fff0dc;border-radius:999px;padding:2px 10px;color:#b43a3d;font-weight:900}.rangebox input{width:100%;accent-color:#e6404e}
       .check{display:flex;align-items:center;gap:10px;height:100%}.check input{width:22px;height:22px;accent-color:#e6404e}
       button{font-weight:900;border:0;border-radius:999px;padding:14px 26px;cursor:pointer}.primary{color:white;background:linear-gradient(135deg,#e93e51,#ff9f4f);box-shadow:0 5px 0 #ad2e3b}.secondary{color:#b43a3d;background:white;border:2px solid #f09b73}
       #hud{display:none;position:fixed;z-index:6;inset:0;pointer-events:none;padding:12px}.row{display:flex;justify-content:space-between;gap:8px}.chip{background:#fff9edf0;border:2px solid white;border-radius:18px;padding:10px 14px;box-shadow:0 8px 20px #4a1d2438;font-weight:900}
@@ -56,6 +59,7 @@
       #result{display:none;inset:0;place-items:center;background:linear-gradient(180deg,#fff0 0%,#ffbd7ee8 60%,#7d373ce8)}.heart{color:#e93e51;font-size:1.3rem;letter-spacing:2px}
       @keyframes beltMove{to{background-position:-58px 0}}
       @keyframes grab{0%{opacity:1;transform:scale(1.08) translateY(-8px)}48%{transform:scale(1.28) translateY(-60px) rotate(-7deg);filter:brightness(1.25)}100%{opacity:0;transform:scale(.18) translateY(-140px) rotate(16deg)}}
+      @media(max-width:980px){.grid{grid-template-columns:1fr 1fr}}
       @media(max-width:700px){.grid{grid-template-columns:1fr}.plate{width:142px;height:98px}.sushi{width:98px;height:64px}.word{font-size:30px}#target{top:78px}.chef{width:86px;height:86px;font-size:48px;opacity:.88}.chip{font-size:.86rem;padding:8px 10px}}
       @media(prefers-reduced-motion:reduce){#belt:before{animation:none}}
     </style>
@@ -75,22 +79,31 @@
         <h1>ซูชิสายพาน คำเป็นคำตาย</h1>
         <p class="lead"><b>ใช้มือทำท่าหยิบจานซูชิคำศัพท์</b> หรือแตะ/คลิกจานให้ตรงกับภารกิจ ฝึกแยกคำเป็นและคำตายสำหรับนักเรียนประถม</p>
         <div class="grid">
-          <label class="field">ระดับชั้น
-            <select id="level">
+          <label class="field form-control">ระดับชั้น
+            <select id="level" class="select select-bordered">
               <option value="1">ป.1-2 เริ่มต้น</option>
               <option value="2" selected>ป.3-4 ฝึกฝน</option>
               <option value="3">ป.5-6 ท้าทาย</option>
             </select>
           </label>
-          <label class="field">เวลาเล่น
-            <select id="duration">
+          <label class="field form-control">เวลาเล่น
+            <select id="duration" class="select select-bordered">
               <option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option>
             </select>
           </label>
-          <label class="check"><input id="useCam" type="checkbox" checked /> เปิด AR ใช้ท่าหยิบจาน</label>
+          <label class="field form-control">ความหนาแน่น
+            <span class="rangebox"><span class="range-head"><span>จานบนสายพาน</span><b id="densityValue" class="range-value">45</b></span><input id="density" class="range range-secondary" type="range" min="1" max="100" value="45" /></span>
+          </label>
+          <label class="field form-control">ความเร็ว
+            <span class="rangebox"><span class="range-head"><span>สายพาน</span><b id="speedValue" class="range-value">35</b></span><input id="speed" class="range range-accent" type="range" min="1" max="100" value="35" /></span>
+          </label>
+          <label class="field form-control">เวลาหยิบ
+            <span class="rangebox"><span class="range-head"><span>ก่อนเลือก</span><b id="dwellValue" class="range-value">1.0 วิ</b></span><input id="dwell" class="range range-warning" type="range" min="0.5" max="3" step="0.5" value="1" /></span>
+          </label>
+          <label class="check"><input id="useCam" class="checkbox checkbox-primary" type="checkbox" checked /> เปิด AR ใช้ท่าหยิบจาน</label>
         </div>
         <p style="font-size:12px;color:#7a5d59">ใช้ MediaPipe Hands ผ่าน CDN และต้องอนุญาตกล้องบน HTTPS หาก AR ไม่พร้อม ยังเล่นด้วยการแตะ/คลิกได้</p>
-        <button class="primary" id="start">เริ่มเปิดร้าน</button>
+        <button class="primary btn border-0" id="start">เริ่มเปิดร้าน</button>
       </section>
     </main>
 
@@ -136,7 +149,9 @@
           {w:"กรรม",t:"live",r:"คำเป็น: แม่กม",l:3},{w:"ธรรม",t:"live",r:"คำเป็น: แม่กม",l:3},{w:"ศาล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"กาล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"พร",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"นวล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"เทียน",t:"live",r:"คำเป็น: แม่กน",l:3},
           {w:"พิษ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"สุข",t:"dead",r:"คำตาย: แม่กก",l:3},{w:"เลข",t:"dead",r:"คำตาย: แม่กก",l:3},{w:"โทษ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"ชาติ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"เพชร",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"บาป",t:"dead",r:"คำตาย: แม่กบ",l:3},{w:"ลาภ",t:"dead",r:"คำตาย: แม่กบ",l:3}
         ];
-        const GRAB_READY_MS = 90;
+        const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)), slider01=v=>(clamp(+v||1,1,100)-1)/99, getDwellMs=()=>clamp(+$("dwell").value||1,.5,3)*1000;
+        function densitySettings(v){const t=slider01(v);return{maxMobile:Math.round(3+t*3),maxDesktop:Math.round(4+t*5),spawnBase:2200-t*1000,minGap:1.8-t*.35};}
+        function speedSettings(v){const t=slider01(v);return{base:28+t*54,level:8+t*10,jitter:5+t*15};}
         const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
         const COLORS = [
           ["#e94452","#ffcf5a"],["#22a6b3","#a6f3ff"],["#6c5ce7","#d6ccff"],
@@ -150,7 +165,7 @@
           cancelAnimationFrame(raf); stopCam();
           const now = performance.now();
           state = {
-            token:Math.random(), score:0, hearts:5, level:+$("level").value, duration:+$("duration").value,
+            token:Math.random(), score:0, hearts:5, level:+$("level").value, duration:+$("duration").value, density:+$("density").value, speed:+$("speed").value, dwellMs:getDwellMs(),
             start:now, mission:Math.random()<.5?"live":"dead", nextSwitch:now+15000, plates:[], hover:-1, grabAt:0, grabOpen:true, spawnAt:0, laneIndex:0
           };
           ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; ui.plates.innerHTML="";
@@ -181,7 +196,8 @@
           if(showToast) toast(state.mission === "live" ? "ออเดอร์ใหม่: หยิบคำเป็น!" : "ออเดอร์ใหม่: หยิบคำตาย!", true);
         }
         function spawnPlate(now){
-          const pool = WORDS.filter(x => x.l <= state.level);
+          state.density=+$("density").value; state.speed=+$("speed").value;
+          const pool = WORDS.filter(x => x.l <= state.level), ds=densitySettings(state.density), ss=speedSettings(state.speed);
           const item = pick(pool), color = pick(COLORS);
           const plateW = innerWidth <= 700 ? 142 : 178;
           const beltCenter = innerHeight - Math.min(innerHeight*.24, 190) - 34;
@@ -189,17 +205,19 @@
           const lane = lanes[state.laneIndex++ % lanes.length];
           const lanePlates = state.plates.filter(p => !p.dead && p.lane === lane);
           const rightMost = lanePlates.length ? Math.max(...lanePlates.map(p => p.x)) : -999;
-          const minGap = Math.max(plateW * 1.55, innerWidth * .18);
+          const minGap = Math.max(plateW * ds.minGap, innerWidth * .14);
           if(rightMost > innerWidth + 120 - minGap){ state.spawnAt = now + 180; return; }
           const y = beltCenter + lane + Math.sin(now*.004)*4;
-          const speed = 40 + state.level*12 + Math.random()*10;
-          const plate = {id:Math.random(), item, x:Math.max(innerWidth + plateW*.75, rightMost + minGap), y, baseY:y, lane, speed, color, dead:false};
+          const speed = ss.base + state.level*ss.level + Math.random()*ss.jitter;
+          const plate = {id:Math.random(), item, x:Math.max(innerWidth + plateW*.75, rightMost + minGap), y, baseY:y, lane, speed, color, dead:false, holdTimer:0};
           const el = document.createElement("button");
           el.className = "plate"; el.style.setProperty("--ring", color[0]); el.style.left = `${plate.x-plateW/2}px`; el.style.top = `${plate.y-62}px`;
           el.innerHTML = `<div class="sushi" style="--fish:${color[1]}"><span class="word">${item.w}</span></div><span class="hint">จีบหยิบ</span>`;
-          el.onclick = () => answer(plate);
+          const cancelHold=()=>{clearTimeout(plate.holdTimer);plate.holdTimer=0;el.classList.remove("hot")};
+          el.addEventListener("pointerdown",e=>{if(!state||plate.dead)return;e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add("hot");plate.holdTimer=setTimeout(()=>answer(plate),state.dwellMs);ui.status.textContent=`กดค้าง ${(state.dwellMs/1000).toFixed(1)} วิ เพื่อหยิบจาน`;});
+          ["pointerup","pointercancel","pointerleave"].forEach(type=>el.addEventListener(type,cancelHold));
           ui.plates.appendChild(el); plate.el = el; state.plates.push(plate);
-          state.spawnAt = now + Math.max(950, 1850 - state.level*190 - Math.random()*260);
+          state.spawnAt = now + Math.max(760, ds.spawnBase - state.level*160 - Math.random()*280);
         }
         function answer(plate){
           if(!state||!plate||plate.dead) return;
@@ -266,10 +284,11 @@
           const grabbing = poseState === "grabbing";
           if(best >= 0 && grabbing && state.grabOpen && !state.grabAt) state.grabAt = now;
           if(!grabbing) state.grabAt = 0;
-          const hold = best>=0 && grabbing ? Math.min(100,(now-state.grabAt)/GRAB_READY_MS*100) : 0;
+          state.dwellMs=getDwellMs();
+          const hold = best>=0 && grabbing ? Math.min(100,(now-state.grabAt)/state.dwellMs*100) : 0;
           ui.cursor.style.setProperty("--hold", `${hold}%`);
           state.plates.forEach(p => p.el.classList.toggle("hot", p.id===best));
-          if(best>=0 && grabbing && state.grabOpen && now-state.grabAt>GRAB_READY_MS){
+          if(best>=0 && grabbing && state.grabOpen && now-state.grabAt>state.dwellMs){
             state.grabOpen = false; state.grabAt = 0; answer(state.plates.find(p => p.id===best));
           }
           ui.status.textContent = best>=0 ? (grabbing ? "หยิบแล้ว!" : "อยู่เหนือจานแล้ว จีบนิ้วโป้งกับนิ้วชี้เพื่อหยิบ") : "เลื่อนมือไปเหนือจาน แล้วทำท่าหยิบ";
@@ -312,14 +331,17 @@
           if(!state) return;
           draw(now); processCam();
           const dt = Math.min(.05,(now-lastFrame)/1000||.016); lastFrame = now;
+          state.density = +$("density").value; state.speed = +$("speed").value; state.dwellMs = getDwellMs();
           const left = Math.max(0, state.duration - (now-state.start)/1000);
           $("time").textContent = Math.ceil(left); $("timebar").style.width = `${left/state.duration*100}%`;
           if(left <= 0) return end("หมดเวลา");
           if(now > state.nextSwitch){ state.mission = state.mission==="live" ? "dead" : "live"; state.nextSwitch = now + 15000; updateMission(true); }
-          if(now > state.spawnAt && state.plates.length < (innerWidth <= 700 ? 4 : 6)) spawnPlate(now);
+          const ds=densitySettings(state.density);
+          if(now > state.spawnAt && state.plates.length < (innerWidth <= 700 ? ds.maxMobile : ds.maxDesktop)) spawnPlate(now);
           state.plates.slice().forEach(p => {
             if(p.dead) return;
-            p.x -= p.speed * dt; p.y = p.baseY + Math.sin(now*.002+p.id)*6;
+            const liveSpeed=p.speed*(speedSettings(state.speed).base/(speedSettings(35).base));
+            p.x -= liveSpeed * dt; p.y = p.baseY + Math.sin(now*.002+p.id)*6;
             p.el.style.left = `${p.x-p.el.offsetWidth/2}px`; p.el.style.top = `${p.y-p.el.offsetHeight/2}px`;
             if(p.x < -120){
               const missedTarget = p.item.t === state.mission;
@@ -343,6 +365,8 @@
           hands=null; hand=null; lastHandLandmarks=null; poseState="none"; lastVideo=-1;
         }
         function resize(){ ui.fx.width=innerWidth; ui.fx.height=innerHeight; }
+        function updateSliderLabels(){ $("densityValue").textContent=$("density").value; $("speedValue").textContent=$("speed").value; $("dwellValue").textContent=(+$("dwell").value).toFixed(1)+" วิ"; }
+        $("density").oninput=updateSliderLabels; $("speed").oninput=updateSliderLabels; $("dwell").oninput=updateSliderLabels; updateSliderLabels();
         $("start").onclick = start; $("again").onclick = start; $("back").onclick = () => { ui.result.style.display="none"; ui.menu.style.display="grid"; };
         addEventListener("resize", resize); resize();
       })();

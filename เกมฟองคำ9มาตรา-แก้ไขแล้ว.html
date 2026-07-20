@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>เกมฟองคำ 9 มาตรา</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" />
     <script>
       window.createMediapipeSolutionsPackedAssets =
         window.createMediapipeSolutionsPackedAssets || {};
@@ -36,7 +38,8 @@
       #menu{inset:0;display:grid;place-items:center;background:linear-gradient(160deg,#bdfaffee,#4acbe7dd 48%,#1575b5e8)}
       #menu .card{width:min(720px,calc(100vw - 28px));text-align:center}
       h1{font-size:clamp(2rem,6vw,4.2rem);margin:.2em;color:#176faf;text-shadow:0 3px #fff,0 8px 18px #0a558744}
-      select,label{font:inherit}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;text-align:left}.field{display:grid;gap:6px}.field select,.check{border:2px solid #a89af2;border-radius:14px;background:white;padding:12px}
+      select,label{font:inherit}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0;text-align:left}.field{display:grid;gap:6px}.field select,.check,.rangebox{border:2px solid #a89af2;border-radius:14px;background:white;padding:12px}
+      .rangebox{display:grid;gap:8px}.range-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.range-value{background:#eef9ff;border-radius:999px;padding:2px 10px;color:#6153d9;font-weight:900}.rangebox input{width:100%;accent-color:#ff6fae}
       .check{display:flex;align-items:center;gap:10px}.check input{width:22px;height:22px;accent-color:#ff6fae}
       button{font:inherit;font-weight:900;border:0;border-radius:999px;padding:14px 28px;cursor:pointer}.primary{color:white;background:linear-gradient(135deg,#ff6fae,#ff9d63);box-shadow:0 5px 0 #d85a78}.secondary{color:#6153d9;background:white;border:2px solid #8d7deb}
       #hud{display:none;position:fixed;inset:0;z-index:4;pointer-events:none;padding:14px}.row{display:flex;justify-content:space-between;gap:8px}.chip{background:#ffffffe8;border:2px solid white;border-radius:18px;padding:10px 14px;box-shadow:0 5px 18px #40528a33;font-weight:900}
@@ -58,12 +61,13 @@
       @keyframes bubbleIn{0%{opacity:0;transform:scale(.08)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
       @keyframes bubblePop{0%{opacity:1;transform:scale(1.08)}38%{transform:scale(1.34);filter:brightness(1.4) saturate(1.5)}100%{opacity:0;transform:scale(.05) rotate(16deg);filter:brightness(1.8)}}
       @media(prefers-reduced-motion:reduce){.shade:before,.shade:after,.weed,.fish{animation:none}}
+      @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
       @media(max-width:640px){.grid{grid-template-columns:1fr}.bubble{width:31vw;height:31vw}.bubble .word{font-size:32px}#target{top:88px}.chip{font-size:.85rem;padding:8px 10px}}
     </style>
   </head>
   <body>
     <video id="camera" autoplay playsinline muted></video><div class="shade"></div><div id="reef" aria-hidden="true"><i class="fish f1">🐠</i><i class="fish f2">🐟</i><i class="fish f3">🐠</i><i class="weed w1"></i><i class="weed w2"></i><i class="weed w3"></i><i class="weed w4"></i><i class="coral c1">🪸</i><i class="coral c2">🪸</i></div><canvas id="fx"></canvas><div id="cursor"></div>
-    <main id="menu" class="panel"><section class="card"><div style="font-size:4rem">🫧🌈</div><h1>เกมฟองคำ 9 มาตรา</h1><p><b>ใช้นิ้วชี้ควบคุมฟองคำ</b> หรือแตะ/คลิกเพื่อเล่นได้</p><div class="grid"><label class="field">ระดับชั้น<select id="level"><option value="1">ป.1–2 เริ่มต้น</option><option value="2" selected>ป.3–4 ฝึกฝน</option><option value="3">ป.5–6 ท้าทาย</option></select></label><label class="field">เวลาเล่น<select id="duration"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select></label></div><label class="check"><input id="useCam" type="checkbox" checked /> เปิดกล้องและใช้ MediaPipe ควบคุมด้วยนิ้ว</label><label class="check"><input id="mirrorX" type="checkbox" checked /> สลับแกนมือ ถ้า cursor วิ่งสวนทาง</label><p style="font-size:12px;color:#687493">ไฟล์นี้เป็น vanilla JavaScript เปิด HTML ได้โดยตรง แต่ MediaPipe ต้องใช้อินเทอร์เน็ตครั้งแรกเพื่อโหลดจาก CDN</p><button class="primary" id="start">เริ่มเล่น</button></section></main>
+    <main id="menu" class="panel"><section class="card"><div style="font-size:4rem">🫧🌈</div><h1>เกมฟองคำ 9 มาตรา</h1><p><b>ใช้นิ้วชี้ควบคุมฟองคำ</b> หรือแตะ/คลิกเพื่อเล่นได้</p><div class="grid"><label class="field form-control">ระดับชั้น<select id="level" class="select select-bordered"><option value="1">ป.1–2 เริ่มต้น</option><option value="2" selected>ป.3–4 ฝึกฝน</option><option value="3">ป.5–6 ท้าทาย</option></select></label><label class="field form-control">เวลาเล่น<select id="duration" class="select select-bordered"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select></label><label class="field form-control">ความหนาแน่น<span class="rangebox"><span class="range-head"><span>ฟองบนจอ</span><b id="densityValue" class="range-value">45</b></span><input id="density" class="range range-secondary" type="range" min="1" max="100" value="45" /></span></label><label class="field form-control">ความเร็ว<span class="rangebox"><span class="range-head"><span>ฟองลอย</span><b id="speedValue" class="range-value">35</b></span><input id="speed" class="range range-accent" type="range" min="1" max="100" value="35" /></span></label><label class="field form-control">เวลาจิ้ม<span class="rangebox"><span class="range-head"><span>ก่อนแตก</span><b id="dwellValue" class="range-value">0.5 วิ</b></span><input id="dwell" class="range range-warning" type="range" min="0.5" max="3" step="0.5" value="0.5" /></span></label></div><label class="check"><input id="useCam" class="checkbox checkbox-primary" type="checkbox" checked /> เปิดกล้องและใช้ MediaPipe ควบคุมด้วยนิ้ว</label><label class="check"><input id="mirrorX" class="checkbox checkbox-secondary" type="checkbox" checked /> สลับแกนมือ ถ้า cursor วิ่งสวนทาง</label><p style="font-size:12px;color:#687493">ไฟล์นี้เป็น vanilla JavaScript เปิด HTML ได้โดยตรง แต่ MediaPipe ต้องใช้อินเทอร์เน็ตครั้งแรกเพื่อโหลดจาก CDN; บาง browser หรือ file:// อาจใช้กล้องไม่ได้</p><button class="primary btn border-0" id="start">เริ่มเล่น</button></section></main>
     <section id="hud"><div class="row"><div class="chip">หัวใจ <span id="hearts" class="heart">♥♥♥♥♥</span></div><div class="chip">คะแนน <span id="score">0</span></div></div><div id="target" class="chip"><small>ภารกิจรอบนี้</small><br><b id="mission">แม่กน</b><div><span id="time">60</span> วินาที</div><div class="bar"><i id="timebar" style="width:100%"></i></div></div><div id="status" class="chip">ยกนิ้วชี้ให้กล้องเห็น แล้วแตะฟองคำแป๊บเดียว</div></section>
     <section id="choices"></section><div id="toast"></div>
     <section id="result" class="panel"><div class="card" style="text-align:center;width:min(480px,calc(100vw - 28px))"><div style="font-size:4rem">🎉</div><h1>จบเกม</h1><div style="font-size:3rem;color:#f39a2e;font-weight:900" id="final">0</div><p id="breakdown"></p><button class="primary" id="again">เล่นอีกครั้ง</button> <button class="secondary" id="back">เมนู</button></div></section>
@@ -89,20 +93,24 @@
           const make=(items,d)=>items.map((w,index)=>({w,m,d,r:m==="แม่ ก กา"?"ไม่มีตัวสะกด":d?"สะกดตรงตามมาตรา":"ออกเสียงตามมาตรา แต่ใช้ตัวสะกดไม่ตรงมาตรา",icon:"🫧",minLevel:d?(index<100?1:index<200?2:3):(index<Math.ceil(items.length/2)?2:3)}));
           return [...make(g.d,true),...make(g.i,false)];
         }).map((x,id)=>({...x,id}));
-        const DWELL_MS=180;
+        const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)), slider01=v=>(clamp(+v||1,1,100)-1)/99;
+        const getDwellMs=()=>clamp(+$("dwell").value||.5,.5,3)*1000;
+        function densitySettings(v){const t=slider01(v);return{decoys:Math.round(2+t*3),gap:2.1-t*.45};}
+        function speedSettings(v){const t=slider01(v);return{move:.65+t*1.65,jitter:.7+t*1.35};}
         let state, hands, stream, raf, roundTimer, gameToken=0, lastFrame=0, lastVideo=-1, hand=null, poseState="none", bursts=[];
         const pick = (a) => a[Math.floor(Math.random()*a.length)], shuffle = (a) => a.sort(()=>Math.random()-.5);
         function start(){
           clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam();
           const now=performance.now(), token=++gameToken;
-          state={score:0,hearts:5,duration:+$("duration").value,level:+$("level").value,start:now,token,round:null,hover:-1,hoverAt:0,fired:false,bubbles:[]};
+          state={score:0,hearts:5,duration:+$("duration").value,level:+$("level").value,density:+$("density").value,speed:+$("speed").value,dwellMs:getDwellMs(),start:now,token,round:null,hover:-1,hoverAt:0,fired:false,bubbles:[]};
           ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; updateHud(); makeRound(); resize(); if($("useCam").checked) startCam(token); else ui.status.textContent="โหมดแตะ/คลิก เลือกฟองคำได้ทันที"; lastFrame=now; loop(now);
         }
         function makeRound(){
           if(!state) return;
           const pool=words.filter(x=>x.minLevel<=state.level), matras=[...new Set(pool.map(x=>x.m))], target=pick(matras), good=pool.filter(x=>x.m===target);
           const uncommon=good.filter(x=>!x.d), preferUncommon=state.level===3&&uncommon.length&&Math.random()<.7;
-          const ans=pick(preferUncommon?uncommon:good), others=shuffle(pool.filter(x=>x.m!==target)).slice(0,2);
+          state.density=+$("density").value;
+          const ans=pick(preferUncommon?uncommon:good), decoyCount=densitySettings(state.density).decoys, others=shuffle(pool.filter(x=>x.m!==target)).slice(0,decoyCount);
           state.round={target,answer:ans,options:shuffle([ans,...others]).map((x,i)=>({...x,id:i}))}; state.hover=-1; state.hoverAt=0; state.fired=false; $("mission").textContent=target; renderBubbles();
         }
         function randomPosition(placed,r){
@@ -112,7 +120,7 @@
         function renderBubbles(){
           ui.choices.innerHTML=""; const colors=["#ffd76a,#ff9a72","#9ee9ff,#58b9ec","#ffacd4,#e879b5"];
           state.bubbles=state.round.options.map(o=>({o,vx:(Math.random()<.5?-1:1)*(5+Math.random()*13),vy:(Math.random()<.5?-1:1)*(3+Math.random()*8),phase:Math.random()*9}));
-          state.bubbles.forEach((b,i)=>{const el=document.createElement("button"); el.className="bubble"; el.dataset.id=b.o.id; el.style.background=`radial-gradient(circle at 35% 28%,#fff,${colors[i]})`; el.style.animationDelay=Math.floor(Math.random()*140)+"ms"; el.innerHTML=`<span class=tag>${b.o.icon||"ฟองคำ"}</span><span class=word>${b.o.w}</span><span class=hint>แตะนิดเดียวก็แตก</span>`; el.onclick=()=>answer(b.o,b); ui.choices.appendChild(el); b.el=el;});
+          state.bubbles.forEach((b,i)=>{const el=document.createElement("button"); el.className="bubble"; el.dataset.id=b.o.id; el.style.background=`radial-gradient(circle at 35% 28%,#fff,${colors[i%colors.length]})`; el.style.animationDelay=Math.floor(Math.random()*140)+"ms"; el.innerHTML=`<span class=tag>${b.o.icon||"ฟองคำ"}</span><span class=word>${b.o.w}</span><span class=hint>กดค้างตามเวลาที่ตั้ง</span>`; let holdTimer=0; const cancel=()=>{clearTimeout(holdTimer);el.classList.remove("hot")}; el.addEventListener("pointerdown",e=>{if(!state?.round)return;e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add("hot");holdTimer=setTimeout(()=>answer(b.o,b),state.dwellMs);}); ["pointerup","pointercancel","pointerleave"].forEach(type=>el.addEventListener(type,cancel)); ui.choices.appendChild(el); b.el=el;});
           // bubble size is responsive (178px desktop, 31vw on narrow screens) — measure the
           // real rendered size instead of assuming a fixed desktop pixel value, so boundary
           // clamping and hover-hit-testing stay correct on phones/tablets.
@@ -183,8 +191,8 @@
           const hitR=(state.bubbleR||89)+61;
           state.bubbles.forEach(b=>{const d=Math.hypot(hand.x-b.x,hand.y-b.y); if(d<hitR&&d<bd){bd=d;best=b.o.id}});
           if(best!==state.hover){state.hover=best;state.hoverAt=now;state.fired=false}
-          const hold=best>=0?Math.min(100,(now-state.hoverAt)/DWELL_MS*100):0; ui.cursor.style.setProperty("--hold",hold+"%");
-          if(best>=0&&now-state.hoverAt>DWELL_MS&&!state.fired){state.fired=true;const bubble=state.bubbles.find(b=>b.o.id===best);answer(state.round.options.find(o=>o.id===best),bubble)}
+          const hold=best>=0?Math.min(100,(now-state.hoverAt)/state.dwellMs*100):0; ui.cursor.style.setProperty("--hold",hold+"%");
+          if(best>=0&&now-state.hoverAt>state.dwellMs&&!state.fired){state.fired=true;const bubble=state.bubbles.find(b=>b.o.id===best);answer(state.round.options.find(o=>o.id===best),bubble)}
           ui.status.textContent=best>=0?"โดนฟองแล้ว—ป๊อบ!":"ขยับนิ้วชี้ไปแตะฟองคำที่ต้องการ";
         }
         function draw(now){
@@ -193,8 +201,8 @@
           bursts=bursts.filter(b=>now-b.start<b.life); bursts.forEach(b=>{const age=now-b.start,p=age/b.life,t=age/1000;x.globalAlpha=1-p;x.strokeStyle=b.ok?"#fff35c":"#ff7da5";x.lineWidth=8*(1-p)+2;x.beginPath();x.arc(b.x,b.y,24+p*105,0,Math.PI*2);x.stroke();x.lineWidth=3;x.beginPath();x.arc(b.x,b.y,12+p*145,0,Math.PI*2);x.stroke();b.particles.forEach(q=>{x.fillStyle=q.color;x.beginPath();x.arc(b.x+q.vx*t,b.y+q.vy*t+110*t*t,q.size*(1-p*.45),0,Math.PI*2);x.fill()});x.fillStyle="#fff";x.font="900 28px Tahoma";x.textAlign="center";x.shadowColor=b.ok?"#ff6fae":"#7c5ce7";x.shadowBlur=12;x.fillText(b.ok?"เยี่ยม!":"ป๊อบ!",b.x,b.y-45-p*35);x.shadowBlur=0});x.globalAlpha=1;
         }
         function moveBubbles(dt,now){
-          if(!state.round) return; const r=state.bubbleR||89, pad=r+6;
-          state.bubbles.forEach((b,i)=>{b.x+=b.vx*dt+Math.sin(now*.001+b.phase)*.35; b.y+=b.vy*dt+Math.cos(now*.0013+b.phase)*.28; const min=pad,maxX=innerWidth-pad,maxY=innerHeight-pad,minY=innerHeight*.35; if(b.x<min||b.x>maxX)b.vx*=-1; if(b.y<minY||b.y>maxY)b.vy*=-1; b.el.style.left=(b.x-r)+"px"; b.el.style.top=(b.y-r)+"px"; b.el.classList.toggle("hot",state.hover===b.o.id);});
+          if(!state.round) return; const r=state.bubbleR||89, pad=r+6, s=speedSettings(state.speed);
+          state.bubbles.forEach((b,i)=>{b.x+=b.vx*dt*s.move+Math.sin(now*.001+b.phase)*.35*s.jitter; b.y+=b.vy*dt*s.move+Math.cos(now*.0013+b.phase)*.28*s.jitter; const min=pad,maxX=innerWidth-pad,maxY=innerHeight-pad,minY=innerHeight*.35; if(b.x<min||b.x>maxX)b.vx*=-1; if(b.y<minY||b.y>maxY)b.vy*=-1; b.el.style.left=(b.x-r)+"px"; b.el.style.top=(b.y-r)+"px"; b.el.classList.toggle("hot",state.hover===b.o.id);});
         }
         let camBusy=false;
         async function processCam(){
@@ -205,11 +213,12 @@
             finally{camBusy=false;}
           }
         }
-        function loop(now){ raf=requestAnimationFrame(loop); draw(now); if(!state)return; const dt=Math.min(.04,Math.max(0,(now-lastFrame)/1000)); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000); $("time").textContent=Math.ceil(left); $("timebar").style.width=(left/state.duration*100)+"%"; if(left<=0)return end("หมดเวลา"); moveBubbles(dt,now); updateHover(now); processCam(); }
+        function loop(now){ raf=requestAnimationFrame(loop); draw(now); if(!state)return; state.density=+$("density").value; state.speed=+$("speed").value; state.dwellMs=getDwellMs(); const dt=Math.min(.04,Math.max(0,(now-lastFrame)/1000)); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000); $("time").textContent=Math.ceil(left); $("timebar").style.width=(left/state.duration*100)+"%"; if(left<=0)return end("หมดเวลา"); moveBubbles(dt,now); updateHover(now); processCam(); }
         function end(reason){ if(!state)return; const finished=state; state=null; gameToken++; clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam(); const final=finished.score+finished.hearts*10; $("final").textContent=final; $("breakdown").textContent=`${reason} • คะแนนคำศัพท์ ${finished.score} + โบนัสหัวใจ ${finished.hearts*10} = ${final}`; ui.hud.style.display="none"; ui.choices.innerHTML=""; ui.result.style.display="grid"; }
         function stopCam(){ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null} ui.video.srcObject=null; ui.cursor.style.display="none"; ui.cursor.style.opacity="0"; ui.cursor.style.setProperty("--hold","0%"); hands=null; hand=null; poseState="none"; lastVideo=-1; }
         function resize(){ ui.fx.width=innerWidth; ui.fx.height=innerHeight; if(state&&state.bubbles&&state.bubbles[0]) state.bubbleR=state.bubbles[0].el.offsetWidth/2; }
-        $("start").onclick=start; $("again").onclick=start; $("back").onclick=()=>{ui.result.style.display="none";ui.menu.style.display="grid"}; addEventListener("resize",resize); resize();
+        function updateLabels(){$("densityValue").textContent=$("density").value;$("speedValue").textContent=$("speed").value;$("dwellValue").textContent=(+$("dwell").value).toFixed(1)+" วิ";}
+        $("density").oninput=updateLabels;$("speed").oninput=updateLabels;$("dwell").oninput=updateLabels;updateLabels();$("start").onclick=start; $("again").onclick=start; $("back").onclick=()=>{ui.result.style.display="none";ui.menu.style.display="grid"}; addEventListener("resize",resize); resize();
       })();
     </script>
   </body>

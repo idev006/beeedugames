@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <title>รังมดอักษรสามหมู่</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" />
     <script>
       window.createMediapipeSolutionsPackedAssets =
         window.createMediapipeSolutionsPackedAssets || {};
@@ -92,24 +94,24 @@
         <p class="lead"><b>เข้าไปสำรวจรังมดใต้ดิน</b> ช่วยมดงานคัดไข่มดตัวอักษรให้ตรงกับภารกิจแบบค่อย ๆ ฝึก ไม่ต้องรีบแข่ง</p>
         <div class="grid">
           <label class="field">ระดับชั้น
-            <select id="level"><option value="1">ป.1-2 เริ่มต้น</option><option value="2" selected>ป.3-4 ฝึกฝน</option><option value="3">ป.5-6 ท้าทาย</option></select>
+            <select id="level" class="select select-bordered"><option value="1">ป.1-2 เริ่มต้น</option><option value="2" selected>ป.3-4 ฝึกฝน</option><option value="3">ป.5-6 ท้าทาย</option></select>
           </label>
           <label class="field">เวลาเล่น
-            <select id="duration"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select>
+            <select id="duration" class="select select-bordered"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select>
           </label>
           <label class="field">ความหนาแน่น
-            <span class="rangebox"><span class="range-head"><span>คำบนจอ</span><b id="densityValue" class="range-value">45</b></span><input id="density" type="range" min="1" max="100" value="45" /></span>
+            <span class="rangebox"><span class="range-head"><span>คำบนจอ</span><b id="densityValue" class="range-value">45</b></span><input id="density" class="range range-secondary" type="range" min="1" max="100" value="45" /></span>
           </label>
           <label class="field">ความเร็ว
-            <span class="rangebox"><span class="range-head"><span>การเคลื่อนที่</span><b id="speedValue" class="range-value">35</b></span><input id="speed" type="range" min="1" max="100" value="35" /></span>
+            <span class="rangebox"><span class="range-head"><span>การเคลื่อนที่</span><b id="speedValue" class="range-value">35</b></span><input id="speed" class="range range-accent" type="range" min="1" max="100" value="35" /></span>
           </label>
           <label class="field">เวลาค้างนิ้ว
-            <span class="rangebox"><span class="range-head"><span>ก่อนเลือก</span><b id="dwellValue" class="range-value">1.0 วิ</b></span><input id="dwell" type="range" min="0.5" max="3" step="0.5" value="1" /></span>
+            <span class="rangebox"><span class="range-head"><span>ก่อนเลือก</span><b id="dwellValue" class="range-value">1.0 วิ</b></span><input id="dwell" class="range range-warning" type="range" min="0.5" max="3" step="0.5" value="1" /></span>
           </label>
-          <label class="check"><input id="useCam" type="checkbox" checked /> เปิด AR ใช้นิ้วชี้จิ้มตัวอักษร</label>
+          <label class="check"><input id="useCam" class="checkbox checkbox-primary" type="checkbox" checked /> เปิด AR ใช้นิ้วชี้จิ้มตัวอักษร</label>
         </div>
         <p style="font-size:12px;color:#73513c">ใช้ MediaPipe Hands ผ่าน CDN ต้องอนุญาตกล้องบน HTTPS หาก AR ไม่พร้อม ยังเล่นด้วยการแตะ/คลิกได้</p>
-        <button class="primary" id="start">เริ่มสำรวจรังมด</button>
+        <button class="primary btn border-0" id="start">เริ่มสำรวจรังมด</button>
       </section>
     </main>
 
