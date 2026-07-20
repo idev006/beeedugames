@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>ป่าเวทมนตร์คำ ห นำ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" />
+    <script>
+      window.createMediapipeSolutionsPackedAssets =
+        window.createMediapipeSolutionsPackedAssets || {};
+      window.createMediapipeSolutionsPackedAssets.dataFileDownloads = new Proxy(
+        {},
+        { get(target, key) { if (!(key in target)) target[key] = { loaded: 0, total: 0 }; return target[key]; } },
+      );
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <style>
+      *{box-sizing:border-box}
+      html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#21314f}
+      body{background:linear-gradient(180deg,#8df7ff 0%,#83ffb3 48%,#ffd36e 100%)}
+      #camera{position:fixed;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:linear-gradient(180deg,#8df7ff,#83ffb3 50%,#ffd36e)}
+      .forest{position:fixed;z-index:1;inset:0;overflow:hidden;pointer-events:none;background:
+        radial-gradient(circle at 20% 20%,#fff7a2a0 0 7%,transparent 8%),
+        radial-gradient(circle at 82% 18%,#ff8fdda0 0 6%,transparent 7%),
+        radial-gradient(circle at 50% 45%,#78fff2a0 0 13%,transparent 14%),
+        linear-gradient(180deg,#ffffff28 0%,#73eaff24 40%,#7bff9f22 100%)}
+      .forest:before{content:"";position:absolute;left:-8%;right:-8%;bottom:-8vh;height:30vh;background:
+        radial-gradient(ellipse at 10% 90%,#1c9b63 0 12%,transparent 13%),
+        radial-gradient(ellipse at 30% 96%,#2dbb72 0 17%,transparent 18%),
+        radial-gradient(ellipse at 55% 90%,#1c9b63 0 15%,transparent 16%),
+        radial-gradient(ellipse at 78% 96%,#29b96f 0 18%,transparent 19%),
+        radial-gradient(ellipse at 95% 92%,#168553 0 13%,transparent 14%),
+        linear-gradient(180deg,#5bcf65,#208d56);border-radius:55% 55% 0 0/35% 35% 0 0;box-shadow:0 -18px 34px #16754f55}
+      .forest:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 14% 58%,#fff36b55 0 2%,transparent 3%),radial-gradient(circle at 66% 66%,#ff8fdd55 0 2.5%,transparent 3.5%),radial-gradient(circle at 88% 52%,#75fff355 0 2%,transparent 3%),radial-gradient(circle at 40% 80%,#a782ff44 0 2.2%,transparent 3.2%)}
+      .tree{position:absolute;bottom:3vh;left:var(--x);width:24px;height:42vh;border-radius:999px;background:linear-gradient(90deg,#7f4a27,#bd7d45,#74401f);filter:drop-shadow(0 8px 8px #14523a55)}
+      .tree:before{content:"";position:absolute;left:50%;top:-80px;translate:-50% 0;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 30% 26%,#c8ff73 0 16%,transparent 17%),radial-gradient(circle,#45d66d 0 62%,#169a58 63%);box-shadow:42px 34px 0 -20px #2ecf75,-46px 50px 0 -24px #6ce06a}
+      .firefly{position:absolute;left:var(--x);top:var(--y);width:12px;height:12px;border-radius:50%;background:#fff36b;box-shadow:0 0 18px #fff36b;animation:floaty 5s ease-in-out infinite alternate}
+      #objects{position:fixed;z-index:3;inset:0;pointer-events:none}
+      .orb{position:fixed;width:172px;height:142px;border:0;background:transparent;display:grid;place-items:center;pointer-events:auto;touch-action:none;transition:transform .12s,filter .12s}
+      .orb.hot{transform:scale(1.1) translateY(-8px);filter:saturate(1.15) brightness(1.08)}
+      .orb.holding .fruit{box-shadow:0 0 0 8px #54e88c88,0 0 34px #fff36b,0 16px 26px #205b4655}
+      .orb.collect{pointer-events:none;animation:collect .4s ease-out forwards}
+      .fruit{position:absolute;left:34px;top:8px;width:112px;height:112px;border-radius:58% 42% 54% 46%;background:radial-gradient(circle at 32% 24%,#fff 0 10%,transparent 11%),linear-gradient(145deg,var(--a),var(--b));border:4px solid #ffffffdd;box-shadow:inset 0 12px 18px #fff7,inset -12px -16px 20px #23584d22,0 14px 24px #205b4655;display:grid;place-items:center}
+      .fruit:before{content:"";position:absolute;left:48px;top:-22px;width:42px;height:28px;border-radius:80% 0 80% 0;background:#2fb965;transform:rotate(-18deg);box-shadow:0 4px 0 #1b8e4d}
+      .word{position:relative;font-size:42px;font-weight:900;color:#243052;text-shadow:0 3px #fff,0 8px 14px #1c5d6040;white-space:nowrap}
+      .tag{position:absolute;left:50%;bottom:2px;translate:-50% 0;background:#ffffffee;border:2px solid #fff;border-radius:999px;padding:3px 12px;color:#5e4aa8;font-size:12px;font-weight:900;white-space:nowrap}
+      .glass{background:#fffffff0;border:3px solid #fff;border-radius:24px;box-shadow:0 18px 40px #26788f30,0 0 28px #7dfff06a}
+      #menu{position:fixed;z-index:7;inset:0;display:grid;place-items:center;padding:14px;background:linear-gradient(180deg,#ffffff22,#75eaff2a 45%,#fff36b30)}
+      #fx{position:fixed;z-index:4;inset:0;pointer-events:none}
+      #cursor{--hold:0%;position:fixed;z-index:8;width:58px;height:58px;margin:-29px;border:4px solid #fff;border-radius:50%;background:conic-gradient(#55e98d var(--hold),#ff8fdd88 0);box-shadow:0 0 0 7px #7b4dff88,0 0 24px #fff,0 0 34px #75fff3;pointer-events:none;display:none;opacity:0;transition:opacity .1s}
+      #cursor:after{content:"จิ้ม";position:absolute;left:50%;top:60px;translate:-50% 0;background:white;border-radius:999px;padding:2px 8px;color:#5e4aa8;font-size:12px;font-weight:900;white-space:nowrap}
+      #toast{position:fixed;z-index:9;left:50%;top:58%;translate:-50% -50%;background:white;border-radius:22px;padding:16px 24px;box-shadow:0 10px 30px #26788f55;font-weight:900;font-size:1.05rem;display:none;text-align:center;max-width:min(680px,calc(100vw - 20px))}
+      #hud{display:none;position:fixed;z-index:6;inset:0;pointer-events:none;padding:12px}
+      .chip{background:#fffffff0;border:2px solid #fff;border-radius:18px;padding:10px 14px;box-shadow:0 8px 20px #26788f30;font-weight:900}
+      #target{position:absolute;left:50%;top:12px;translate:-50% 0;text-align:center;min-width:300px;color:#5e4aa8}
+      #target b{font-size:1.45rem}.bar{height:8px;border-radius:999px;background:#d8f7ff;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#7b4dff,#ff5fc8,#ffbd4a)}
+      #status{position:absolute;left:50%;bottom:10px;translate:-50% 0;max-width:min(760px,calc(100vw - 18px));text-align:center;color:#3b4b75}
+      #result{position:fixed;z-index:7;inset:0;display:none;place-items:center;padding:14px;background:linear-gradient(180deg,#ffffff22,#75eaff2a 45%,#fff36b30)}
+      .heart{color:#ff4f96;font-size:1.25rem;letter-spacing:2px}
+      @keyframes floaty{to{transform:translate(26px,-22px) scale(1.2)}}@keyframes collect{0%{opacity:1;transform:scale(1.08)}48%{transform:scale(1.3) translateY(-70px) rotate(-8deg);filter:brightness(1.25)}100%{opacity:0;transform:scale(.15) translateY(-150px) rotate(18deg)}}
+      @media(max-width:900px){.settings{grid-template-columns:1fr 1fr!important}.orb{width:146px;height:122px}.fruit{left:26px;width:96px;height:96px}.word{font-size:34px}#target{top:84px}}
+      @media(max-width:560px){.settings{grid-template-columns:1fr!important}.glass{border-radius:18px}.orb{width:132px;height:112px}.fruit{left:22px;width:88px;height:88px}.word{font-size:30px}.chip{font-size:.86rem;padding:8px 10px}}
+    </style>
+  </head>
+  <body>
+    <video id="camera" autoplay playsinline muted></video>
+    <div class="forest" aria-hidden="true">
+      <i class="tree" style="--x:6%"></i><i class="tree" style="--x:88%"></i><i class="tree" style="--x:22%"></i>
+      <i class="firefly" style="--x:18%;--y:24%"></i><i class="firefly" style="--x:72%;--y:18%"></i><i class="firefly" style="--x:48%;--y:68%"></i>
+    </div>
+    <canvas id="fx"></canvas>
+    <div id="objects"></div>
+    <div id="cursor"></div>
+
+    <main id="menu">
+      <section class="glass w-full max-w-5xl p-5 md:p-7 text-center">
+        <div class="text-6xl mb-2">🌳✨</div>
+        <h1 class="text-4xl md:text-6xl font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-pink-500 to-amber-400 drop-shadow">ป่าเวทมนตร์คำ ห นำ</h1>
+        <p class="mt-3 text-base md:text-lg font-bold text-slate-600">เก็บผลไม้เวทมนตร์ที่เป็นคำมี <span class="text-violet-600">ห นำ</span> เช่น หมา หนู หยุด หลับ หวาน</p>
+        <div class="settings grid grid-cols-5 gap-3 text-left mt-5">
+          <label class="form-control">
+            <span class="label-text font-black text-slate-600">ระดับชั้น</span>
+            <select id="level" class="select select-bordered bg-white border-amber-300 font-bold"><option value="1">ป.1-2 เริ่มต้น</option><option value="2" selected>ป.3-4 ฝึกฝน</option><option value="3">ป.5-6 ท้าทาย</option></select>
+          </label>
+          <label class="form-control">
+            <span class="label-text font-black text-slate-600">เวลาเล่น</span>
+            <select id="duration" class="select select-bordered bg-white border-amber-300 font-bold"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select>
+          </label>
+          <label class="form-control">
+            <span class="label-text font-black text-slate-600">ความหนาแน่น <b id="densityValue" class="badge badge-secondary">45</b></span>
+            <input id="density" type="range" min="1" max="100" value="45" class="range range-secondary" />
+          </label>
+          <label class="form-control">
+            <span class="label-text font-black text-slate-600">ความเร็ว <b id="speedValue" class="badge badge-accent">35</b></span>
+            <input id="speed" type="range" min="1" max="100" value="35" class="range range-accent" />
+          </label>
+          <label class="form-control">
+            <span class="label-text font-black text-slate-600">เวลาค้าง <b id="dwellValue" class="badge badge-warning">1.0 วิ</b></span>
+            <input id="dwell" type="range" min="0.5" max="3" step="0.5" value="1" class="range range-warning" />
+          </label>
+        </div>
+        <label class="mt-4 flex items-center justify-center gap-3 font-black text-slate-700">
+          <input id="useCam" type="checkbox" class="checkbox checkbox-primary" checked />
+          เปิด AR ใช้นิ้วชี้จิ้มผลไม้คำศัพท์
+        </label>
+        <p class="text-xs text-slate-500 mt-3">AR ต้องอนุญาตกล้องและโหลด MediaPipe จาก CDN; บาง browser หรือ file:// อาจใช้กล้องไม่ได้ แต่ยังเล่นด้วย mouse/touch ได้</p>
+        <button id="start" class="btn btn-lg border-0 text-white mt-5 bg-gradient-to-r from-violet-600 via-pink-500 to-amber-400 shadow-lg">เริ่มผจญภัย</button>
+      </section>
+    </main>
+
+    <section id="hud">
+      <div class="flex justify-between gap-2"><div class="chip">หัวใจ <span id="hearts" class="heart">♥♥♥♥♥</span></div><div class="chip">คะแนน <span id="score">0</span></div></div>
+      <div id="target" class="chip"><small>ภารกิจ</small><br><b>เก็บคำที่มี ห นำ</b><div><span id="time">60</span> วินาที</div><div class="bar"><i id="timebar" style="width:100%"></i></div></div>
+      <div id="status" class="chip">ยกนิ้วชี้ให้กล้องเห็น แล้วค้างบนผลไม้จนวงกลมเต็ม</div>
+    </section>
+
+    <div id="toast"></div>
+    <section id="result">
+      <div class="glass w-full max-w-lg p-7 text-center">
+        <div class="text-6xl">🏆</div>
+        <h2 class="text-4xl font-black text-violet-700 mt-2">จบการผจญภัย</h2>
+        <div id="final" class="text-5xl font-black text-amber-500 mt-3">0</div>
+        <p id="breakdown" class="font-bold text-slate-600 mt-2"></p>
+        <button id="again" class="btn btn-primary mt-5">เล่นอีกครั้ง</button>
+        <button id="back" class="btn btn-outline mt-5">เมนู</button>
+      </div>
+    </section>
+
+    <script>
+      (() => {
+        "use strict";
+        const $ = id => document.getElementById(id);
+        const ui = {video:$("camera"),fx:$("fx"),menu:$("menu"),hud:$("hud"),objects:$("objects"),cursor:$("cursor"),status:$("status"),toast:$("toast"),result:$("result")};
+        const WORDS = [
+          {w:"หมา",ok:true,r:"มี ห นำ: ห นำ ม"}, {w:"หมู",ok:true,r:"มี ห นำ: ห นำ ม"}, {w:"หมี",ok:true,r:"มี ห นำ: ห นำ ม"}, {w:"หนู",ok:true,r:"มี ห นำ: ห นำ น"}, {w:"หนาว",ok:true,r:"มี ห นำ: ห นำ น"}, {w:"หนาม",ok:true,r:"มี ห นำ: ห นำ น"}, {w:"หนัก",ok:true,r:"มี ห นำ: ห นำ น"}, {w:"หยุด",ok:true,r:"มี ห นำ: ห นำ ย"}, {w:"หยิบ",ok:true,r:"มี ห นำ: ห นำ ย"}, {w:"หยาม",ok:true,r:"มี ห นำ: ห นำ ย"}, {w:"หวาน",ok:true,r:"มี ห นำ: ห นำ ว"}, {w:"หวี",ok:true,r:"มี ห นำ: ห นำ ว"}, {w:"หลับ",ok:true,r:"มี ห นำ: ห นำ ล"}, {w:"หลง",ok:true,r:"มี ห นำ: ห นำ ล"}, {w:"หลาน",ok:true,r:"มี ห นำ: ห นำ ล"}, {w:"หรู",ok:true,r:"มี ห นำ: ห นำ ร"}, {w:"หรา",ok:true,r:"มี ห นำ: ห นำ ร"}, {w:"หงอน",ok:true,r:"มี ห นำ: ห นำ ง"}, {w:"หงาย",ok:true,r:"มี ห นำ: ห นำ ง"}, {w:"หญิง",ok:true,r:"มี ห นำ: ห นำ ญ"},
+          {w:"หา",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียงเป็นพยัญชนะต้น"}, {w:"หอ",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หิน",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หาด",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หีบ",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หู",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หัว",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"หัก",ok:false,r:"ไม่ใช่ ห นำ: ห ออกเสียง"}, {w:"ม้า",ok:false,r:"ไม่มี ห นำ"}, {w:"นา",ok:false,r:"ไม่มี ห นำ"}, {w:"ยาว",ok:false,r:"ไม่มี ห นำ"}, {w:"ลม",ok:false,r:"ไม่มี ห นำ"}, {w:"วาด",ok:false,r:"ไม่มี ห นำ"}, {w:"รอ",ok:false,r:"ไม่มี ห นำ"}, {w:"งาม",ok:false,r:"ไม่มี ห นำ"}
+        ].map((x,i)=>({...x,level:i<20?1:(i<30?2:3)}));
+        const COLORS = [["#75fff3","#7b4dff"],["#fff36b","#ff8fdd"],["#8bff78","#31c8ff"],["#ffbd4a","#ff5fc8"],["#bda6ff","#75fff3"]];
+        const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+        const clamp=(n,min,max)=>Math.max(min,Math.min(max,n)), slider01=v=>(clamp(+v||1,1,100)-1)/99, pick=a=>a[Math.floor(Math.random()*a.length)];
+        const getDwellMs=()=>clamp(+$("dwell").value||1,.5,3)*1000;
+        function densitySettings(v){const t=slider01(v);return{maxMobile:Math.round(2+t*3),maxDesktop:Math.round(3+t*5),spawnMin:3200-t*1900,spawnJitter:900-t*400,gap:2.1-t*.45};}
+        function speedSettings(v){const t=slider01(v);return{vxBase:18+t*34,vxLevel:3+t*6,vxJitter:5+t*10,vyJitter:4+t*13};}
+        let state,stream,hands,raf,lastFrame=0,lastVideo=-1,camBusy=false,hand=null,poseState="none",lastHandLandmarks=null,particles=[];
+
+        function start(){
+          cancelAnimationFrame(raf); stopCam();
+          const now=performance.now();
+          state={token:Math.random(),score:0,hearts:5,level:+$("level").value,density:+$("density").value,speed:+$("speed").value,dwellMs:getDwellMs(),duration:+$("duration").value,start:now,objects:[],hover:-1,hoverAt:0,fired:false,spawnAt:0};
+          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; ui.objects.innerHTML="";
+          updateHud(); resize();
+          if($("useCam").checked) startCam(state.token); else ui.status.textContent="โหมด mouse/touch: กดค้างบนผลไม้ให้ครบเวลาที่ตั้งไว้";
+          lastFrame=now; raf=requestAnimationFrame(loop);
+        }
+        async function startCam(token){
+          try{
+            if(!navigator.mediaDevices?.getUserMedia) throw new Error("browser ไม่รองรับการเปิดกล้อง");
+            if(typeof Hands!=="function") throw new Error("MediaPipe ยังโหลดไม่สำเร็จ");
+            ui.status.textContent="กำลังเปิดกล้อง AR...";
+            const nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}},audio:false});
+            if(!state||state.token!==token){nextStream.getTracks().forEach(t=>t.stop());return}
+            stream=nextStream; ui.video.srcObject=stream; await ui.video.play();
+            if(!state||state.token!==token){stopCam();return}
+            ui.cursor.style.display="block";
+            hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});
+            hands.onResults(onHands); ui.status.textContent="เห็นโครงมือแล้ว: ใช้นิ้วชี้ค้างบนผลไม้จนวงกลมเต็ม";
+          }catch(e){if(state&&state.token===token){ui.status.textContent=`เปิด AR ไม่สำเร็จ: ${e.message||"ไม่อนุญาตกล้อง"} • เล่นด้วย mouse/touch ได้`;stopCam();}}
+        }
+        function spawnObject(now){
+          const pool=WORDS.filter(x=>x.level<=state.level), item=pick(pool), size=innerWidth<=560?132:172, density=densitySettings(state.density);
+          const minY=innerHeight*.28,maxY=innerHeight-size*.95,minGap=size*density.gap;
+          let best={x:innerWidth+size*.7,y:(minY+maxY)/2},bestGap=-1;
+          for(let i=0;i<36;i++){const p={x:innerWidth+size*.6+Math.random()*120,y:minY+Math.random()*(maxY-minY)},gap=state.objects.length?Math.min(...state.objects.map(o=>Math.hypot(p.x-o.x,p.y-o.y))):9999;if(gap>bestGap){best=p;bestGap=gap}if(gap>minGap)break;}
+          const color=pick(COLORS), obj={id:Math.random(),item,x:best.x,y:best.y,speedSeed:Math.random(),driftSeed:Math.random()-.5,holdTimer:0,dead:false};
+          const el=document.createElement("button"); el.className="orb"; el.style.setProperty("--a",color[0]); el.style.setProperty("--b",color[1]);
+          el.innerHTML=`<span class="fruit"><span class="word">${item.w}</span></span><span class="tag">เก็บ</span>`;
+          bindHoldInput(obj,el); ui.objects.appendChild(el); obj.el=el; state.objects.push(obj);
+          state.spawnAt=now+density.spawnMin+Math.random()*density.spawnJitter;
+        }
+        function bindHoldInput(obj,el){
+          const cancel=()=>{clearTimeout(obj.holdTimer);obj.holdTimer=0;el.classList.remove("holding","hot");};
+          el.addEventListener("pointerdown",e=>{if(!state||obj.dead)return;e.preventDefault();el.setPointerCapture?.(e.pointerId);el.classList.add("holding","hot");clearTimeout(obj.holdTimer);obj.holdTimer=setTimeout(()=>answer(obj),getDwellMs());ui.status.textContent="กดค้างไว้ให้ครบเวลาที่ตั้งไว้ แล้วระบบจะเลือกให้";});
+          ["pointerup","pointercancel","pointerleave"].forEach(type=>el.addEventListener(type,cancel));
+        }
+        function answer(obj){
+          if(!state||!obj||obj.dead)return; clearTimeout(obj.holdTimer); obj.dead=true; obj.el.classList.add("collect");
+          if(obj.item.ok){state.score+=10; burst(obj.x,obj.y,true); toast(`ถูกต้อง! ${obj.item.w} • ${obj.item.r}`,true);}
+          else{state.hearts--; burst(obj.x,obj.y,false); toast(`ยังไม่ใช่ • ${obj.item.r}`,false);}
+          updateHud(); setTimeout(()=>removeObject(obj),420); if(state.hearts<=0) end("หัวใจหมดแล้ว");
+        }
+        function removeObject(obj){const i=state?.objects.indexOf(obj)??-1;if(i>=0)state.objects.splice(i,1);obj.el?.remove();}
+        function updateHud(){$("score").textContent=state.score;$("hearts").textContent="♥".repeat(state.hearts)+"♡".repeat(5-state.hearts);}
+        function toast(text,ok){ui.toast.textContent=text;ui.toast.style.display="block";ui.toast.style.color=ok?"#14814a":"#d13570";clearTimeout(ui.toast._t);ui.toast._t=setTimeout(()=>ui.toast.style.display="none",1100);}
+        function mapToVideoCover(p){const vw=innerWidth,vh=innerHeight,sw=ui.video.videoWidth||vw,sh=ui.video.videoHeight||vh,scale=Math.max(vw/sw,vh/sh),dw=sw*scale,dh=sh*scale,ox=(dw-vw)/2,oy=(dh-vh)/2;return{x:vw-(p.x*dw-ox),y:p.y*dh-oy};}
+        function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0))}
+        function fingerExtended(h,tip,mcp){return dist(h[tip],h[0])>dist(h[mcp],h[0])*1.14}
+        function isPointingPose(h){const index=fingerExtended(h,8,5),others=[fingerExtended(h,12,9),fingerExtended(h,16,13),fingerExtended(h,20,17)].filter(Boolean).length;return index&&others<=1;}
+        function onHands(res){
+          const h=res.multiHandLandmarks&&res.multiHandLandmarks[0]; if(!h){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          const p=h[8],wrist=h[0],valid=p.x>.01&&p.x<.99&&p.y>.01&&p.y<.99&&wrist.x>.01&&wrist.x<.99&&wrist.y>.01&&wrist.y<.99;
+          if(!valid){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          lastHandLandmarks=h.map(mapToVideoCover);
+          if(!isPointingPose(h)){hand=null;poseState="notPointing";ui.cursor.style.opacity="0";return}
+          const mapped=mapToVideoCover(p); hand=hand?{x:hand.x*.68+mapped.x*.32,y:hand.y*.68+mapped.y*.32}:mapped;
+          poseState="pointing"; ui.cursor.style.opacity="1"; ui.cursor.style.left=`${hand.x}px`; ui.cursor.style.top=`${hand.y}px`;
+        }
+        function updateHover(now){
+          if(state) state.dwellMs=getDwellMs();
+          if(!hand){state.hover=-1;state.hoverAt=0;state.fired=false;ui.cursor.style.setProperty("--hold","0%");if(hands)ui.status.textContent=poseState==="notPointing"?"เห็นมือแล้ว: เหยียดนิ้วชี้ให้เด่น แล้วพับนิ้วอื่น":"ยกมือให้เห็นครบ แล้วใช้นิ้วชี้จิ้มผลไม้";return}
+          let best=-1,bd=1e9; state.objects.forEach(o=>{if(o.dead)return;const d=Math.hypot(hand.x-o.x,hand.y-o.y);if(d<92&&d<bd){bd=d;best=o.id}});
+          if(best!==state.hover){state.hover=best;state.hoverAt=now;state.fired=false}
+          ui.cursor.style.setProperty("--hold",best>=0?`${Math.min(100,(now-state.hoverAt)/state.dwellMs*100)}%`:"0%");
+          state.objects.forEach(o=>o.el.classList.toggle("hot",o.id===best));
+          if(best>=0&&now-state.hoverAt>state.dwellMs&&!state.fired){state.fired=true;answer(state.objects.find(o=>o.id===best))}
+          ui.status.textContent=best>=0?"ค้างไว้ให้วงกลมเต็ม แล้วระบบจะเลือกให้":"เลื่อนนิ้วชี้ไปที่ผลไม้คำศัพท์";
+        }
+        async function processCam(){if(hands&&!camBusy&&ui.video.readyState>=2&&ui.video.currentTime!==lastVideo){lastVideo=ui.video.currentTime;camBusy=true;try{await hands.send({image:ui.video});}catch(e){ui.status.textContent="MediaPipe โหลดไม่สำเร็จ ใช้ mouse/touch แทนได้";stopCam();}finally{camBusy=false;}}}
+        function burst(x,y,ok){const colors=ok?["#fff36b","#55e98d","#75fff3","#ffffff"]:["#ff5fc8","#ffbd4a","#ffffff"];for(let i=0;i<26;i++){const a=Math.random()*Math.PI*2,s=90+Math.random()*170;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-70,life:720,start:performance.now(),c:pick(colors),r:3+Math.random()*5});}}
+        function draw(now){const c=ui.fx,x=c.getContext("2d");x.clearRect(0,0,innerWidth,innerHeight);drawHandSkeleton(x);particles=particles.filter(p=>now-p.start<p.life);particles.forEach(p=>{const age=now-p.start,t=age/1000,k=1-age/p.life;x.globalAlpha=k;x.fillStyle=p.c;x.beginPath();x.arc(p.x+p.vx*t,p.y+p.vy*t+180*t*t,p.r*k,0,Math.PI*2);x.fill();});x.globalAlpha=1;}
+        function drawHandSkeleton(x){if(!lastHandLandmarks)return;x.save();x.lineCap="round";x.lineJoin="round";x.shadowColor="#fff";x.shadowBlur=9;x.strokeStyle=poseState==="pointing"?"#55e98d":"#ffbd4a";x.lineWidth=5;HAND_CONNECTIONS.forEach(([a,b])=>{const p=lastHandLandmarks[a],q=lastHandLandmarks[b];x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();});lastHandLandmarks.forEach((p,i)=>{x.fillStyle=i===8?"#fff":"#7b4dff";x.beginPath();x.arc(p.x,p.y,i===8?7:4.5,0,Math.PI*2);x.fill();});x.restore();}
+        function loop(now){
+          raf=requestAnimationFrame(loop); if(!state)return; draw(now); processCam();
+          state.density=+$("density").value; state.speed=+$("speed").value; state.dwellMs=getDwellMs();
+          const dt=Math.min(.05,(now-lastFrame)/1000||.016); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000);
+          $("time").textContent=Math.ceil(left); $("timebar").style.width=`${left/state.duration*100}%`; if(left<=0)return end("หมดเวลา");
+          const density=densitySettings(state.density), speed=speedSettings(state.speed);
+          if(now>state.spawnAt&&state.objects.length<(innerWidth<=560?density.maxMobile:density.maxDesktop)) spawnObject(now);
+          state.objects.slice().forEach(o=>{if(o.dead)return;const vx=-(speed.vxBase+state.level*speed.vxLevel+o.speedSeed*speed.vxJitter),vy=o.driftSeed*speed.vyJitter;o.x+=vx*dt;o.y+=vy*dt+Math.sin(now*.002+o.id)*.25;if(o.y<innerHeight*.26||o.y>innerHeight-90)o.driftSeed*=-1;o.el.style.left=`${o.x-o.el.offsetWidth/2}px`;o.el.style.top=`${o.y-o.el.offsetHeight/2}px`;if(o.x<-100)removeObject(o);});
+          if(hands) updateHover(now);
+        }
+        function end(reason){if(!state)return;const done=state;state=null;cancelAnimationFrame(raf);stopCam();const final=done.score+done.hearts*10;$("final").textContent=final;$("breakdown").textContent=`${reason} • คะแนนคำศัพท์ ${done.score} + โบนัสหัวใจ ${done.hearts*10} = ${final}`;ui.hud.style.display="none";ui.objects.innerHTML="";ui.result.style.display="grid";}
+        function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}ui.video.srcObject=null;ui.cursor.style.display="none";ui.cursor.style.opacity="0";ui.cursor.style.setProperty("--hold","0%");hands=null;hand=null;lastHandLandmarks=null;poseState="none";lastVideo=-1;}
+        function resize(){ui.fx.width=innerWidth;ui.fx.height=innerHeight;}
+        function updateSliderLabels(){$("densityValue").textContent=$("density").value;$("speedValue").textContent=$("speed").value;$("dwellValue").textContent=(+$("dwell").value).toFixed(1)+" วิ";}
+        $("density").oninput=updateSliderLabels;$("speed").oninput=updateSliderLabels;$("dwell").oninput=updateSliderLabels;updateSliderLabels();
+        $("start").onclick=start;$("again").onclick=start;$("back").onclick=()=>{ui.result.style.display="none";ui.menu.style.display="grid"};addEventListener("resize",resize);resize();
+      })();
+    </script>
+  </body>
+</html>

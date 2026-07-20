@@ -30,7 +30,7 @@
       .brand{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:#ffffffd9;color:#176a9c;font-weight:900;text-shadow:none;box-shadow:0 8px 20px #06466d35}
       h1{margin:16px 0 8px;font-size:clamp(2.1rem,7vw,5rem);line-height:1.05;color:white}
       .lead{margin:0 auto;max-width:720px;font-size:clamp(1rem,2.5vw,1.22rem);font-weight:700}
-      .games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+      .games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
       .card{
         position:relative;overflow:hidden;min-height:300px;padding:22px;border:3px solid #fff;border-radius:24px;background:#fffffff0;
         box-shadow:0 18px 38px #073c5e38;display:grid;align-content:space-between;gap:20px;
@@ -55,6 +55,7 @@
         .games{grid-template-columns:1fr}
         .card{min-height:260px;border-radius:20px}
       }
+      @media(min-width:761px) and (max-width:1020px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}}
     </style>
   </head>
   <body>
@@ -87,8 +88,44 @@
           <div class="tags"><span class="tag">ภาษาไทย</span><span class="tag">คำเป็นคำตาย</span><span class="tag">Touch + Mouse</span></div>
           <a class="play" href="คำเป็นคำตาย.html">เข้าเล่นเกม</a>
         </article>
+        <article class="card">
+          <div>
+            <div class="icon">🍣</div>
+            <h2>ซูชิคำเป็นคำตาย</h2>
+            <p>แยกคำเป็นคำตายในร้านซูชิ AR หยิบจานคำศัพท์บนสายพานให้ถูกหมวด</p>
+          </div>
+          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">คำเป็นคำตาย</span><span class="tag">AR + Touch</span></div>
+          <a class="play" href="เกมซูชิคำเป็นคำตาย.html">เข้าเล่นเกม</a>
+        </article>
+        <article class="card">
+          <div>
+            <div class="icon">🐜</div>
+            <h2>รังมดอักษรสามหมู่</h2>
+            <p>สำรวจรังมดแฟนซี ฝึกแยกอักษรสูง อักษรกลาง และอักษรต่ำด้วยการจิ้ม AR</p>
+          </div>
+          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">อักษรสามหมู่</span><span class="tag">AR + Touch</span></div>
+          <a class="play" href="เกมรังมดอักษรสามหมู่.html">เข้าเล่นเกม</a>
+        </article>
+        <article class="card">
+          <div>
+            <div class="icon">🌳</div>
+            <h2>ป่าเวทมนตร์คำ ห. นำ</h2>
+            <p>เก็บของในป่าแฟนตาซี ฝึกคำที่มี ห. นำ พร้อมเหตุผลสั้น ๆ หลังตอบ</p>
+          </div>
+          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">ห. นำ</span><span class="tag">AR + Touch</span></div>
+          <a class="play" href="เกมป่าเวทมนตร์คำหอนำ.html">เข้าเล่นเกม</a>
+        </article>
+        <article class="card">
+          <div>
+            <div class="icon">🍭</div>
+            <h2>บ้านลูกกวาดคำควบกล้ำ</h2>
+            <p>หยิบลูกกวาดคำศัพท์ใส่โหล ฝึกแยกคำควบแท้และคำควบไม่แท้แบบเป็นรอบ</p>
+          </div>
+          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">คำควบกล้ำ</span><span class="tag">AR + Touch</span></div>
+          <a class="play" href="เกมบ้านลูกกวาดคำควบกล้ำ.html">เข้าเล่นเกม</a>
+        </article>
       </section>
-      <p class="note">หมายเหตุ: โหมด AR ต้องเปิดผ่าน HTTPS และกดอนุญาตกล้อง หากกล้องไม่พร้อม เกมฟองคำยังเล่นด้วยการแตะหรือคลิกได้</p>
+      <p class="note">หมายเหตุ: โหมด AR ต้องเปิดผ่าน HTTPS และกดอนุญาตกล้อง บาง browser อาจไม่รองรับกล้องบน file:// หาก AR ไม่พร้อม เกมยังเล่นด้วยการแตะหรือคลิกได้</p>
     </main>
   </body>
 </html>

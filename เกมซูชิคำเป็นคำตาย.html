@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>ซูชิสายพาน คำเป็นคำตาย</title>
+    <script>
+      window.createMediapipeSolutionsPackedAssets =
+        window.createMediapipeSolutionsPackedAssets || {};
+      window.createMediapipeSolutionsPackedAssets.dataFileDownloads = new Proxy(
+        {},
+        { get(target, key) { if (!(key in target)) target[key] = { loaded: 0, total: 0 }; return target[key]; } },
+      );
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <style>
+      *{box-sizing:border-box}
+      html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#3b2734}
+      body{background:linear-gradient(180deg,#ffd9ba 0%,#f7a66c 45%,#87463f 100%)}
+      #camera{position:fixed;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:linear-gradient(180deg,#ffd9ba,#f7a66c 55%,#87463f)}
+      .shop{position:fixed;z-index:1;inset:0;overflow:hidden;pointer-events:none;background:linear-gradient(180deg,#fff2dfb8 0%,#ffc98f80 50%,#5a252780 100%)}
+      .shop:before{content:"";position:absolute;left:0;right:0;top:0;height:28vh;background:linear-gradient(90deg,#d53e43 0 12%,#fff4dd 12% 24%,#d53e43 24% 36%,#fff4dd 36% 48%,#d53e43 48% 60%,#fff4dd 60% 72%,#d53e43 72% 84%,#fff4dd 84% 100%);clip-path:polygon(0 0,100% 0,100% 70%,95% 100%,90% 70%,85% 100%,80% 70%,75% 100%,70% 70%,65% 100%,60% 70%,55% 100%,50% 70%,45% 100%,40% 70%,35% 100%,30% 70%,25% 100%,20% 70%,15% 100%,10% 70%,5% 100%,0 70%);opacity:.8}
+      .shop:after{content:"";position:absolute;left:-5%;right:-5%;bottom:-9vh;height:23vh;border-radius:50% 50% 0 0/35% 35% 0 0;background:linear-gradient(180deg,#b05a36,#6d332d);box-shadow:0 -18px 35px #4a1d2488}
+      .lantern{position:absolute;top:13vh;width:76px;height:90px;border-radius:40% 40% 46% 46%;background:linear-gradient(90deg,#f15050,#ffdc7b,#f15050);box-shadow:0 12px 24px #62262655}
+      .lantern:before{content:"";position:absolute;left:32px;top:-24px;width:12px;height:28px;background:#67413b}.lantern:after{content:"寿";position:absolute;inset:0;display:grid;place-items:center;color:#6e2222;font-weight:900;font-size:38px}
+      .l1{left:8%}.l2{right:8%;animation-delay:-1.8s}
+      .chef{position:fixed;z-index:2;right:18px;bottom:18px;width:122px;height:122px;border-radius:50%;background:#fff9ec;border:4px solid white;box-shadow:0 12px 25px #4a1d2444;display:grid;place-items:center;font-size:64px;pointer-events:none}
+      #belt{position:fixed;z-index:2;left:-4vw;right:-4vw;bottom:18vh;height:min(30vh,230px);border-radius:50%/35%;background:linear-gradient(180deg,#40434d,#232630 48%,#55545b 49%,#24252c);box-shadow:inset 0 18px 24px #ffffff18,0 18px 36px #4a1d245c;overflow:hidden}
+      #belt:before{content:"";position:absolute;left:0;right:0;top:45%;height:10px;background:repeating-linear-gradient(90deg,#e5e1d4 0 45px,#85868d 45px 58px);animation:beltMove 1.2s linear infinite}
+      #belt:after{content:"";position:absolute;inset:14px;border:4px dashed #ffffff26;border-radius:50%/35%}
+      #plates{position:fixed;z-index:3;inset:0;pointer-events:none}
+      .plate{position:fixed;width:178px;height:124px;border:0;border-radius:50%;background:radial-gradient(ellipse at 50% 42%,#fff 0 35%,#f9f2dc 36% 42%,var(--ring) 43% 60%,#ffffff 61% 69%,#0002 70%);box-shadow:0 15px 26px #3b1b2344,inset 0 -8px 14px #0001;pointer-events:auto;display:grid;place-items:center;transition:transform .12s,filter .12s;touch-action:manipulation}
+      .plate.hot{transform:scale(1.09) translateY(-12px);filter:saturate(1.2) brightness(1.08);box-shadow:0 20px 30px #ffcf5a88,0 0 0 8px #fff5,inset 0 -8px 14px #0001}
+      .plate.grab{pointer-events:none;animation:grab .36s ease-out forwards}
+      .sushi{position:relative;width:122px;height:78px;border-radius:25px 25px 19px 19px;background:linear-gradient(180deg,var(--fish),#fff0 45%),linear-gradient(180deg,#fffdf2 45%,#efe3c9 46% 100%);border:3px solid #ffffffd9;box-shadow:inset 0 10px 12px #fff9,0 7px 10px #6b3d2f28}
+      .sushi:before{content:"";position:absolute;left:14px;right:14px;top:35px;height:20px;border-radius:14px;background:repeating-linear-gradient(90deg,#2d2c34 0 14px,#ffffff00 14px 22px);opacity:.2}
+      .sushi:after{content:"";position:absolute;right:10px;top:7px;width:27px;height:15px;border-radius:50%;background:#ffffffbd;box-shadow:-50px 4px 0 -4px #fff8, -20px 30px 0 -6px #fff6;transform:rotate(-18deg)}
+      .word{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:36px;font-weight:900;color:#312335;text-shadow:0 2px white,0 5px 10px #552f2f44;white-space:nowrap}
+      .plate .hint{position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);background:#fff8eb;border:2px solid white;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:900;color:#7b554f}
+      .panel{position:fixed;z-index:7;background:#fff9edf2;border:3px solid white;border-radius:22px;box-shadow:0 12px 30px #4a1d2444;padding:16px;font-weight:900}
+      #menu{inset:0;display:grid;place-items:center;background:linear-gradient(180deg,#fff0 0%,#ffbd7ee8 60%,#7d373ce8)}
+      #menu .card{width:min(760px,calc(100vw - 26px));text-align:center}
+      h1{font-size:clamp(2.15rem,7vw,4.8rem);line-height:1.05;margin:.15em 0;color:#c53242;text-shadow:0 3px #fff,0 10px 22px #68232640}
+      .lead{font-size:clamp(1rem,2.6vw,1.2rem);color:#6b4c4b;line-height:1.55}
+      .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;text-align:left}
+      label,select,button{font:inherit}.field{display:grid;gap:6px}.field select,.check{width:100%;border:2px solid #f09b73;border-radius:14px;background:white;padding:12px;color:#4d3333}
+      .check{display:flex;align-items:center;gap:10px;height:100%}.check input{width:22px;height:22px;accent-color:#e6404e}
+      button{font-weight:900;border:0;border-radius:999px;padding:14px 26px;cursor:pointer}.primary{color:white;background:linear-gradient(135deg,#e93e51,#ff9f4f);box-shadow:0 5px 0 #ad2e3b}.secondary{color:#b43a3d;background:white;border:2px solid #f09b73}
+      #hud{display:none;position:fixed;z-index:6;inset:0;pointer-events:none;padding:12px}.row{display:flex;justify-content:space-between;gap:8px}.chip{background:#fff9edf0;border:2px solid white;border-radius:18px;padding:10px 14px;box-shadow:0 8px 20px #4a1d2438;font-weight:900}
+      #target{position:absolute;left:50%;top:12px;transform:translateX(-50%);text-align:center;min-width:270px;color:#b43a3d}#target b{font-size:1.55rem}.bar{height:8px;border-radius:99px;background:#ecd9c5;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#e93e51,#ffcf5a)}
+      #status{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:min(700px,calc(100vw - 18px));text-align:center;color:#6b4c4b}
+      #cursor{--hold:0%;position:fixed;z-index:8;width:56px;height:56px;margin:-28px;border:4px solid white;border-radius:50%;background:conic-gradient(#37d28a var(--hold),#ffcf5a88 0);box-shadow:0 0 0 7px #e93e5188,0 0 24px white;pointer-events:none;display:none;opacity:0;transition:opacity .1s}
+      #cursor:after{content:"หยิบ";position:absolute;left:50%;top:58px;transform:translateX(-50%);background:white;border-radius:999px;padding:2px 8px;color:#b43a3d;font-size:12px;font-weight:900;white-space:nowrap}
+      #fx{position:fixed;z-index:4;inset:0;pointer-events:none}
+      #toast{position:fixed;z-index:9;left:50%;top:58%;transform:translate(-50%,-50%);background:white;border-radius:22px;padding:16px 24px;box-shadow:0 10px 30px #4a1d2455;font-weight:900;font-size:1.08rem;display:none;text-align:center;max-width:min(620px,calc(100vw - 20px))}
+      #result{display:none;inset:0;place-items:center;background:linear-gradient(180deg,#fff0 0%,#ffbd7ee8 60%,#7d373ce8)}.heart{color:#e93e51;font-size:1.3rem;letter-spacing:2px}
+      @keyframes beltMove{to{background-position:-58px 0}}
+      @keyframes grab{0%{opacity:1;transform:scale(1.08) translateY(-8px)}48%{transform:scale(1.28) translateY(-60px) rotate(-7deg);filter:brightness(1.25)}100%{opacity:0;transform:scale(.18) translateY(-140px) rotate(16deg)}}
+      @media(max-width:700px){.grid{grid-template-columns:1fr}.plate{width:142px;height:98px}.sushi{width:98px;height:64px}.word{font-size:30px}#target{top:78px}.chef{width:86px;height:86px;font-size:48px;opacity:.88}.chip{font-size:.86rem;padding:8px 10px}}
+      @media(prefers-reduced-motion:reduce){#belt:before{animation:none}}
+    </style>
+  </head>
+  <body>
+    <video id="camera" autoplay playsinline muted></video>
+    <div class="shop" aria-hidden="true"><i class="lantern l1"></i><i class="lantern l2"></i></div>
+    <div id="belt" aria-hidden="true"></div>
+    <div class="chef" aria-hidden="true">👨‍🍳</div>
+    <canvas id="fx"></canvas>
+    <div id="plates"></div>
+    <div id="cursor"></div>
+
+    <main id="menu" class="panel">
+      <section class="card">
+        <div style="font-size:4rem">🍣✨</div>
+        <h1>ซูชิสายพาน คำเป็นคำตาย</h1>
+        <p class="lead"><b>ใช้มือทำท่าหยิบจานซูชิคำศัพท์</b> หรือแตะ/คลิกจานให้ตรงกับภารกิจ ฝึกแยกคำเป็นและคำตายสำหรับนักเรียนประถม</p>
+        <div class="grid">
+          <label class="field">ระดับชั้น
+            <select id="level">
+              <option value="1">ป.1-2 เริ่มต้น</option>
+              <option value="2" selected>ป.3-4 ฝึกฝน</option>
+              <option value="3">ป.5-6 ท้าทาย</option>
+            </select>
+          </label>
+          <label class="field">เวลาเล่น
+            <select id="duration">
+              <option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option>
+            </select>
+          </label>
+          <label class="check"><input id="useCam" type="checkbox" checked /> เปิด AR ใช้ท่าหยิบจาน</label>
+        </div>
+        <p style="font-size:12px;color:#7a5d59">ใช้ MediaPipe Hands ผ่าน CDN และต้องอนุญาตกล้องบน HTTPS หาก AR ไม่พร้อม ยังเล่นด้วยการแตะ/คลิกได้</p>
+        <button class="primary" id="start">เริ่มเปิดร้าน</button>
+      </section>
+    </main>
+
+    <section id="hud">
+      <div class="row">
+        <div class="chip">หัวใจ <span id="hearts" class="heart">♥♥♥♥♥</span></div>
+        <div class="chip">คะแนน <span id="score">0</span></div>
+      </div>
+      <div id="target" class="chip">
+        <small>ออเดอร์รอบนี้</small><br>
+        <b id="mission">หยิบคำเป็น</b>
+        <div><span id="time">60</span> วินาที</div>
+        <div class="bar"><i id="timebar" style="width:100%"></i></div>
+      </div>
+      <div id="status" class="chip">ยกมือให้กล้องเห็น แล้วจีบนิ้วโป้งกับนิ้วชี้เหนือจานเพื่อหยิบ</div>
+    </section>
+
+    <div id="toast"></div>
+    <section id="result" class="panel">
+      <div class="card" style="text-align:center;width:min(520px,calc(100vw - 28px))">
+        <div style="font-size:4rem">🍱</div>
+        <h1>ปิดร้านแล้ว!</h1>
+        <div style="font-size:3rem;color:#d43f4d;font-weight:900" id="final">0</div>
+        <p id="breakdown"></p>
+        <button class="primary" id="again">เล่นอีกครั้ง</button>
+        <button class="secondary" id="back">เมนู</button>
+      </div>
+    </section>
+
+    <script>
+      (() => {
+        "use strict";
+        const $ = id => document.getElementById(id);
+        const ui = {
+          video:$("camera"), fx:$("fx"), menu:$("menu"), hud:$("hud"), plates:$("plates"),
+          cursor:$("cursor"), status:$("status"), toast:$("toast"), result:$("result")
+        };
+        const WORDS = [
+          {w:"ตา",t:"live",r:"คำเป็น: สระเสียงยาว ไม่มีตัวสะกด",l:1},{w:"ดี",t:"live",r:"คำเป็น: สระอีเสียงยาว",l:1},{w:"งู",t:"live",r:"คำเป็น: สระอูเสียงยาว",l:1},{w:"มา",t:"live",r:"คำเป็น: สระอาเสียงยาว",l:1},{w:"มือ",t:"live",r:"คำเป็น: สระอือเสียงยาว",l:1},{w:"ใจ",t:"live",r:"คำเป็น: สระใอเหมือนมี ย สะกด",l:1},{w:"จำ",t:"live",r:"คำเป็น: สระอำเหมือนมี ม สะกด",l:1},{w:"ดาว",t:"live",r:"คำเป็น: แม่เกอว",l:1},{w:"นาง",t:"live",r:"คำเป็น: แม่กง",l:1},{w:"ลม",t:"live",r:"คำเป็น: แม่กม",l:1},{w:"ขาย",t:"live",r:"คำเป็น: แม่เกย",l:1},{w:"กิน",t:"live",r:"คำเป็น: แม่กน",l:1},
+          {w:"จะ",t:"dead",r:"คำตาย: สระสั้น ไม่มีตัวสะกด",l:1},{w:"กะ",t:"dead",r:"คำตาย: สระสั้น ไม่มีตัวสะกด",l:1},{w:"ปะ",t:"dead",r:"คำตาย: สระสั้น ไม่มีตัวสะกด",l:1},{w:"นก",t:"dead",r:"คำตาย: แม่กก",l:1},{w:"มด",t:"dead",r:"คำตาย: แม่กด",l:1},{w:"ปาก",t:"dead",r:"คำตาย: แม่กก",l:1},{w:"จับ",t:"dead",r:"คำตาย: แม่กบ",l:1},{w:"รัก",t:"dead",r:"คำตาย: แม่กก",l:1},{w:"ตัด",t:"dead",r:"คำตาย: แม่กด",l:1},{w:"รูป",t:"dead",r:"คำตาย: แม่กบ",l:1},
+          {w:"บ้าน",t:"live",r:"คำเป็น: แม่กน",l:2},{w:"เรียน",t:"live",r:"คำเป็น: แม่กน",l:2},{w:"เพลง",t:"live",r:"คำเป็น: แม่กง",l:2},{w:"แก้ว",t:"live",r:"คำเป็น: แม่เกอว",l:2},{w:"สวย",t:"live",r:"คำเป็น: แม่เกย",l:2},{w:"ชม",t:"live",r:"คำเป็น: แม่กม",l:2},{w:"ครู",t:"live",r:"คำเป็น: สระอูเสียงยาว",l:2},{w:"เรือ",t:"live",r:"คำเป็น: สระเอือเสียงยาว",l:2},{w:"เขา",t:"live",r:"คำเป็น: สระเอาเหมือนมี ว สะกด",l:2},
+          {w:"เด็ก",t:"dead",r:"คำตาย: แม่กก",l:2},{w:"รถ",t:"dead",r:"คำตาย: แม่กด",l:2},{w:"ภาพ",t:"dead",r:"คำตาย: แม่กบ",l:2},{w:"คิด",t:"dead",r:"คำตาย: แม่กด",l:2},{w:"ลบ",t:"dead",r:"คำตาย: แม่กบ",l:2},{w:"สด",t:"dead",r:"คำตาย: แม่กด",l:2},{w:"ทุก",t:"dead",r:"คำตาย: แม่กก",l:2},{w:"เกาะ",t:"dead",r:"คำตาย: สระเอาะเสียงสั้น",l:2},
+          {w:"กรรม",t:"live",r:"คำเป็น: แม่กม",l:3},{w:"ธรรม",t:"live",r:"คำเป็น: แม่กม",l:3},{w:"ศาล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"กาล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"พร",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"นวล",t:"live",r:"คำเป็น: แม่กน",l:3},{w:"เทียน",t:"live",r:"คำเป็น: แม่กน",l:3},
+          {w:"พิษ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"สุข",t:"dead",r:"คำตาย: แม่กก",l:3},{w:"เลข",t:"dead",r:"คำตาย: แม่กก",l:3},{w:"โทษ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"ชาติ",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"เพชร",t:"dead",r:"คำตาย: แม่กด",l:3},{w:"บาป",t:"dead",r:"คำตาย: แม่กบ",l:3},{w:"ลาภ",t:"dead",r:"คำตาย: แม่กบ",l:3}
+        ];
+        const GRAB_READY_MS = 90;
+        const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+        const COLORS = [
+          ["#e94452","#ffcf5a"],["#22a6b3","#a6f3ff"],["#6c5ce7","#d6ccff"],
+          ["#ff8a4c","#ffe0a3"],["#27ae60","#c8ffd4"],["#e84393","#ffd1ea"]
+        ];
+        let state, stream, hands, raf, lastFrame = 0, lastVideo = -1, camBusy = false, hand = null, poseState = "none", particles = [], lastHandLandmarks = null;
+        const pick = a => a[Math.floor(Math.random()*a.length)];
+        const shuffle = a => a.sort(() => Math.random() - .5);
+
+        function start(){
+          cancelAnimationFrame(raf); stopCam();
+          const now = performance.now();
+          state = {
+            token:Math.random(), score:0, hearts:5, level:+$("level").value, duration:+$("duration").value,
+            start:now, mission:Math.random()<.5?"live":"dead", nextSwitch:now+15000, plates:[], hover:-1, grabAt:0, grabOpen:true, spawnAt:0, laneIndex:0
+          };
+          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; ui.plates.innerHTML="";
+          updateHud(); updateMission(true); resize();
+          if($("useCam").checked) startCam(state.token); else ui.status.textContent="โหมดแตะ/คลิก: หยิบจานซูชิที่ตรงกับออเดอร์";
+          lastFrame = now; raf = requestAnimationFrame(loop);
+        }
+        async function startCam(token){
+          try{
+            if(!navigator.mediaDevices?.getUserMedia) throw new Error("browser ไม่รองรับการเปิดกล้อง");
+            if(typeof Hands !== "function") throw new Error("MediaPipe ยังโหลดไม่สำเร็จ");
+            ui.status.textContent="กำลังเปิดกล้อง AR...";
+            const nextStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}},audio:false});
+            if(!state||state.token!==token){nextStream.getTracks().forEach(t=>t.stop());return}
+            stream = nextStream; ui.video.srcObject = stream; await ui.video.play();
+            if(!state||state.token!==token){stopCam();return}
+            ui.cursor.style.display="block";
+            hands = new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});
+            hands.onResults(onHands);
+            ui.status.textContent="เห็นโครงมือแล้ว: จีบนิ้วโป้งกับนิ้วชี้เหนือจานเพื่อหยิบ";
+          }catch(e){
+            if(state&&state.token===token){ui.status.textContent=`เปิด AR ไม่สำเร็จ: ${e.message||"ไม่อนุญาตกล้อง"} • เล่นด้วยแตะ/คลิกได้`;stopCam();}
+          }
+        }
+        function updateMission(showToast){
+          $("mission").textContent = state.mission === "live" ? "หยิบคำเป็น" : "หยิบคำตาย";
+          if(showToast) toast(state.mission === "live" ? "ออเดอร์ใหม่: หยิบคำเป็น!" : "ออเดอร์ใหม่: หยิบคำตาย!", true);
+        }
+        function spawnPlate(now){
+          const pool = WORDS.filter(x => x.l <= state.level);
+          const item = pick(pool), color = pick(COLORS);
+          const plateW = innerWidth <= 700 ? 142 : 178;
+          const beltCenter = innerHeight - Math.min(innerHeight*.24, 190) - 34;
+          const lanes = innerWidth <= 700 ? [0] : [-34, 34];
+          const lane = lanes[state.laneIndex++ % lanes.length];
+          const lanePlates = state.plates.filter(p => !p.dead && p.lane === lane);
+          const rightMost = lanePlates.length ? Math.max(...lanePlates.map(p => p.x)) : -999;
+          const minGap = Math.max(plateW * 1.55, innerWidth * .18);
+          if(rightMost > innerWidth + 120 - minGap){ state.spawnAt = now + 180; return; }
+          const y = beltCenter + lane + Math.sin(now*.004)*4;
+          const speed = 40 + state.level*12 + Math.random()*10;
+          const plate = {id:Math.random(), item, x:Math.max(innerWidth + plateW*.75, rightMost + minGap), y, baseY:y, lane, speed, color, dead:false};
+          const el = document.createElement("button");
+          el.className = "plate"; el.style.setProperty("--ring", color[0]); el.style.left = `${plate.x-plateW/2}px`; el.style.top = `${plate.y-62}px`;
+          el.innerHTML = `<div class="sushi" style="--fish:${color[1]}"><span class="word">${item.w}</span></div><span class="hint">จีบหยิบ</span>`;
+          el.onclick = () => answer(plate);
+          ui.plates.appendChild(el); plate.el = el; state.plates.push(plate);
+          state.spawnAt = now + Math.max(950, 1850 - state.level*190 - Math.random()*260);
+        }
+        function answer(plate){
+          if(!state||!plate||plate.dead) return;
+          plate.dead = true; plate.el.classList.add("grab");
+          const ok = plate.item.t === state.mission;
+          if(ok){ state.score += 10; burst(plate.x, plate.y, true); toast(`อร่อย! +10 • ${plate.item.r}`, true); }
+          else { state.hearts--; burst(plate.x, plate.y, false); toast(`ยังไม่ใช่จานนี้ • ${plate.item.r}`, false); }
+          updateHud();
+          setTimeout(() => removePlate(plate), 390);
+          if(state.hearts <= 0) end("หัวใจหมดแล้ว");
+        }
+        function removePlate(plate){
+          const i = state?.plates.indexOf(plate) ?? -1;
+          if(i >= 0) state.plates.splice(i, 1);
+          plate.el?.remove();
+        }
+        function updateHud(){
+          $("score").textContent = state.score;
+          $("hearts").textContent = "♥".repeat(state.hearts) + "♡".repeat(5-state.hearts);
+        }
+        function toast(text, ok){
+          ui.toast.textContent = text; ui.toast.style.display = "block"; ui.toast.style.color = ok ? "#18764f" : "#c53242";
+          clearTimeout(ui.toast._t); ui.toast._t = setTimeout(() => ui.toast.style.display = "none", 1000);
+        }
+        function mapToVideoCover(p){
+          const vw=innerWidth,vh=innerHeight,sw=ui.video.videoWidth||vw,sh=ui.video.videoHeight||vh,scale=Math.max(vw/sw,vh/sh),dw=sw*scale,dh=sh*scale,ox=(dw-vw)/2,oy=(dh-vh)/2;
+          return {x:vw-(p.x*dw-ox),y:p.y*dh-oy};
+        }
+        function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0))}
+        function isGrabPose(h){
+          const palm = Math.max(dist(h[0],h[9]), dist(h[5],h[17]), .045);
+          const pinch = dist(h[4],h[8]) / palm;
+          return pinch < .62;
+        }
+        function isOpenPose(h){
+          const palm = Math.max(dist(h[0],h[9]), dist(h[5],h[17]), .045);
+          return dist(h[4],h[8]) / palm > .82;
+        }
+        function onHands(res){
+          const h = res.multiHandLandmarks && res.multiHandLandmarks[0];
+          if(!h){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          const p = {x:(h[4].x+h[8].x)/2,y:(h[4].y+h[8].y)/2,z:((h[4].z||0)+(h[8].z||0))/2}, wrist = h[0], valid = p&&p.x>.01&&p.x<.99&&p.y>.01&&p.y<.99&&wrist.x>.01&&wrist.x<.99&&wrist.y>.01&&wrist.y<.99;
+          if(!valid){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          lastHandLandmarks = h.map(mapToVideoCover);
+          const mapped = mapToVideoCover(p);
+          hand = hand ? {x:hand.x*.68+mapped.x*.32,y:hand.y*.68+mapped.y*.32} : mapped;
+          poseState = isGrabPose(h) ? "grabbing" : "open";
+          ui.cursor.style.opacity = "1"; ui.cursor.style.left = `${hand.x}px`; ui.cursor.style.top = `${hand.y}px`;
+          if(isOpenPose(h) && state) state.grabOpen = true;
+        }
+        function updateHover(now){
+          if(!hand){
+            state.hover=-1; state.grabAt=0; ui.cursor.style.setProperty("--hold","0%");
+            if(hands) ui.status.textContent = "ยกมือให้กล้องเห็นครบ แล้วจีบนิ้วโป้งกับนิ้วชี้เหนือจาน";
+            return;
+          }
+          let best=-1, bd=1e9;
+          state.plates.forEach(p => {
+            if(p.dead) return;
+            const d = Math.hypot(hand.x-p.x, hand.y-p.y);
+            if(d < 105 && d < bd){bd=d; best=p.id;}
+          });
+          if(best !== state.hover){state.hover=best;state.grabAt=0}
+          const grabbing = poseState === "grabbing";
+          if(best >= 0 && grabbing && state.grabOpen && !state.grabAt) state.grabAt = now;
+          if(!grabbing) state.grabAt = 0;
+          const hold = best>=0 && grabbing ? Math.min(100,(now-state.grabAt)/GRAB_READY_MS*100) : 0;
+          ui.cursor.style.setProperty("--hold", `${hold}%`);
+          state.plates.forEach(p => p.el.classList.toggle("hot", p.id===best));
+          if(best>=0 && grabbing && state.grabOpen && now-state.grabAt>GRAB_READY_MS){
+            state.grabOpen = false; state.grabAt = 0; answer(state.plates.find(p => p.id===best));
+          }
+          ui.status.textContent = best>=0 ? (grabbing ? "หยิบแล้ว!" : "อยู่เหนือจานแล้ว จีบนิ้วโป้งกับนิ้วชี้เพื่อหยิบ") : "เลื่อนมือไปเหนือจาน แล้วทำท่าหยิบ";
+        }
+        async function processCam(){
+          if(hands&&!camBusy&&ui.video.readyState>=2&&ui.video.currentTime!==lastVideo){
+            lastVideo=ui.video.currentTime; camBusy=true;
+            try{await hands.send({image:ui.video});}
+            catch(e){ui.status.textContent="MediaPipe โหลดไม่สำเร็จ ใช้แตะ/คลิกแทนได้"; stopCam();}
+            finally{camBusy=false;}
+          }
+        }
+        function burst(x,y,ok){
+          const palette = ok ? ["#fff04f","#ff914d","#56e39f","#ffffff"] : ["#ff5f72","#ffcf5a","#ffffff"];
+          for(let i=0;i<28;i++){
+            const a = Math.random()*Math.PI*2, s = 90+Math.random()*180;
+            particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-80,life:680,start:performance.now(),c:pick(palette),r:3+Math.random()*5});
+          }
+        }
+        function draw(now){
+          const c=ui.fx, x=c.getContext("2d"); x.clearRect(0,0,innerWidth,innerHeight);
+          drawHandSkeleton(x);
+          particles = particles.filter(p => now-p.start < p.life);
+          particles.forEach(p => {
+            const age = now-p.start, t=age/1000, k=1-age/p.life;
+            x.globalAlpha = k; x.fillStyle = p.c; x.beginPath(); x.arc(p.x+p.vx*t,p.y+p.vy*t+190*t*t,p.r*k,0,Math.PI*2); x.fill();
+          });
+          x.globalAlpha = 1;
+        }
+        function drawHandSkeleton(x){
+          if(!lastHandLandmarks) return;
+          x.save(); x.lineCap="round"; x.lineJoin="round";
+          x.shadowColor="#ffffff"; x.shadowBlur=9; x.strokeStyle=poseState==="grabbing"?"#37d28a":"#ffcf5a"; x.lineWidth=5;
+          HAND_CONNECTIONS.forEach(([a,b]) => { const p=lastHandLandmarks[a], q=lastHandLandmarks[b]; x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(q.x,q.y); x.stroke(); });
+          lastHandLandmarks.forEach((p,i) => { x.fillStyle=i===4||i===8?"#fff":"#e93e51"; x.beginPath(); x.arc(p.x,p.y,i===4||i===8?7:4.5,0,Math.PI*2); x.fill(); });
+          x.restore();
+        }
+        function loop(now){
+          raf = requestAnimationFrame(loop);
+          if(!state) return;
+          draw(now); processCam();
+          const dt = Math.min(.05,(now-lastFrame)/1000||.016); lastFrame = now;
+          const left = Math.max(0, state.duration - (now-state.start)/1000);
+          $("time").textContent = Math.ceil(left); $("timebar").style.width = `${left/state.duration*100}%`;
+          if(left <= 0) return end("หมดเวลา");
+          if(now > state.nextSwitch){ state.mission = state.mission==="live" ? "dead" : "live"; state.nextSwitch = now + 15000; updateMission(true); }
+          if(now > state.spawnAt && state.plates.length < (innerWidth <= 700 ? 4 : 6)) spawnPlate(now);
+          state.plates.slice().forEach(p => {
+            if(p.dead) return;
+            p.x -= p.speed * dt; p.y = p.baseY + Math.sin(now*.002+p.id)*6;
+            p.el.style.left = `${p.x-p.el.offsetWidth/2}px`; p.el.style.top = `${p.y-p.el.offsetHeight/2}px`;
+            if(p.x < -120){
+              const missedTarget = p.item.t === state.mission;
+              removePlate(p);
+              if(missedTarget){ state.hearts--; updateHud(); toast("พลาดจานที่ควรหยิบ เสียหัวใจ!", false); if(state.hearts<=0) end("หัวใจหมดแล้ว"); }
+            }
+          });
+          if(hands) updateHover(now);
+        }
+        function end(reason){
+          if(!state) return;
+          const finished = state; state = null; cancelAnimationFrame(raf); stopCam();
+          const final = finished.score + finished.hearts * 10;
+          $("final").textContent = final;
+          $("breakdown").textContent = `${reason} • คะแนนคำศัพท์ ${finished.score} + โบนัสหัวใจ ${finished.hearts*10} = ${final}`;
+          ui.hud.style.display = "none"; ui.plates.innerHTML = ""; ui.result.style.display = "grid";
+        }
+        function stopCam(){
+          if(stream){stream.getTracks().forEach(t=>t.stop()); stream=null}
+          ui.video.srcObject=null; ui.cursor.style.display="none"; ui.cursor.style.opacity="0"; ui.cursor.style.setProperty("--hold","0%");
+          hands=null; hand=null; lastHandLandmarks=null; poseState="none"; lastVideo=-1;
+        }
+        function resize(){ ui.fx.width=innerWidth; ui.fx.height=innerHeight; }
+        $("start").onclick = start; $("again").onclick = start; $("back").onclick = () => { ui.result.style.display="none"; ui.menu.style.display="grid"; };
+        addEventListener("resize", resize); resize();
+      })();
+    </script>
+  </body>
+</html>

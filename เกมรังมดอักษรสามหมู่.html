@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>รังมดอักษรสามหมู่</title>
+    <script>
+      window.createMediapipeSolutionsPackedAssets =
+        window.createMediapipeSolutionsPackedAssets || {};
+      window.createMediapipeSolutionsPackedAssets.dataFileDownloads = new Proxy(
+        {},
+        { get(target, key) { if (!(key in target)) target[key] = { loaded: 0, total: 0 }; return target[key]; } },
+      );
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" crossorigin="anonymous"></script>
+    <style>
+      *{box-sizing:border-box}
+      html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#342018}
+      body{background:#62dfff}
+      #camera{position:fixed;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:linear-gradient(180deg,#75eaff,#ffd86b 55%,#ff8fdc)}
+      #scene3d{position:fixed;z-index:1;inset:0;width:100%;height:100%;display:block;pointer-events:none;background:linear-gradient(180deg,#31c8ff 0%,#7defff 38%,#ffd86b 72%,#ff8fdc 100%)}
+      .nest{position:fixed;z-index:2;inset:0;overflow:hidden;pointer-events:none;background:
+        radial-gradient(ellipse at 50% 13%,#fff8bdba 0 12%,transparent 13%),
+        radial-gradient(circle at 17% 25%,#67fff29e 0 5%,transparent 6%),
+        radial-gradient(circle at 83% 31%,#ff77d89c 0 5%,transparent 6%),
+        radial-gradient(circle at 33% 20%,#9d7cff66 0 4%,transparent 5%),
+        linear-gradient(180deg,#ffffff1c 0%,#ffd86b22 44%,#ff8fdc18 100%)}
+      .nest:before{content:"";position:absolute;inset:-4%;background:
+        repeating-radial-gradient(ellipse at 50% 45%,transparent 0 42px,#4d3b8b24 43px 49px,transparent 50px 78px),
+        radial-gradient(ellipse at 50% 55%,transparent 0 25%,#764bc434 26% 31%,transparent 32%),
+        radial-gradient(ellipse at 22% 72%,transparent 0 16%,#35c8e436 17% 22%,transparent 23%),
+        radial-gradient(ellipse at 80% 75%,transparent 0 15%,#ff77d83a 16% 21%,transparent 22%);
+        filter:blur(.2px)}
+      .nest:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 22%,#fff28a36 0 2%,transparent 3%),radial-gradient(circle at 75% 24%,#72fff238 0 2%,transparent 3%),radial-gradient(circle at 48% 84%,#ff77d833 0 3%,transparent 4%),radial-gradient(circle at 31% 63%,#9a7cff38 0 2.5%,transparent 3.5%)}
+      .root{position:absolute;left:var(--x);top:-5%;width:12px;height:44vh;border-radius:999px;background:linear-gradient(90deg,#5b329b,#f5a05f,#7b4dff);transform:rotate(var(--r));box-shadow:16px 34px 0 -4px #e86bc5, -18px 74px 0 -5px #5edff0;opacity:.78}
+      .crystal{position:absolute;bottom:var(--b);left:var(--x);width:34px;height:72px;background:linear-gradient(160deg,#ffffff,#75fff3 38%,#9a7cff);clip-path:polygon(50% 0,100% 26%,82% 100%,18% 100%,0 26%);filter:drop-shadow(0 0 18px #75fff3);opacity:.88}
+      .mush{position:absolute;bottom:var(--b);left:var(--x);width:54px;height:48px;border-radius:50% 50% 18px 18px;background:radial-gradient(circle at 30% 22%,#fff 0 8%,transparent 9%),linear-gradient(180deg,#ff77d8,#8f4bff);filter:drop-shadow(0 0 18px #ff77d8)}
+      .ant{position:fixed;z-index:3;font-size:clamp(28px,5vw,52px);filter:drop-shadow(0 6px 5px #23110d88);animation:walk 17s linear infinite;pointer-events:none}.a1{left:-12%;bottom:17%;animation-duration:18s}.a2{left:-18%;bottom:34%;animation-delay:-8s;animation-duration:24s;transform:scale(.82)}.a3{right:-12%;bottom:10%;animation-name:walkBack;animation-delay:-4s;animation-duration:22s}
+      #items{position:fixed;z-index:3;inset:0;pointer-events:none}
+      .tile{position:fixed;width:176px;height:132px;border:0;background:transparent;display:grid;place-items:center;pointer-events:auto;touch-action:manipulation;transition:transform .12s,filter .12s}
+      .tile:before{content:"";position:absolute;left:16px;bottom:12px;width:108px;height:54px;border-radius:50% 48% 45% 52%;background:radial-gradient(circle at 25% 32%,#9d7cff 0 14%,#4930a6 15% 100%);box-shadow:31px 0 0 #4930a6,60px -2px 0 -5px #4930a6,18px 42px 0 -18px #301f70,54px 42px 0 -18px #301f70}
+      .tile:after{content:"";position:absolute;left:75px;bottom:56px;width:52px;height:38px;border-radius:50%;background:#4930a6;box-shadow:35px 6px 0 -13px #301f70}
+      .tile.hot{transform:scale(1.12);filter:brightness(1.12) saturate(1.18);box-shadow:0 0 0 10px #ffe0a850,0 18px 34px #ffcb7a77,inset 0 10px 18px #fff3}
+      .tile.holding .egg{box-shadow:inset 0 10px 18px #fff9,inset -10px -16px 18px #8b47ff30,0 0 0 8px #64d97b80,0 0 30px #75fff3,0 12px 22px #1f0e0a66}
+      .tile.grab{pointer-events:none;animation:grab .36s ease-out forwards}
+      .egg{position:absolute;left:70px;top:4px;width:92px;height:110px;border-radius:48% 52% 50% 50%/56% 56% 44% 44%;background:radial-gradient(circle at 34% 24%,#fff 0 14%,transparent 15%),linear-gradient(145deg,#fffdf0 0%,#9ffdf2 38%,#ffd36e 70%,#ff77d8 100%);border:4px solid #fffdf0;box-shadow:inset 0 10px 18px #fff9,inset -10px -16px 18px #8b47ff30,0 0 26px #75fff380,0 12px 22px #1f0e0a66;display:grid;place-items:center;z-index:2}
+      .egg:before{content:"";position:absolute;left:-50px;top:47px;width:58px;height:8px;border-radius:999px;background:#4930a6;transform:rotate(-17deg);box-shadow:6px 15px 0 -1px #4930a6,15px -16px 0 -2px #4930a6}
+      .egg:after{content:"";position:absolute;right:-10px;top:52px;width:22px;height:10px;border-radius:999px;background:#4930a6;transform:rotate(20deg)}
+      .letter{position:relative;font-size:66px;font-weight:900;color:#31133d;text-shadow:0 3px #fffdf0,0 9px 13px #9d67ff66;line-height:1}
+      .label{position:absolute;left:60%;bottom:-4px;transform:translateX(-50%);background:#fff8d8;border:2px solid #fff;border-radius:999px;padding:3px 12px;color:#7b3e7f;font-size:12px;font-weight:900;white-space:nowrap;z-index:3}
+      .panel{position:fixed;z-index:7;background:#fffffff5;border:3px solid #ffffff;border-radius:22px;box-shadow:0 14px 34px #315f9a33,0 0 30px #75fff35a;padding:16px;font-weight:900}
+      #menu{inset:0;display:grid;place-items:center;background:linear-gradient(180deg,#ffffff20 0%,#75eaff28 48%,#ffef8a35 100%)}
+      #menu .card{width:min(780px,calc(100vw - 26px));text-align:center}
+      h1{font-size:clamp(2.1rem,7vw,4.8rem);line-height:1.05;margin:.15em 0;color:#7b3e7f;text-shadow:0 3px #fff4d0,0 10px 22px #75fff35c}
+      .lead{font-size:clamp(1rem,2.6vw,1.2rem);color:#55326c;line-height:1.6;text-shadow:0 1px #ffffffb8}
+      .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0;text-align:left}
+      label,select,button,input{font:inherit}.field{display:grid;gap:6px}.field select,.check,.rangebox{width:100%;border:2px solid #bf7a46;border-radius:14px;background:white;padding:12px;color:#4d2e22}
+      .rangebox{display:grid;gap:8px}.range-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.range-value{background:#fff0c8;border-radius:999px;padding:2px 10px;color:#7b3e7f;font-weight:900}.rangebox input{width:100%;accent-color:#ff5fc8}
+      .check{display:flex;align-items:center;gap:10px;height:100%}.check input{width:22px;height:22px;accent-color:#8f4b2f}
+      button{font-weight:900;border:0;border-radius:999px;padding:14px 26px;cursor:pointer}.primary{color:white;background:linear-gradient(135deg,#7b4dff,#ff5fc8,#ffbd4a);box-shadow:0 5px 0 #5b2cb5}.secondary{color:#7b3e7f;background:white;border:2px solid #c986ff}
+      #hud{display:none;position:fixed;z-index:6;inset:0;pointer-events:none;padding:12px}.row{display:flex;justify-content:space-between;gap:8px}.chip{background:#fffffff0;border:2px solid #ffffff;border-radius:18px;padding:10px 14px;box-shadow:0 8px 20px #315f9a30;font-weight:900}
+      #target{position:absolute;left:50%;top:12px;transform:translateX(-50%);text-align:center;min-width:285px;color:#6d35a8}#target b{font-size:1.5rem}.bar{height:8px;border-radius:99px;background:#d8f7ff;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#7b4dff,#ff5fc8,#ffbd4a)}
+      #status{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);max-width:min(720px,calc(100vw - 18px));text-align:center;color:#4b3c72}
+      #cursor{--hold:0%;position:fixed;z-index:8;width:56px;height:56px;margin:-28px;border:4px solid #fff;border-radius:50%;background:conic-gradient(#64d97b var(--hold),#ff77d888 0);box-shadow:0 0 0 7px #7b4dff88,0 0 24px #fff,0 0 32px #75fff3;pointer-events:none;display:none;opacity:0;transition:opacity .1s}
+      #cursor:after{content:"จิ้ม";position:absolute;left:50%;top:58px;transform:translateX(-50%);background:white;border-radius:999px;padding:2px 8px;color:#7d4129;font-size:12px;font-weight:900;white-space:nowrap}
+      #fx{position:fixed;z-index:4;inset:0;pointer-events:none}
+      #toast{position:fixed;z-index:9;left:50%;top:58%;transform:translate(-50%,-50%);background:white;border-radius:22px;padding:16px 24px;box-shadow:0 10px 30px #315f9a55;font-weight:900;font-size:1.08rem;display:none;text-align:center;max-width:min(640px,calc(100vw - 20px))}
+      #result{display:none;inset:0;place-items:center;background:linear-gradient(180deg,#ffffff20,#75eaff28 48%,#ffef8a35 100%)}.heart{color:#ff4f96;font-size:1.3rem;letter-spacing:2px}
+      @keyframes walk{to{left:112%;transform:translateY(-16px)}}@keyframes walkBack{to{right:112%;transform:translateY(14px)}}@keyframes grab{0%{opacity:1;transform:scale(1.08)}48%{transform:scale(1.28) translateY(-55px) rotate(-8deg);filter:brightness(1.25)}100%{opacity:0;transform:scale(.18) translateY(-135px) rotate(16deg)}}
+      @media(max-width:700px){.grid{grid-template-columns:1fr}.tile{width:142px;height:112px}.tile:before{transform:scale(.82);transform-origin:left bottom}.tile:after{transform:scale(.82);transform-origin:left bottom}.egg{left:56px;width:76px;height:92px}.letter{font-size:54px}#target{top:78px}.chip{font-size:.86rem;padding:8px 10px}.ant{opacity:.65}}
+      @media(prefers-reduced-motion:reduce){.ant{animation:none}}
+    </style>
+  </head>
+  <body>
+    <video id="camera" autoplay playsinline muted></video>
+    <canvas id="scene3d" aria-hidden="true"></canvas>
+    <div class="nest" aria-hidden="true">
+      <i class="root" style="--x:18%;--r:-14deg"></i><i class="root" style="--x:72%;--r:18deg"></i><i class="root" style="--x:46%;--r:5deg"></i>
+      <i class="crystal" style="--x:8%;--b:12%"></i><i class="crystal" style="--x:86%;--b:16%"></i><i class="crystal" style="--x:68%;--b:5%"></i>
+      <i class="mush" style="--x:18%;--b:6%"></i><i class="mush" style="--x:78%;--b:8%"></i>
+    </div>
+    <i class="ant a1">🐜</i><i class="ant a2">🐜</i><i class="ant a3">🐜</i>
+    <canvas id="fx"></canvas>
+    <div id="items"></div>
+    <div id="cursor"></div>
+
+    <main id="menu" class="panel">
+      <section class="card">
+        <div style="font-size:4rem">🐜🔤</div>
+        <h1>รังมดอักษรสามหมู่</h1>
+        <p class="lead"><b>เข้าไปสำรวจรังมดใต้ดิน</b> ช่วยมดงานคัดไข่มดตัวอักษรให้ตรงกับภารกิจแบบค่อย ๆ ฝึก ไม่ต้องรีบแข่ง</p>
+        <div class="grid">
+          <label class="field">ระดับชั้น
+            <select id="level"><option value="1">ป.1-2 เริ่มต้น</option><option value="2" selected>ป.3-4 ฝึกฝน</option><option value="3">ป.5-6 ท้าทาย</option></select>
+          </label>
+          <label class="field">เวลาเล่น
+            <select id="duration"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select>
+          </label>
+          <label class="field">ความหนาแน่น
+            <span class="rangebox"><span class="range-head"><span>คำบนจอ</span><b id="densityValue" class="range-value">45</b></span><input id="density" type="range" min="1" max="100" value="45" /></span>
+          </label>
+          <label class="field">ความเร็ว
+            <span class="rangebox"><span class="range-head"><span>การเคลื่อนที่</span><b id="speedValue" class="range-value">35</b></span><input id="speed" type="range" min="1" max="100" value="35" /></span>
+          </label>
+          <label class="field">เวลาค้างนิ้ว
+            <span class="rangebox"><span class="range-head"><span>ก่อนเลือก</span><b id="dwellValue" class="range-value">1.0 วิ</b></span><input id="dwell" type="range" min="0.5" max="3" step="0.5" value="1" /></span>
+          </label>
+          <label class="check"><input id="useCam" type="checkbox" checked /> เปิด AR ใช้นิ้วชี้จิ้มตัวอักษร</label>
+        </div>
+        <p style="font-size:12px;color:#73513c">ใช้ MediaPipe Hands ผ่าน CDN ต้องอนุญาตกล้องบน HTTPS หาก AR ไม่พร้อม ยังเล่นด้วยการแตะ/คลิกได้</p>
+        <button class="primary" id="start">เริ่มสำรวจรังมด</button>
+      </section>
+    </main>
+
+    <section id="hud">
+      <div class="row"><div class="chip">หัวใจ <span id="hearts" class="heart">♥♥♥♥♥</span></div><div class="chip">คะแนน <span id="score">0</span></div></div>
+      <div id="target" class="chip"><small>ภารกิจรอบนี้</small><br><b id="mission">หยิบอักษรกลาง</b><div><span id="time">60</span> วินาที</div><div class="bar"><i id="timebar" style="width:100%"></i></div></div>
+      <div id="status" class="chip">ยกนิ้วชี้ให้กล้องเห็น แล้วค้างบนไข่มดตัวอักษรจนวงกลมเต็ม</div>
+    </section>
+
+    <div id="toast"></div>
+    <section id="result" class="panel">
+      <div class="card" style="text-align:center;width:min(520px,calc(100vw - 28px))">
+        <div style="font-size:4rem">🏆</div><h1>สำรวจเสร็จแล้ว!</h1>
+        <div style="font-size:3rem;color:#8f4b2f;font-weight:900" id="final">0</div><p id="breakdown"></p>
+        <button class="primary" id="again">เล่นอีกครั้ง</button> <button class="secondary" id="back">เมนู</button>
+      </div>
+    </section>
+
+    <script>
+      (() => {
+        "use strict";
+        const $ = id => document.getElementById(id);
+        const ui = { video:$("camera"), scene3d:$("scene3d"), fx:$("fx"), menu:$("menu"), hud:$("hud"), items:$("items"), cursor:$("cursor"), status:$("status"), toast:$("toast"), result:$("result") };
+        const GROUPS = {
+          high:{name:"อักษรสูง", letters:["ข","ฃ","ฉ","ฐ","ถ","ผ","ฝ","ศ","ษ","ส","ห"], hint:"ข ฃ ฉ ฐ ถ ผ ฝ ศ ษ ส ห"},
+          mid:{name:"อักษรกลาง", letters:["ก","จ","ฎ","ฏ","ด","ต","บ","ป","อ"], hint:"ก จ ฎ ฏ ด ต บ ป อ"},
+          low:{name:"อักษรต่ำ", letters:["ค","ฅ","ฆ","ง","ช","ซ","ฌ","ญ","ฑ","ฒ","ณ","ท","ธ","น","พ","ฟ","ภ","ม","ย","ร","ล","ว","ฬ","ฮ"], hint:"ค ฅ ฆ ง ช ซ ... ฮ"}
+        };
+        const ALL = Object.entries(GROUPS).flatMap(([type,g]) => g.letters.map(letter => ({letter,type,name:g.name,hint:g.hint})));
+        const MISSIONS = ["high","mid","low"];
+        const HAND_CONNECTIONS = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+        const getPointDwellMs = () => clamp(+$("dwell").value || 1, .5, 3) * 1000;
+        const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
+        const slider01 = value => (clamp(+value || 1, 1, 100) - 1) / 99;
+        function densitySettings(value){
+          const t = slider01(value);
+          return {
+            maxMobile: Math.round(2 + t * 3),
+            maxDesktop: Math.round(3 + t * 5),
+            spawnMin: 3400 - t * 2100,
+            spawnJitter: 950 - t * 430,
+            gap: 2.25 - t * .55
+          };
+        }
+        function speedSettings(value){
+          const t = slider01(value);
+          return {vxBase:18 + t * 34, vxLevel:3 + t * 7, vxJitter:5 + t * 10, vyJitter:5 + t * 15};
+        }
+        let state, stream, hands, raf, lastFrame=0, lastVideo=-1, camBusy=false, hand=null, poseState="none", lastHandLandmarks=null, particles=[], scene3d=null;
+        const pick = a => a[Math.floor(Math.random()*a.length)];
+
+        function initThreeLite(){
+          if(scene3d || typeof THREE === "undefined") return;
+          const renderer = new THREE.WebGLRenderer({canvas:ui.scene3d,antialias:false,alpha:true,powerPreference:"low-power"});
+          renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.25)); renderer.setSize(innerWidth,innerHeight,false);
+          const scene = new THREE.Scene();
+          scene.background = new THREE.Color(0x66dfff);
+          scene.fog = new THREE.Fog(0x8ff4ff, 13, 34);
+          const camera = new THREE.PerspectiveCamera(52, innerWidth/innerHeight, .1, 42);
+          camera.position.set(0,0,13);
+          const hemi = new THREE.HemisphereLight(0xffffff,0xffc75f,3.4); scene.add(hemi);
+          const key = new THREE.PointLight(0xfff06a,34,32); key.position.set(-5,5,6); scene.add(key);
+          const pink = new THREE.PointLight(0xff5fc8,28,30); pink.position.set(5,-1,7); scene.add(pink);
+          const cyan = new THREE.PointLight(0x75fff3,32,30); cyan.position.set(0,3,5); scene.add(cyan);
+          const tunnelGeo = new THREE.TorusGeometry(7.4,2.2,10,36,Math.PI*1.55);
+          const tunnelMat = new THREE.MeshStandardMaterial({color:0xffb46b,roughness:.68,metalness:.04,emissive:0x7defff,emissiveIntensity:.22,flatShading:true});
+          const tunnel = new THREE.Mesh(tunnelGeo,tunnelMat); tunnel.rotation.set(0,0,Math.PI*.1); tunnel.position.z=-3; scene.add(tunnel);
+          const ground = new THREE.Mesh(new THREE.CircleGeometry(12,32),new THREE.MeshStandardMaterial({color:0xffd36e,roughness:.86,emissive:0xff77d8,emissiveIntensity:.18}));
+          ground.position.set(0,-4.4,-1); ground.rotation.x=-Math.PI/2; scene.add(ground);
+          const crystals = [], eggs = [], sparks = [];
+          const crystalGeo = new THREE.ConeGeometry(.38,1.65,5);
+          const crystalMats = [0x75fff3,0xff77d8,0xffd35f,0x9a7cff].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.28,emissive:c,emissiveIntensity:.8,flatShading:true}));
+          for(let i=0;i<18;i++){
+            const m = new THREE.Mesh(crystalGeo, crystalMats[i%crystalMats.length]);
+            m.position.set((Math.random()-.5)*15,-4.0+Math.random()*1.7,-7+Math.random()*9);
+            m.rotation.set((Math.random()-.5)*.35,(Math.random()-.5)*.5,(Math.random()-.5)*.8);
+            const s=.75+Math.random()*1.15; m.scale.setScalar(s); scene.add(m); crystals.push(m);
+          }
+          const eggGeo = new THREE.SphereGeometry(.42,12,8);
+          const eggMat = new THREE.MeshStandardMaterial({color:0xfff6d7,roughness:.34,emissive:0x75fff3,emissiveIntensity:.22});
+          for(let i=0;i<10;i++){
+            const e = new THREE.Mesh(eggGeo, eggMat);
+            e.position.set((Math.random()-.5)*13,-2.8+Math.random()*5,-7+Math.random()*8);
+            e.scale.set(.75,1.08,.75); scene.add(e); eggs.push(e);
+          }
+          const sparkGeo = new THREE.SphereGeometry(.055,6,4);
+          const sparkMat = new THREE.MeshBasicMaterial({color:0xffffff});
+          for(let i=0;i<34;i++){
+            const s = new THREE.Mesh(sparkGeo,sparkMat);
+            s.position.set((Math.random()-.5)*16,-4+Math.random()*9,-8+Math.random()*10);
+            scene.add(s); sparks.push(s);
+          }
+          scene3d = {renderer,scene,camera,tunnel,crystals,eggs,sparks};
+        }
+
+        function start(){
+          cancelAnimationFrame(raf); stopCam();
+          initThreeLite();
+          const now = performance.now();
+          state = {token:Math.random(), score:0, hearts:5, level:+$("level").value, density:+$("density").value, speed:+$("speed").value, dwellMs:getPointDwellMs(), duration:+$("duration").value, start:now, mission:pick(MISSIONS), nextSwitch:now+22000, tiles:[], hover:-1, hoverAt:0, fired:false, spawnAt:0};
+          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; ui.items.innerHTML="";
+          updateHud(); updateMission(true); resize();
+          if($("useCam").checked) startCam(state.token); else ui.status.textContent="โหมดแตะ/คลิก: เลือกไข่มดตัวอักษรที่ตรงกับภารกิจ";
+          lastFrame=now; raf=requestAnimationFrame(loop);
+        }
+        async function startCam(token){
+          try{
+            if(!navigator.mediaDevices?.getUserMedia) throw new Error("browser ไม่รองรับการเปิดกล้อง");
+            if(typeof Hands !== "function") throw new Error("MediaPipe ยังโหลดไม่สำเร็จ");
+            ui.status.textContent="กำลังเปิดกล้อง AR...";
+            const nextStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}},audio:false});
+            if(!state||state.token!==token){nextStream.getTracks().forEach(t=>t.stop());return}
+            stream=nextStream; ui.video.srcObject=stream; await ui.video.play();
+            if(!state||state.token!==token){stopCam();return}
+            ui.cursor.style.display="block";
+            hands = new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});
+            hands.onResults(onHands);
+            ui.status.textContent="เห็นโครงมือแล้ว: ใช้นิ้วชี้ค้างบนไข่มดจนวงกลมเต็ม";
+          }catch(e){ if(state&&state.token===token){ui.status.textContent=`เปิด AR ไม่สำเร็จ: ${e.message||"ไม่อนุญาตกล้อง"} • เล่นด้วยแตะ/คลิกได้`;stopCam();} }
+        }
+        function updateMission(show){
+          const g = GROUPS[state.mission];
+          $("mission").textContent = `หยิบ${g.name}`;
+          if(show) toast(`ภารกิจใหม่: หยิบ${g.name}`, true);
+        }
+        function spawnTile(now){
+          const pool = ALL.filter(x => state.level>=3 || x.type !== "low" || !["ฅ","ฆ","ฌ","ฑ","ฒ","ฬ"].includes(x.letter));
+          const item = pick(pool), size = innerWidth <= 700 ? 142 : 176, density = densitySettings(state.density);
+          const minY = innerHeight*.3, maxY = innerHeight - size*1.05, minGap = size*density.gap;
+          let best = null, bestGap = -1;
+          for(let i=0;i<32;i++){
+            const x = innerWidth + size*.65 + Math.random()*100;
+            const y = minY + Math.random()*(maxY-minY);
+            const gap = state.tiles.length ? Math.min(...state.tiles.map(t => Math.hypot(x-t.x,y-t.y))) : 9999;
+            if(gap > bestGap){best={x,y};bestGap=gap}
+            if(gap > minGap) break;
+          }
+          const tile = {id:Math.random(), item, x:best.x, y:best.y, speedSeed:Math.random(), driftSeed:Math.random()-.5, holdTimer:0, dead:false};
+          const el = document.createElement("button");
+          el.className="tile"; el.innerHTML=`<span class="egg"><span class="letter">${item.letter}</span></span><span class="label">ไข่มด</span>`;
+          bindHoldInput(tile, el); ui.items.appendChild(el); tile.el=el; state.tiles.push(tile);
+          state.spawnAt = now + density.spawnMin + Math.random()*density.spawnJitter;
+        }
+        function bindHoldInput(tile, el){
+          const cancel = () => { clearTimeout(tile.holdTimer); tile.holdTimer=0; el.classList.remove("holding","hot"); };
+          el.addEventListener("pointerdown", e => {
+            if(!state||tile.dead) return;
+            e.preventDefault(); el.setPointerCapture?.(e.pointerId); el.classList.add("holding","hot");
+            clearTimeout(tile.holdTimer); tile.holdTimer = setTimeout(() => answer(tile), getPointDwellMs());
+            ui.status.textContent = "ค้างไว้ให้ครบเวลาที่ตั้งไว้ แล้วระบบจะเลือกให้";
+          });
+          ["pointerup","pointercancel","pointerleave"].forEach(type => el.addEventListener(type, cancel));
+        }
+        function answer(tile){
+          if(!state||!tile||tile.dead) return;
+          clearTimeout(tile.holdTimer);
+          tile.dead=true; tile.el.classList.add("grab");
+          const ok = tile.item.type === state.mission;
+          if(ok){state.score+=10; burst(tile.x,tile.y,true); toast(`ถูกต้อง! ${tile.item.letter} คือ${tile.item.name}`, true);}
+          else{state.hearts--; burst(tile.x,tile.y,false); toast(`ยังไม่ใช่: ${tile.item.letter} คือ${tile.item.name}`, false);}
+          updateHud(); setTimeout(()=>removeTile(tile),390); if(state.hearts<=0) end("หัวใจหมดแล้ว");
+        }
+        function removeTile(tile){ const i=state?.tiles.indexOf(tile) ?? -1; if(i>=0) state.tiles.splice(i,1); tile.el?.remove(); }
+        function updateHud(){ $("score").textContent=state.score; $("hearts").textContent="♥".repeat(state.hearts)+"♡".repeat(5-state.hearts); }
+        function toast(text,ok){ ui.toast.textContent=text; ui.toast.style.display="block"; ui.toast.style.color=ok?"#26733b":"#b94931"; clearTimeout(ui.toast._t); ui.toast._t=setTimeout(()=>ui.toast.style.display="none",1000); }
+        function mapToVideoCover(p){
+          const vw=innerWidth,vh=innerHeight,sw=ui.video.videoWidth||vw,sh=ui.video.videoHeight||vh,scale=Math.max(vw/sw,vh/sh),dw=sw*scale,dh=sh*scale,ox=(dw-vw)/2,oy=(dh-vh)/2;
+          return {x:vw-(p.x*dw-ox),y:p.y*dh-oy};
+        }
+        function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0))}
+        function fingerExtended(h,tip,mcp){ return dist(h[tip],h[0]) > dist(h[mcp],h[0]) * 1.14; }
+        function isPointingPose(h){
+          const index = fingerExtended(h,8,5);
+          const others = [fingerExtended(h,12,9),fingerExtended(h,16,13),fingerExtended(h,20,17)].filter(Boolean).length;
+          return index && others <= 1;
+        }
+        function onHands(res){
+          const h=res.multiHandLandmarks&&res.multiHandLandmarks[0];
+          if(!h){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          const p=h[8], wrist=h[0];
+          const valid=p.x>.01&&p.x<.99&&p.y>.01&&p.y<.99&&wrist.x>.01&&wrist.x<.99&&wrist.y>.01&&wrist.y<.99;
+          if(!valid){hand=null;lastHandLandmarks=null;poseState="none";ui.cursor.style.opacity="0";return}
+          lastHandLandmarks=h.map(mapToVideoCover); const mapped=mapToVideoCover(p);
+          if(!isPointingPose(h)){hand=null;poseState="notPointing";ui.cursor.style.opacity="0";return}
+          hand=hand?{x:hand.x*.68+mapped.x*.32,y:hand.y*.68+mapped.y*.32}:mapped;
+          poseState="pointing"; ui.cursor.style.opacity="1"; ui.cursor.style.left=`${hand.x}px`; ui.cursor.style.top=`${hand.y}px`;
+        }
+        function updateHover(now){
+          if(state) state.dwellMs = getPointDwellMs();
+          if(!hand){state.hover=-1;state.hoverAt=0;state.fired=false;ui.cursor.style.setProperty("--hold","0%");if(hands)ui.status.textContent=poseState==="notPointing"?"เห็นมือแล้ว: เหยียดนิ้วชี้ให้เด่น แล้วพับนิ้วอื่น":"ยกมือให้เห็นครบ แล้วใช้นิ้วชี้จิ้มไข่มด";return}
+          let best=-1, bd=1e9;
+          state.tiles.forEach(t=>{if(t.dead)return;const d=Math.hypot(hand.x-t.x,hand.y-t.y);if(d<95&&d<bd){bd=d;best=t.id}});
+          if(best!==state.hover){state.hover=best;state.hoverAt=now;state.fired=false}
+          ui.cursor.style.setProperty("--hold", best>=0 ? `${Math.min(100,(now-state.hoverAt)/state.dwellMs*100)}%` : "0%");
+          state.tiles.forEach(t=>t.el.classList.toggle("hot",t.id===best));
+          if(best>=0&&now-state.hoverAt>state.dwellMs&&!state.fired){state.fired=true;answer(state.tiles.find(t=>t.id===best))}
+          ui.status.textContent=best>=0?"ค้างไว้ให้วงกลมเต็ม แล้วระบบจะเลือกให้":"เลื่อนนิ้วชี้ไปที่ไข่มดตัวอักษร";
+        }
+        async function processCam(){
+          if(hands&&!camBusy&&ui.video.readyState>=2&&ui.video.currentTime!==lastVideo){
+            lastVideo=ui.video.currentTime; camBusy=true;
+            try{await hands.send({image:ui.video});}catch(e){ui.status.textContent="MediaPipe โหลดไม่สำเร็จ ใช้แตะ/คลิกแทนได้";stopCam();}finally{camBusy=false;}
+          }
+        }
+        function burst(x,y,ok){ const colors=ok?["#fff0a8","#64d97b","#ffffff","#d28b47"]:["#ff7866","#f0bd62","#ffffff"]; for(let i=0;i<26;i++){const a=Math.random()*Math.PI*2,s=80+Math.random()*170;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-70,life:680,start:performance.now(),c:pick(colors),r:3+Math.random()*5});} }
+        function draw(now){
+          drawThreeLite(now);
+          const c=ui.fx,x=c.getContext("2d"); x.clearRect(0,0,innerWidth,innerHeight); drawHandSkeleton(x);
+          particles=particles.filter(p=>now-p.start<p.life);
+          particles.forEach(p=>{const age=now-p.start,t=age/1000,k=1-age/p.life;x.globalAlpha=k;x.fillStyle=p.c;x.beginPath();x.arc(p.x+p.vx*t,p.y+p.vy*t+180*t*t,p.r*k,0,Math.PI*2);x.fill();}); x.globalAlpha=1;
+        }
+        function drawHandSkeleton(x){
+          if(!lastHandLandmarks) return;
+          x.save();x.lineCap="round";x.lineJoin="round";x.shadowColor="#fff";x.shadowBlur=9;x.strokeStyle=poseState==="pointing"?"#64d97b":"#f0bd62";x.lineWidth=5;
+          HAND_CONNECTIONS.forEach(([a,b])=>{const p=lastHandLandmarks[a],q=lastHandLandmarks[b];x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);x.stroke();});
+          lastHandLandmarks.forEach((p,i)=>{x.fillStyle=i===4||i===8?"#fff":"#8f4b2f";x.beginPath();x.arc(p.x,p.y,i===4||i===8?7:4.5,0,Math.PI*2);x.fill();}); x.restore();
+        }
+        function drawThreeLite(now){
+          if(!scene3d) return;
+          const t = now * .001;
+          scene3d.tunnel.rotation.z = Math.PI*.1 + Math.sin(t*.33)*.035;
+          scene3d.crystals.forEach((m,i)=>{m.rotation.y += .004 + (i%3)*.001; m.position.y += Math.sin(t*1.2+i)*.002;});
+          scene3d.eggs.forEach((e,i)=>{e.rotation.y += .006; e.position.y += Math.sin(t*1.4+i)*.003;});
+          scene3d.sparks.forEach((s,i)=>{s.position.y += .006 + (i%4)*.0015; if(s.position.y>5.2)s.position.y=-4.2;});
+          scene3d.camera.position.x = Math.sin(t*.22)*.35;
+          scene3d.camera.position.y = Math.sin(t*.3)*.18;
+          scene3d.camera.lookAt(0,0,-3);
+          scene3d.renderer.render(scene3d.scene,scene3d.camera);
+        }
+        function loop(now){
+          raf=requestAnimationFrame(loop); if(!state)return; draw(now); processCam();
+          state.density = +$("density").value; state.speed = +$("speed").value; state.dwellMs = getPointDwellMs();
+          const dt=Math.min(.05,(now-lastFrame)/1000||.016); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000);
+          $("time").textContent=Math.ceil(left); $("timebar").style.width=`${left/state.duration*100}%`; if(left<=0)return end("หมดเวลา");
+          if(now>state.nextSwitch){let next=pick(MISSIONS); if(next===state.mission) next=pick(MISSIONS.filter(x=>x!==state.mission)); state.mission=next; state.nextSwitch=now+22000; updateMission(true);}
+          const density = densitySettings(state.density), speed = speedSettings(state.speed);
+          if(now>state.spawnAt&&state.tiles.length<(innerWidth<=700?density.maxMobile:density.maxDesktop)) spawnTile(now);
+          state.tiles.slice().forEach(t=>{if(t.dead)return;const vx=-(speed.vxBase+state.level*speed.vxLevel+t.speedSeed*speed.vxJitter),vy=t.driftSeed*speed.vyJitter;t.x+=vx*dt;t.y+=vy*dt+Math.sin(now*.002+t.id)*.24;if(t.y<innerHeight*.28||t.y>innerHeight-92)t.driftSeed*=-1;t.el.style.left=`${t.x-t.el.offsetWidth/2}px`;t.el.style.top=`${t.y-t.el.offsetHeight/2}px`;if(t.x<-100){removeTile(t);}});
+          if(hands) updateHover(now);
+        }
+        function end(reason){ if(!state)return; const done=state; state=null; cancelAnimationFrame(raf); stopCam(); const final=done.score+done.hearts*10; $("final").textContent=final; $("breakdown").textContent=`${reason} • คะแนนตัวอักษร ${done.score} + โบนัสหัวใจ ${done.hearts*10} = ${final}`; ui.hud.style.display="none"; ui.items.innerHTML=""; ui.result.style.display="grid"; }
+        function stopCam(){ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null} ui.video.srcObject=null; ui.cursor.style.display="none"; ui.cursor.style.opacity="0"; ui.cursor.style.setProperty("--hold","0%"); hands=null; hand=null; lastHandLandmarks=null; poseState="none"; lastVideo=-1; }
+        function resize(){
+          ui.fx.width=innerWidth; ui.fx.height=innerHeight;
+          if(scene3d){scene3d.camera.aspect=innerWidth/innerHeight;scene3d.camera.updateProjectionMatrix();scene3d.renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.25));scene3d.renderer.setSize(innerWidth,innerHeight,false);}
+        }
+        initThreeLite(); drawThreeLite(performance.now());
+        function updateSliderLabels(){ $("densityValue").textContent=$("density").value; $("speedValue").textContent=$("speed").value; $("dwellValue").textContent=(+$("dwell").value).toFixed(1)+" วิ"; }
+        $("density").oninput=updateSliderLabels; $("speed").oninput=updateSliderLabels; $("dwell").oninput=updateSliderLabels; updateSliderLabels();
+        $("start").onclick=start; $("again").onclick=start; $("back").onclick=()=>{ui.result.style.display="none";ui.menu.style.display="grid"}; addEventListener("resize",resize); resize();
+      })();
+    </script>
+  </body>
+</html>
