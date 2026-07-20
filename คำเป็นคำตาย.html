@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="เกมการศึกษา 3 มิติ เรื่องคำเป็น–คำตาย สำหรับนักเรียนประถมศึกษา">
+  <title>สนามรบอุกกาบาตเสียง</title>
+
+  <!-- UI: Tailwind CSS + DaisyUI ผ่าน CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet">
+  <!-- Three.js แบบ Global ตามข้อกำหนด (ไม่ใช้ module/import) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <style>
+    :root { color-scheme: dark; --cyan:#37e8ff; --violet:#b15cff; --danger:#ff365f; }
+    * { box-sizing: border-box; }
+    html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#02040d; font-family:Tahoma,"Noto Sans Thai",sans-serif; }
+    #gameCanvas { position:fixed; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; }
+    .space-panel { background:linear-gradient(145deg,rgba(8,16,40,.94),rgba(20,8,44,.9)); border:1px solid rgba(90,225,255,.25); box-shadow:0 0 35px rgba(55,232,255,.12), inset 0 0 28px rgba(177,92,255,.08); backdrop-filter:blur(16px); }
+    .title-glow { color:white; text-shadow:0 0 12px #37e8ff,0 0 32px #6f4cff,0 0 60px #6f4cff; }
+    .hud-chip { background:rgba(2,8,24,.74); border:1px solid rgba(118,220,255,.28); box-shadow:inset 0 0 18px rgba(55,232,255,.07); backdrop-filter:blur(8px); }
+    #hud { pointer-events:none; }
+    #banner { transform:translate(-50%,-50%) scale(.7); opacity:0; transition:.25s ease; pointer-events:none; }
+    #banner.show { transform:translate(-50%,-50%) scale(1); opacity:1; }
+    .objective-live { color:#69fff1; border-color:#36f1cf!important; box-shadow:0 0 28px rgba(54,241,207,.25); }
+    .objective-dead { color:#ff83ec; border-color:#df55ff!important; box-shadow:0 0 28px rgba(223,85,255,.25); }
+    #cameraPreview { position:fixed; right:14px; bottom:14px; width:170px; height:126px; object-fit:cover; transform:scaleX(-1); border:2px solid rgba(55,232,255,.7); border-radius:16px; opacity:.72; z-index:12; display:none; }
+    #handCursor, #handCursor2 { position:fixed; width:34px; height:34px; margin:-17px; border:3px solid #fff; border-radius:50%; box-shadow:0 0 18px #37e8ff,inset 0 0 12px #37e8ff; pointer-events:none; z-index:20; display:none; transition:transform .05s linear; }
+    .scanlines { position:fixed; inset:0; pointer-events:none; z-index:5; opacity:.08; background:repeating-linear-gradient(0deg,transparent 0 3px,#8beaff 4px); }
+    .shake { animation:shake .32s linear; }
+    @keyframes shake { 25%{transform:translate(5px,-2px)} 50%{transform:translate(-5px,3px)} 75%{transform:translate(3px,2px)} }
+    @media (max-width:640px){ #cameraPreview{width:108px;height:82px;bottom:8px;right:8px}.menu-card{max-height:94vh;overflow-y:auto}.hud-top{gap:.35rem!important}.hud-chip{padding:.5rem!important} }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" aria-label="พื้นที่เกมอุกกาบาตสามมิติ"></canvas>
+  <div class="scanlines"></div>
+  <video id="cameraPreview" autoplay playsinline muted aria-label="ภาพจากกล้องสำหรับควบคุมด้วยมือ"></video>
+  <div id="handCursor" aria-hidden="true"></div>
+  <div id="handCursor2" aria-hidden="true"></div>
+
+  <!-- เมนูหลัก -->
+  <section id="mainMenu" class="fixed inset-0 z-30 flex items-center justify-center p-4 bg-black/45">
+    <div class="menu-card space-panel rounded-3xl w-full max-w-xl p-6 md:p-9 text-center">
+      <div class="text-5xl mb-3" aria-hidden="true">☄️</div>
+      <p class="text-cyan-300 tracking-[.28em] text-xs font-bold mb-2">THAI LANGUAGE DEFENSE UNIT</p>
+      <h1 class="title-glow text-3xl md:text-5xl font-black leading-tight">สนามรบอุกกาบาตเสียง</h1>
+      <p class="text-violet-200 font-bold mt-1">Meteor Field of Sounds</p>
+      <p class="text-slate-300 mt-4 text-sm md:text-base">แยก “คำเป็น–คำตาย” ให้แม่น แล้วปกป้องยานจากฝูงอุกกาบาตคำศัพท์!</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-6 text-left">
+        <label class="form-control">
+          <span class="label-text text-cyan-100 mb-1">ระดับภารกิจ</span>
+          <select id="difficulty" class="select select-bordered bg-slate-950/70 border-cyan-700 w-full" aria-label="เลือกระดับความยาก">
+            <option value="easy">ป.1–2 • ช้าและคำพื้นฐาน</option>
+            <option value="medium" selected>ป.3–4 • ความเร็วปานกลาง</option>
+            <option value="hard">ป.5–6 • เร็วและคำยาก</option>
+          </select>
+        </label>
+        <label class="form-control">
+          <span class="label-text text-cyan-100 mb-1">เวลาเล่น</span>
+          <select id="duration" class="select select-bordered bg-slate-950/70 border-cyan-700 w-full" aria-label="เลือกเวลาเล่น">
+            <option value="30">30 วินาที</option><option value="45">45 วินาที</option>
+            <option value="60" selected>60 วินาที</option><option value="90">90 วินาที</option><option value="120">120 วินาที</option>
+          </select>
+        </label>
+        <label class="flex items-center justify-between rounded-xl border border-violet-700/60 bg-slate-950/60 px-4 mt-0 sm:mt-7 h-12 cursor-pointer">
+          <span><span class="text-violet-100 font-bold">ควบคุมด้วยมือ</span><br><small class="text-slate-400">ต้องอนุญาตกล้อง</small></span>
+          <input id="cameraToggle" type="checkbox" class="toggle toggle-info" aria-label="เปิดการควบคุมด้วยกล้อง">
+        </label>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <button id="rulesBtn" class="btn btn-outline btn-secondary">📘 ดูกติกา</button>
+        <button id="startBtn" class="btn btn-info text-slate-950 font-black">🚀 เริ่มภารกิจ</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-4">เล่นได้ด้วยเมาส์ การแตะหน้าจอ หรือชูนิ้วชี้ค้างเพื่อทำลายเมื่อเปิดกล้อง</p>
+    </div>
+  </section>
+
+  <!-- HUD -->
+  <section id="hud" class="fixed inset-0 z-10 hidden p-3 md:p-5" aria-live="polite">
+    <div class="hud-top flex items-start justify-between gap-3">
+      <div class="hud-chip rounded-2xl p-3 w-44 md:w-64">
+        <div class="flex justify-between text-xs font-bold mb-1"><span>เกราะพลังงาน</span><span id="healthText">100%</span></div>
+        <div class="h-4 rounded-full bg-slate-900 overflow-hidden border border-white/10"><div id="healthBar" class="h-full bg-emerald-400 transition-all duration-300" style="width:100%"></div></div>
+      </div>
+      <div class="hud-chip rounded-2xl px-4 py-3 text-right min-w-28">
+        <div class="text-xs text-slate-400">คะแนน</div><div id="scoreText" class="text-2xl font-black text-yellow-300">0</div>
+      </div>
+    </div>
+    <div id="objectiveBox" class="hud-chip objective-live absolute top-20 md:top-5 left-1/2 -translate-x-1/2 rounded-2xl px-5 py-2 text-center min-w-56">
+      <div class="text-[10px] tracking-widest text-slate-400">เป้าหมายปัจจุบัน</div>
+      <div id="objectiveText" class="font-black text-lg">ทำลายเฉพาะ คำเป็น!</div>
+      <div class="text-xs text-slate-400">เปลี่ยนใน <span id="timerText">20</span> วินาที</div>
+      <div class="text-xs text-amber-200 mt-1">เวลาภารกิจเหลือ <span id="missionTimerText">60</span> วินาที</div>
+    </div>
+  </section>
+
+  <div id="banner" class="fixed z-20 left-1/2 top-1/2 space-panel rounded-3xl px-8 py-6 text-center w-[90%] max-w-lg">
+    <div class="text-xs tracking-[.3em] text-slate-400 mb-2">เปลี่ยนเป้าหมาย</div>
+    <div id="bannerText" class="text-3xl md:text-4xl font-black title-glow"></div>
+  </div>
+
+  <!-- Modal กติกา -->
+  <dialog id="rulesModal" class="modal">
+    <div class="modal-box space-panel max-w-2xl">
+      <h2 class="font-black text-2xl text-cyan-200">คู่มือผู้พิทักษ์คำไทย</h2>
+      <div class="grid md:grid-cols-2 gap-3 mt-4">
+        <div class="rounded-2xl border border-emerald-400/40 bg-emerald-950/30 p-4"><h3 class="font-black text-emerald-300 text-lg">🟢 คำเป็น</h3><p class="text-sm mt-2">พยางค์ที่ไม่มีตัวสะกดและใช้สระเสียงยาว หรือใช้สระ อำ ไอ ใอ เอา หรือสะกดด้วยแม่ กง กน กม เกย เกอว</p><p class="text-xs text-slate-400 mt-2">เช่น ตา, จำ, ใจ, นาง, ลม, ขาย, ดาว</p></div>
+        <div class="rounded-2xl border border-fuchsia-400/40 bg-fuchsia-950/30 p-4"><h3 class="font-black text-fuchsia-300 text-lg">🔴 คำตาย</h3><p class="text-sm mt-2">พยางค์ที่ไม่มีตัวสะกดและใช้สระเสียงสั้น หรือสะกดด้วยแม่ กก กด กบ</p><p class="text-xs text-slate-400 mt-2">เช่น จะ, กะ, นก, มด, รูป, รัก</p></div>
+      </div>
+      <ul class="mt-4 text-sm space-y-2 text-slate-300">
+        <li>🎯 อ่านเป้าหมาย แล้วทำลายเฉพาะชนิดที่กำหนด</li><li>☝️ เปิดกล้องแล้วชูนิ้วชี้ค้างเพื่อยิง ต้องลดนิ้วก่อนชี้ครั้งถัดไป</li><li>✨ ตีถูก: +10 คะแนน และ +4 เกราะ</li><li>🛡️ ยิงผลึกโล่สีทอง: +5 คะแนน และ +20 เกราะ (ยิงได้ทุกภารกิจ)</li><li>💥 ตีผิด: −8 คะแนน และ −18 เกราะ</li><li>⚠️ ปล่อยคำที่ต้องตีผ่านยาน: −12 เกราะ</li>
+      </ul>
+      <div class="modal-action"><form method="dialog"><button class="btn btn-info">รับทราบ</button></form></div>
+    </div>
+  </dialog>
+
+  <dialog id="cameraModal" class="modal">
+    <div class="modal-box space-panel text-center"><div class="text-5xl">📷</div><h2 class="font-black text-2xl text-warning mt-2">ระบบกล้องไม่พร้อม</h2><p id="cameraErrorText" class="text-slate-300 mt-3">ไม่สามารถเปิดกล้องหรือระบบตรวจจับมือได้</p><p class="text-cyan-200 mt-2">เกมจะเล่นต่อด้วยเมาส์หรือการแตะหน้าจอโดยอัตโนมัติ</p><div class="modal-action justify-center"><form method="dialog"><button class="btn btn-warning">เล่นต่อ</button></form></div></div>
+  </dialog>
+
+  <dialog id="gameOverModal" class="modal">
+    <div class="modal-box space-panel text-center"><div class="text-6xl">🛰️</div><h2 class="font-black text-3xl title-glow mt-2">ภารกิจสิ้นสุด</h2><p id="gameOverReason" class="text-slate-300 mt-3">หมดเวลาภารกิจ</p><p id="scoreBreakdown" class="text-xs text-amber-200 mt-2">คะแนนยิง 0 + โบนัสเกราะ 100 = 100</p><div class="stats bg-slate-950/60 mt-5"><div class="stat"><div class="stat-title">คะแนนรวม</div><div id="finalScore" class="stat-value text-yellow-300">0</div></div><div class="stat"><div class="stat-title">ทำลายถูก</div><div id="finalHits" class="stat-value text-emerald-300">0</div></div></div><div class="modal-action justify-center"><button id="restartBtn" class="btn btn-info">🔁 เล่นอีกครั้ง</button><button id="menuBtn" class="btn btn-outline">กลับเมนู</button></div></div>
+  </dialog>
+
+<script>
+/* ================================================================
+   สนามรบอุกกาบาตเสียง — ทุกระบบรวมอยู่ในไฟล์เดียว
+   ================================================================ */
+(() => {
+  'use strict';
+
+  // คลังคำ 54 คำ แบ่งตามระดับชั้น พร้อมชนิดและเหตุผล
+  // ใช้คำ/พยางค์สั้น ๆ เพื่อลดความกำกวมในการจำแนกคำเป็น-คำตาย
+  const WORD_BANK = {
+    easy: [
+      {word:'ตา',type:'live',reason:'สระอายาว'}, {word:'มือ',type:'live',reason:'สระอือยาว'},
+      {word:'งู',type:'live',reason:'สระอูยาว'}, {word:'ปลา',type:'live',reason:'สระอายาว'},
+      {word:'ดี',type:'live',reason:'สระอียาว'}, {word:'นาง',type:'live',reason:'แม่กง'},
+      {word:'ลม',type:'live',reason:'แม่กม'}, {word:'ดาว',type:'live',reason:'แม่เกอว'},
+      {word:'ขาย',type:'live',reason:'แม่เกย'}, {word:'จะ',type:'dead',reason:'สระสั้นไม่มีตัวสะกด'},
+      {word:'กะ',type:'dead',reason:'สระสั้นไม่มีตัวสะกด'}, {word:'มะ',type:'dead',reason:'สระสั้นไม่มีตัวสะกด'},
+      {word:'นก',type:'dead',reason:'แม่กก'}, {word:'มด',type:'dead',reason:'แม่กด'},
+      {word:'รูป',type:'dead',reason:'แม่กบ'}, {word:'จับ',type:'dead',reason:'แม่กบ'},
+      {word:'ปิด',type:'dead',reason:'แม่กด'}, {word:'เล็ก',type:'dead',reason:'แม่กก'}
+    ],
+    medium: [
+      {word:'บ้าน',type:'live',reason:'แม่กน'}, {word:'เรียน',type:'live',reason:'แม่กน'},
+      {word:'เพลง',type:'live',reason:'แม่กง'}, {word:'ชม',type:'live',reason:'แม่กม'},
+      {word:'สวย',type:'live',reason:'แม่เกย'}, {word:'แก้ว',type:'live',reason:'แม่เกอว'},
+      {word:'ครู',type:'live',reason:'สระอูยาว'}, {word:'จำ',type:'live',reason:'สระอำเหมือนมี ม สะกด'},
+      {word:'ใจ',type:'live',reason:'สระใอเหมือนมี ย สะกด'}, {word:'เมฆ',type:'dead',reason:'แม่กก'},
+      {word:'รถ',type:'dead',reason:'แม่กด'}, {word:'ภาพ',type:'dead',reason:'แม่กบ'},
+      {word:'คิด',type:'dead',reason:'แม่กด'}, {word:'รัก',type:'dead',reason:'แม่กก'},
+      {word:'ลบ',type:'dead',reason:'แม่กบ'}, {word:'สด',type:'dead',reason:'แม่กด'},
+      {word:'ทุก',type:'dead',reason:'แม่กก'}, {word:'เกาะ',type:'dead',reason:'สระเอาะสั้นไม่มีตัวสะกด'}
+    ],
+    hard: [
+      {word:'กรรม',type:'live',reason:'แม่กม'}, {word:'ธรรม',type:'live',reason:'แม่กม'},
+      {word:'ศาล',type:'live',reason:'แม่กน'}, {word:'กาล',type:'live',reason:'แม่กน'},
+      {word:'พร',type:'live',reason:'แม่กน'}, {word:'นวล',type:'live',reason:'แม่กน'},
+      {word:'เทียน',type:'live',reason:'แม่กน'}, {word:'ดำ',type:'live',reason:'สระอำเหมือนมี ม สะกด'},
+      {word:'เขา',type:'live',reason:'สระเอาเหมือนมี ว สะกด'}, {word:'พิษ',type:'dead',reason:'แม่กด'},
+      {word:'สุข',type:'dead',reason:'แม่กก'}, {word:'เลข',type:'dead',reason:'แม่กก'},
+      {word:'โทษ',type:'dead',reason:'แม่กด'}, {word:'ชาติ',type:'dead',reason:'แม่กด'},
+      {word:'เพชร',type:'dead',reason:'แม่กด'}, {word:'บาป',type:'dead',reason:'แม่กบ'},
+      {word:'ศพ',type:'dead',reason:'แม่กบ'}, {word:'ลาภ',type:'dead',reason:'แม่กบ'}
+    ]
+  };
+
+  const SETTINGS = {
+    easy:{spawn:2200,speed:4.5,max:6}, medium:{spawn:1650,speed:6.2,max:8}, hard:{spawn:1150,speed:8.2,max:10}
+  };
+
+  // สีอุกกาบาตสุ่มอิสระจากชนิดคำ เพื่อให้ผู้เล่นต้องอ่านและแยกคำจริง ๆ
+  const METEOR_THEMES = [
+    {rock:0x38445f,emissive:0x2cc9ff,border:'#59ddff',accent:'#bdefff'},
+    {rock:0x4f3f31,emissive:0xffb84a,border:'#ffc96a',accent:'#ffe0a1'},
+    {rock:0x354f43,emissive:0x6df28c,border:'#76f7a0',accent:'#c4ffd4'},
+    {rock:0x473a5f,emissive:0xc894ff,border:'#c99cff',accent:'#ead6ff'},
+    {rock:0x56373f,emissive:0xff6f8f,border:'#ff8ba5',accent:'#ffd0db'},
+    {rock:0x3f4c5a,emissive:0xb8f3ff,border:'#9eefff',accent:'#e0fbff'}
+  ];
+
+  // รูปทรงและช่องทางเกิดถูกสุ่มแยกจากชนิดคำ ผู้เล่นจึงใช้สีหรือทรงเดาคำไม่ได้
+  const METEOR_SHAPES = ['jagged','round','diamond','flat','crystal'];
+  const SPAWN_LANES = [
+    {x:-8.2,y:3.8},{x:0,y:4.4},{x:8.2,y:3.8},
+    {x:-7.2,y:0},{x:0,y:0},{x:7.2,y:0},
+    {x:-8.2,y:-3.8},{x:0,y:-4.4},{x:8.2,y:-3.8}
+  ];
+
+  const $ = id => document.getElementById(id);
+  const ui = {
+    canvas:$('gameCanvas'), menu:$('mainMenu'), hud:$('hud'), difficulty:$('difficulty'), duration:$('duration'), cameraToggle:$('cameraToggle'),
+    score:$('scoreText'), health:$('healthBar'), healthText:$('healthText'), objective:$('objectiveText'), objectiveBox:$('objectiveBox'),
+    timer:$('timerText'), missionTimer:$('missionTimerText'), banner:$('banner'), bannerText:$('bannerText'), video:$('cameraPreview'), cursor:$('handCursor'), cursor2:$('handCursor2'),
+    rules:$('rulesModal'), cameraModal:$('cameraModal'), cameraError:$('cameraErrorText'), gameOver:$('gameOverModal'), gameOverReason:$('gameOverReason'), scoreBreakdown:$('scoreBreakdown')
+  };
+
+  let scene, camera, renderer, raycaster, pointer, starField;
+  let asteroids = [], particles = [], gameRunning = false, score = 0, health = 100, correctHits = 0;
+  let objective = 'live', difficulty = 'medium', gameDuration = 60, missionStart = 0, lastFrame = performance.now(), spawnAccumulator = 0, objectiveStart = 0;
+  let audioCtx = null, handLandmarker = null, mediaStream = null, lastVideoTime = -1, handStates = [];
+  let bannerTimeout = 0, animationStarted = false, lastSpawnLane = -1;
+
+  // ---------- ฉาก Three.js ----------
+  function initThree(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x02040d);
+    scene.fog = new THREE.FogExp2(0x050516, 0.017);
+    camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, .1, 120);
+    camera.position.set(0,0,15);
+    renderer = new THREE.WebGLRenderer({canvas:ui.canvas,antialias:true,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,1.8)); renderer.setSize(innerWidth,innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    raycaster = new THREE.Raycaster(); pointer = new THREE.Vector2();
+
+    scene.add(new THREE.AmbientLight(0x7b78ff,1.15));
+    const key = new THREE.DirectionalLight(0x86eaff,2.4); key.position.set(-5,8,10); scene.add(key);
+    const rim = new THREE.PointLight(0xb342ff,55,40); rim.position.set(7,-4,5); scene.add(rim);
+
+    const positions = new Float32Array(1800*3);
+    for(let i=0;i<positions.length;i+=3){ positions[i]=(Math.random()-.5)*110; positions[i+1]=(Math.random()-.5)*70; positions[i+2]=-Math.random()*100+14; }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+    starField = new THREE.Points(geo,new THREE.PointsMaterial({color:0xaedfff,size:.12,transparent:true,opacity:.85,sizeAttenuation:true})); scene.add(starField);
+    if(!animationStarted){ animationStarted=true; requestAnimationFrame(loop); }
+  }
+
+  function makeTextTexture(item,theme){
+    const c=document.createElement('canvas'); c.width=512; c.height=256; const x=c.getContext('2d');
+    x.clearRect(0,0,512,256); x.fillStyle='rgba(3,7,20,.88)'; x.strokeStyle=theme.border; x.lineWidth=8;
+    roundRect(x,18,35,476,184,34); x.fill(); x.stroke();
+    x.textAlign='center'; x.fillStyle='#fff'; x.shadowColor=theme.border; x.shadowBlur=20;
+    x.font='bold 82px Tahoma, sans-serif'; x.fillText(item.word,256,132);
+    x.shadowBlur=0; x.fillStyle=theme.accent; x.font='bold 28px Tahoma, sans-serif'; x.fillText('อ่านคำแล้วตัดสิน',256,184);
+    const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; return tex;
+  }
+  function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+
+  function makeMeteorGeometry(shape,radius){
+    if(shape==='round') return new THREE.DodecahedronGeometry(radius,1);
+    if(shape==='diamond') return new THREE.OctahedronGeometry(radius*1.18,1);
+    if(shape==='flat') return new THREE.IcosahedronGeometry(radius,1);
+    if(shape==='crystal') return new THREE.ConeGeometry(radius*.9,radius*2.15,7,2);
+    return new THREE.IcosahedronGeometry(radius,2);
+  }
+
+  function decorateMeteor(rock,shape,radius,theme){
+    if(shape==='flat') rock.scale.set(1.25,.68,1.05);
+    else if(shape==='diamond') rock.scale.set(.9,1.3,.9);
+    else if(shape==='round') rock.scale.set(1,THREE.MathUtils.randFloat(.86,1.08),THREE.MathUtils.randFloat(.88,1.12));
+    else if(shape==='crystal') rock.rotation.z=THREE.MathUtils.randFloat(-.45,.45);
+    else rock.scale.set(1,THREE.MathUtils.randFloat(.8,1.15),THREE.MathUtils.randFloat(.8,1.18));
+
+    if(shape==='round'||shape==='jagged'){
+      const craterMat=new THREE.MeshStandardMaterial({color:0x111827,roughness:1,emissive:theme.emissive,emissiveIntensity:.12});
+      for(let i=0;i<3;i++){
+        const bump=new THREE.Mesh(new THREE.SphereGeometry(radius*THREE.MathUtils.randFloat(.12,.22),7,5),craterMat);
+        const v=new THREE.Vector3().randomDirection().multiplyScalar(radius*.91);bump.position.copy(v);rock.add(bump);
+      }
+    }
+    if(shape==='diamond'){
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(radius*1.05,.055,8,28),new THREE.MeshBasicMaterial({color:theme.emissive,transparent:true,opacity:.72}));
+      ring.rotation.x=Math.PI/2;rock.add(ring);
+    }
+  }
+
+  function chooseSpawnPosition(){
+    const order=SPAWN_LANES.map((_,i)=>i).sort(()=>Math.random()-.5);
+    let laneIndex=order.find(i=>i!==lastSpawnLane&&asteroids.every(a=>{
+      if(a.userData.dead||a.position.z>-32)return true;
+      return Math.hypot(a.position.x-SPAWN_LANES[i].x,a.position.y-SPAWN_LANES[i].y)>4.6;
+    }));
+    if(laneIndex===undefined) laneIndex=order.find(i=>i!==lastSpawnLane)??order[0];
+    lastSpawnLane=laneIndex;
+    const lane=SPAWN_LANES[laneIndex];
+    return new THREE.Vector3(lane.x+THREE.MathUtils.randFloat(-.45,.45),lane.y+THREE.MathUtils.randFloat(-.35,.35),-56-THREE.MathUtils.randFloat(0,7));
+  }
+
+  function createShieldItem(){
+    const group=new THREE.Group(), coreMat=new THREE.MeshStandardMaterial({color:0xffd84d,emissive:0xff9f1c,emissiveIntensity:1.5,metalness:.55,roughness:.22});
+    const core=new THREE.Mesh(new THREE.OctahedronGeometry(1.25,0),coreMat);group.add(core);
+    const ringMat=new THREE.MeshBasicMaterial({color:0xfff1a6,transparent:true,opacity:.85,side:THREE.DoubleSide});
+    const ring1=new THREE.Mesh(new THREE.TorusGeometry(1.65,.09,10,36),ringMat);ring1.rotation.x=Math.PI/2;group.add(ring1);
+    const ring2=ring1.clone();ring2.rotation.set(Math.PI/2,Math.PI/2,0);group.add(ring2);
+    const item={word:'โล่ +20',type:'bonus',reason:'ผลึกโล่พลังงาน'};
+    const labelMat=new THREE.SpriteMaterial({map:makeTextTexture(item,{border:'#ffe66d',accent:'#fff2a8'}),transparent:true,depthTest:false});
+    const label=new THREE.Sprite(labelMat);label.position.set(0,0,1.8);label.scale.set(3.8,1.9,1);label.renderOrder=5;group.add(label);
+    group.position.copy(chooseSpawnPosition());group.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);
+    group.userData={kind:'shield',item,speed:SETTINGS[difficulty].speed*.82,spin:new THREE.Vector3(.5,.75,.35),phase:Math.random()*6.28,pulseAmp:.09,dead:false};
+    [core,ring1,ring2,label].forEach(o=>o.userData.asteroid=group);asteroids.push(group);scene.add(group);
+  }
+
+  function createAsteroid(){
+    if(!gameRunning || asteroids.length>=SETTINGS[difficulty].max) return;
+    const hasShield=asteroids.some(a=>a.userData.kind==='shield');
+    const shieldChance=health<=80?.13:.045;
+    if(!hasShield&&Math.random()<shieldChance){createShieldItem();return;}
+    const bank=WORD_BANK[difficulty], item=bank[Math.floor(Math.random()*bank.length)], theme=METEOR_THEMES[Math.floor(Math.random()*METEOR_THEMES.length)];
+    const group=new THREE.Group();
+    const radius=THREE.MathUtils.randFloat(1.15,1.65);
+    const shape=METEOR_SHAPES[Math.floor(Math.random()*METEOR_SHAPES.length)];
+    const geometry=makeMeteorGeometry(shape,radius);
+    const material=new THREE.MeshStandardMaterial({color:theme.rock,roughness:.72,metalness:.2,emissive:theme.emissive,emissiveIntensity:THREE.MathUtils.randFloat(.55,1.05),flatShading:true});
+    const rock=new THREE.Mesh(geometry,material);decorateMeteor(rock,shape,radius,theme);group.add(rock);
+    const spriteMat=new THREE.SpriteMaterial({map:makeTextTexture(item,theme),transparent:true,depthTest:false});
+    const label=new THREE.Sprite(spriteMat); label.position.set(0,0,radius+0.42); label.scale.set(4.1,2.05,1); label.renderOrder=4; group.add(label);
+    group.position.copy(chooseSpawnPosition());
+    group.rotation.set(Math.random()*2,Math.random()*2,Math.random()*2);
+    group.userData={kind:'word',item,shape,speed:SETTINGS[difficulty].speed*THREE.MathUtils.randFloat(.88,1.2),spin:new THREE.Vector3((Math.random()-.5)*.8,(Math.random()-.5)*.8,(Math.random()-.5)*.5),phase:Math.random()*6.28,pulseAmp:THREE.MathUtils.randFloat(.015,.06),dead:false};
+    rock.traverse(o=>o.userData.asteroid=group);label.userData.asteroid=group;
+    asteroids.push(group); scene.add(group);
+  }
+
+  function disposeAsteroid(group){
+    scene.remove(group); group.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose();}});
+    const i=asteroids.indexOf(group); if(i>=0) asteroids.splice(i,1);
+  }
+  function clearWorld(){ [...asteroids].forEach(disposeAsteroid); particles.forEach(p=>{scene.remove(p.points);p.points.geometry.dispose();p.points.material.dispose();}); particles=[]; }
+
+  // ---------- การยิงด้วย Raycasting ----------
+  function shootAt(clientX,clientY,assistRadius=0){
+    if(!gameRunning) return;
+    pointer.x=(clientX/innerWidth)*2-1; pointer.y=-(clientY/innerHeight)*2+1;
+    raycaster.setFromCamera(pointer,camera);
+    const hits=raycaster.intersectObjects(asteroids,true);
+    if(hits.length){ let target=hits[0].object.userData.asteroid; if(target && !target.userData.dead) hitAsteroid(target); }
+    else if(assistRadius>0){
+      const screenPos=new THREE.Vector3(); let target=null, best=assistRadius;
+      asteroids.forEach(a=>{if(a.userData.dead)return;screenPos.copy(a.position).project(camera);const sx=(screenPos.x*.5+.5)*innerWidth,sy=(-screenPos.y*.5+.5)*innerHeight,d=Math.hypot(sx-clientX,sy-clientY);if(d<best){best=d;target=a;}});
+      if(target) hitAsteroid(target); else synth('shoot');
+    } else synth('shoot');
+  }
+  function hitAsteroid(group){
+    group.userData.dead=true;
+    if(group.userData.kind==='shield'){
+      score+=5;changeHealth(20);ui.score.textContent=score;synth('correct');explode(group.position,0xffdc58);showToast('🛡️ +20 เกราะ • +5 คะแนน',true);disposeAsteroid(group);return;
+    }
+    const isCorrect=group.userData.item.type===objective;
+    synth(isCorrect?'correct':'wrong'); explode(group.position,isCorrect?(objective==='live'?0x43ffd5:0xdb59ff):0xff244f);
+    if(isCorrect){score+=10;correctHits++;changeHealth(4);showToast('+'+10+' • '+group.userData.item.reason,true);}
+    else {score=Math.max(0,score-8);changeHealth(-18);showToast('ผิดชนิด! −18 เกราะ',false);screenShake();}
+    ui.score.textContent=score; disposeAsteroid(group);
+  }
+  function showToast(text,good){
+    const el=document.createElement('div'); el.className=`fixed z-20 left-1/2 top-[62%] -translate-x-1/2 font-black text-xl pointer-events-none ${good?'text-emerald-300':'text-red-400'}`; el.textContent=text; document.body.appendChild(el);
+    el.animate([{opacity:0,transform:'translate(-50%,15px)'},{opacity:1},{opacity:0,transform:'translate(-50%,-55px)'}],{duration:900,easing:'ease-out'}).onfinish=()=>el.remove();
+  }
+  function screenShake(){ui.canvas.classList.remove('shake');void ui.canvas.offsetWidth;ui.canvas.classList.add('shake');}
+
+  // ---------- อนุภาคระเบิดแบบจัดการอายุ ----------
+  function explode(pos,color){
+    const n=34, arr=new Float32Array(n*3), velocities=[];
+    for(let i=0;i<n;i++){const v=new THREE.Vector3().randomDirection().multiplyScalar(THREE.MathUtils.randFloat(3,9));velocities.push(v);}
+    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(arr,3));
+    const mat=new THREE.PointsMaterial({color,size:.35,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false});
+    const points=new THREE.Points(geo,mat);points.position.copy(pos);scene.add(points);particles.push({points,velocities,life:1});
+  }
+
+  // ---------- Web Audio API: เสียงสังเคราะห์ล้วน ----------
+  function ensureAudio(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();}
+  function tone(freq,duration,type='sine',volume=.12,slide=1){
+    ensureAudio();const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,now);o.frequency.exponentialRampToValueAtTime(Math.max(30,freq*slide),now+duration);g.gain.setValueAtTime(volume,now);g.gain.exponentialRampToValueAtTime(.001,now+duration);o.connect(g).connect(audioCtx.destination);o.start(now);o.stop(now+duration);
+  }
+  function synth(kind){
+    if(kind==='shoot')tone(520,.08,'square',.045,.35);
+    if(kind==='correct'){tone(520,.15,'sine',.12,1.5);setTimeout(()=>tone(790,.22,'triangle',.09,1.2),80);}
+    if(kind==='wrong'){tone(150,.38,'sawtooth',.16,.35);}
+    if(kind==='alert'){tone(440,.12,'square',.07,1.3);setTimeout(()=>tone(660,.16,'square',.06,.8),130);}
+    if(kind==='gameover'){tone(320,.55,'sawtooth',.12,.6);setTimeout(()=>tone(150,1,'triangle',.12,.35),350);}
+  }
+
+  // ---------- สถานะเกม ----------
+  function startGame(){
+    difficulty=ui.difficulty.value;gameDuration=Number(ui.duration.value);score=0;health=100;correctHits=0;lastSpawnLane=-1;missionStart=performance.now();spawnAccumulator=SETTINGS[difficulty].spawn*.65;lastFrame=missionStart;ui.missionTimer.textContent=gameDuration;
+    clearWorld();updateHUD();ui.menu.classList.add('hidden');ui.hud.classList.remove('hidden');ui.gameOver.close();gameRunning=true;chooseObjective(true);ensureAudio();
+    if(ui.cameraToggle.checked) startHandTracking(); else stopCamera();
+  }
+  function endGame(reason='เกราะพลังงานของยานหมดลง'){
+    if(!gameRunning)return;gameRunning=false;synth('gameover');stopCamera();
+    const earnedScore=score, armorBonus=Math.round(health), finalScore=earnedScore+armorBonus;
+    score=finalScore;ui.score.textContent=finalScore;$('finalScore').textContent=finalScore;$('finalHits').textContent=correctHits;
+    ui.gameOverReason.textContent=reason;ui.scoreBreakdown.textContent=`คะแนนยิง ${earnedScore} + โบนัสเกราะ ${armorBonus} = ${finalScore}`;
+    setTimeout(()=>ui.gameOver.showModal(),350);
+  }
+  function chooseObjective(initial=false){
+    objective=Math.random()<.5?'live':'dead';objectiveStart=performance.now();
+    const label=objective==='live'?'คำเป็น':'คำตาย';ui.objective.textContent=`ทำลายเฉพาะ ${label}!`;
+    ui.objectiveBox.classList.toggle('objective-live',objective==='live');ui.objectiveBox.classList.toggle('objective-dead',objective==='dead');
+    ui.bannerText.textContent=`ทำลายเฉพาะ ${label}!`;ui.bannerText.style.color=objective==='live'?'#69fff1':'#ff83ec';
+    clearTimeout(bannerTimeout);ui.banner.classList.add('show');bannerTimeout=setTimeout(()=>ui.banner.classList.remove('show'),initial?1800:2400);synth('alert');
+  }
+  function changeHealth(amount){health=Math.max(0,Math.min(100,health+amount));updateHUD();if(health<=0)endGame();}
+  function updateHUD(){
+    ui.score.textContent=score;ui.health.style.width=health+'%';ui.healthText.textContent=Math.round(health)+'%';
+    ui.health.className='h-full transition-all duration-300 '+(health>60?'bg-emerald-400':health>30?'bg-amber-400':'bg-red-500');
+  }
+
+  // ---------- MediaPipe Tasks Vision (Dynamic Import) ----------
+  async function startHandTracking(){
+    try{
+      if(!navigator.mediaDevices?.getUserMedia)throw new Error('เบราว์เซอร์นี้ไม่รองรับการเข้าถึงกล้อง');
+      mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+      ui.video.srcObject=mediaStream;await ui.video.play();ui.video.style.display='block';ui.cursor.style.display='block';
+      // โหลดเฉพาะเมื่อผู้เล่นเลือกเปิดกล้อง เพื่อลดเวลาเริ่มเกม
+      const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/+esm');
+      const fileset=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm');
+      handLandmarker=await vision.HandLandmarker.createFromOptions(fileset,{
+        baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',delegate:'GPU'},
+        runningMode:'VIDEO',numHands:2,minHandDetectionConfidence:.55,minHandPresenceConfidence:.5,minTrackingConfidence:.5
+      });
+      lastVideoTime=-1;handStates=[];
+    }catch(err){console.warn('Hand tracking fallback:',err);stopCamera();ui.cameraError.textContent=err?.message||'ไม่สามารถเปิดกล้องหรือโหลดระบบตรวจจับมือได้';ui.cameraModal.showModal();}
+  }
+  function processHand(now){
+    if(!handLandmarker||ui.video.readyState<2||ui.video.currentTime===lastVideoTime)return;lastVideoTime=ui.video.currentTime;
+    try{
+      const result=handLandmarker.detectForVideo(ui.video,now);
+      const hands=(result.landmarks||[]).slice(0,2);
+      if(!hands.length){handStates=[];ui.cursor.style.display='none';ui.cursor2.style.display='none';return;}
+      [ui.cursor,ui.cursor2].forEach((cursor,i)=>cursor.style.display=i<hands.length?'block':'none');
+      hands.forEach((hand,i)=>{
+        const cursor=i===0?ui.cursor:ui.cursor2;
+        const index=hand[8], aim={x:index.x,y:index.y};
+        const state=handStates[i]||{pointFrames:0,releaseFrames:0,wasPointing:false,lastShotAt:0,aimX:null,aimY:null};
+        const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y,(a.z-b.z)*.5);
+        const rawPalmSize=Math.max(dist(hand[0],hand[9]),dist(hand[5],hand[17]));
+        // บางครั้งโมเดลคืน landmark ใกล้ (0,0) ชั่วขณะ ทำให้เคอร์เซอร์กระโดดไปมุมจอ
+        const validPoint=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=.01&&p.x<=.99&&p.y>=.01&&p.y<=.99;
+        if(!validPoint(index)||!validPoint(hand[0])||!Number.isFinite(rawPalmSize)||rawPalmSize<.055){
+          state.pointFrames=0;state.releaseFrames=3;state.wasPointing=false;handStates[i]=state;cursor.style.opacity='.25';return;
+        }
+        cursor.style.opacity='1';
+        // ค่า landmark จากกล้องจะสั่นเล็กน้อย จึงกรองด้วย EMA ก่อนคำนวณและวางเคอร์เซอร์
+        const safeAim={x:THREE.MathUtils.clamp(aim.x,.02,.98),y:THREE.MathUtils.clamp(aim.y,.02,.98)};
+        state.aimX=state.aimX===null?safeAim.x:state.aimX*.7+safeAim.x*.3;
+        state.aimY=state.aimY===null?safeAim.y:state.aimY*.7+safeAim.y*.3;
+        const x=(1-state.aimX)*innerWidth,y=state.aimY*innerHeight;cursor.style.left=x+'px';cursor.style.top=y+'px';
+        const palmSize=Math.max(rawPalmSize,.045);
+        const fingerExtended=(tip,mcp)=>dist(hand[tip],hand[0])>dist(hand[mcp],hand[0])*1.16;
+        const indexExtended=fingerExtended(8,5), middleExtended=fingerExtended(12,9), ringExtended=fingerExtended(16,13), pinkyExtended=fingerExtended(20,17);
+        // ชี้เป้าเมื่อชูนิ้วชี้และพับนิ้วอื่นอย่างน้อย 2 นิ้ว
+        const pointingShape=indexExtended&&[middleExtended,ringExtended,pinkyExtended].filter(Boolean).length<=1;
+        if(pointingShape) state.pointFrames=Math.min(6,state.pointFrames+1); else state.pointFrames=Math.max(0,state.pointFrames-1);
+        state.releaseFrames=indexExtended?0:Math.min(3,state.releaseFrames+1);
+        const isPointing=state.wasPointing?state.releaseFrames<3:state.pointFrames>=4;
+        cursor.style.borderColor=isPointing?'#ffe66d':'#fff';
+        cursor.style.boxShadow=isPointing?'0 0 22px #ffe66d,inset 0 0 14px #ffe66d':'0 0 18px #37e8ff,inset 0 0 12px #37e8ff';
+        // ยิงหนึ่งครั้งต่อการชี้หนึ่งครั้ง ต้องลดนิ้วลงก่อนจึงจะยิงครั้งต่อไป
+        if(isPointing&&!state.wasPointing&&now-state.lastShotAt>500){
+          state.lastShotAt=now;cursor.animate([{transform:'scale(1)'},{transform:'scale(.62)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:240});shootAt(x,y,92);
+        }
+        state.wasPointing=isPointing;
+        handStates[i]=state;
+      });
+    }catch(err){console.warn('ตรวจจับมือข้ามหนึ่งเฟรม:',err);}
+  }
+  function stopCamera(){
+    if(mediaStream){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;}ui.video.srcObject=null;ui.video.style.display='none';ui.cursor.style.display='none';ui.cursor2.style.display='none';handStates=[];
+    if(handLandmarker){try{handLandmarker.close();}catch(e){}handLandmarker=null;}
+  }
+
+  // ---------- Game loop และการเก็บกวาดวัตถุ ----------
+  function loop(now){
+    requestAnimationFrame(loop);const dt=Math.min(.05,(now-lastFrame)/1000||.016);lastFrame=now;
+    if(starField){starField.rotation.z+=dt*.012;starField.position.z+=dt*.45;if(starField.position.z>6)starField.position.z=0;}
+    if(gameRunning){
+      const missionElapsed=(now-missionStart)/1000,missionRemaining=Math.max(0,gameDuration-missionElapsed);
+      ui.missionTimer.textContent=Math.ceil(missionRemaining);
+      if(missionRemaining<=0){endGame('หมดเวลาภารกิจ');return;}
+      spawnAccumulator+=dt*1000;if(spawnAccumulator>=SETTINGS[difficulty].spawn){spawnAccumulator=0;createAsteroid();}
+      const elapsed=(now-objectiveStart)/1000;if(elapsed>=20)chooseObjective();ui.timer.textContent=Math.max(0,Math.ceil(20-elapsed));
+      for(let i=asteroids.length-1;i>=0;i--){const a=asteroids[i],d=a.userData;a.position.z+=d.speed*dt;a.rotation.x+=d.spin.x*dt;a.rotation.y+=d.spin.y*dt;a.rotation.z+=d.spin.z*dt;
+        const pulse=1+Math.sin(now*.004+d.phase)*d.pulseAmp;a.scale.setScalar(pulse);
+        if(a.position.z>14.4){const shouldHit=d.item.type===objective;disposeAsteroid(a);if(shouldHit){changeHealth(-12);showToast('พลาดเป้าหมาย! −12 เกราะ',false);screenShake();synth('wrong');}}
+      }
+      for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt*1.7;const arr=p.points.geometry.attributes.position.array;for(let j=0;j<p.velocities.length;j++){arr[j*3]+=p.velocities[j].x*dt;arr[j*3+1]+=p.velocities[j].y*dt;arr[j*3+2]+=p.velocities[j].z*dt;}p.points.geometry.attributes.position.needsUpdate=true;p.points.material.opacity=Math.max(0,p.life);if(p.life<=0){scene.remove(p.points);p.points.geometry.dispose();p.points.material.dispose();particles.splice(i,1);}}
+      processHand(now);
+    }
+    renderer.render(scene,camera);
+  }
+
+  // ---------- Events / Responsive ----------
+  ui.canvas.addEventListener('pointerdown',e=>{e.preventDefault();shootAt(e.clientX,e.clientY);},{passive:false});
+  $('startBtn').addEventListener('click',startGame);$('rulesBtn').addEventListener('click',()=>ui.rules.showModal());
+  $('restartBtn').addEventListener('click',startGame);$('menuBtn').addEventListener('click',()=>{gameRunning=false;ui.gameOver.close();clearWorld();ui.hud.classList.add('hidden');ui.menu.classList.remove('hidden');});
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&gameRunning){gameRunning=false;stopCamera();clearWorld();ui.hud.classList.add('hidden');ui.menu.classList.remove('hidden');}});
+  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)lastFrame=performance.now();});
+
+  initThree();
+})();
+</script>
+</body>
+</html>

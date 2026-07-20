@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>เกมฟองคำ 9 มาตรา</title>
+    <script>
+      window.createMediapipeSolutionsPackedAssets =
+        window.createMediapipeSolutionsPackedAssets || {};
+      window.createMediapipeSolutionsPackedAssets.dataFileDownloads = new Proxy(
+        {},
+        {
+          get(target, key) {
+            if (!(key in target)) target[key] = { loaded: 0, total: 0 };
+            return target[key];
+          },
+        },
+      );
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+    <style>
+      *{box-sizing:border-box} html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#24345d}
+      body{background:linear-gradient(180deg,#55d9ec 0%,#188fc4 48%,#07538d 100%)}
+      #camera{position:fixed;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:linear-gradient(180deg,#62e0ed,#1687bc 55%,#064c83)}
+      #fx{position:fixed;z-index:2;inset:0;pointer-events:none}
+      .shade{position:fixed;z-index:1;inset:0;overflow:hidden;background:linear-gradient(180deg,#65eff037 0%,#037db14a 50%,#023b704f 100%);pointer-events:none}
+      .shade:before{content:"";position:absolute;left:-15%;top:-42%;width:130%;height:120%;background:repeating-conic-gradient(from 252deg at 50% 0%,#d9ffff00 0deg 7deg,#d9ffff2d 9deg 14deg,#d9ffff00 17deg 28deg);filter:blur(9px);animation:rays 10s ease-in-out infinite alternate;transform-origin:50% 0}
+      .shade:after{content:"";position:absolute;inset:0 0 auto;height:26%;opacity:.45;background:radial-gradient(ellipse at 12% 0,#efffffaa 0 3%,transparent 4%),radial-gradient(ellipse at 42% 2%,#efffff82 0 4%,transparent 5%),radial-gradient(ellipse at 76% 0,#efffff99 0 3%,transparent 4%);background-size:180px 72px;animation:caustics 8s linear infinite}
+      #reef{position:fixed;z-index:2;inset:0;overflow:hidden;pointer-events:none}
+      #reef:before{content:"";position:absolute;left:-5%;right:-5%;bottom:-40px;height:18vh;min-height:100px;background:radial-gradient(ellipse at 12% 22%,#ffd895 0 12%,transparent 13%),radial-gradient(ellipse at 72% 30%,#efbd79 0 11%,transparent 12%),linear-gradient(180deg,#e8bd7dcc,#ad714ed9);border-radius:50% 50% 0 0/28% 32% 0 0;box-shadow:0 -12px 28px #083f6e55}
+      .weed{position:absolute;bottom:4vh;width:22px;height:18vh;min-height:85px;border-radius:80% 20% 70% 25%;background:linear-gradient(90deg,#087b65,#38c985);transform-origin:50% 100%;animation:sway 3.8s ease-in-out infinite alternate}.weed:after{content:"";position:absolute;left:18px;bottom:0;width:18px;height:72%;border-radius:80% 20%;background:#24ad74;transform:rotate(18deg);transform-origin:0 100%}
+      .w1{left:5%}.w2{left:18%;height:13vh;animation-delay:-1.8s}.w3{right:20%;height:15vh;animation-delay:-.8s}.w4{right:6%;height:21vh;animation-delay:-2.4s}
+      .coral{position:absolute;bottom:4vh;font-size:clamp(42px,7vw,84px);filter:drop-shadow(0 8px 6px #043b6b77)}.c1{left:9%}.c2{right:10%;transform:scaleX(-1)}
+      .fish{position:absolute;font-size:clamp(30px,4vw,54px);filter:drop-shadow(0 5px 4px #06355c66);animation:swim 15s linear infinite}.f1{top:28%;left:-12%;animation-duration:16s}.f2{top:62%;left:-18%;animation-delay:-7s;animation-duration:21s;transform:scale(.72)}.f3{top:43%;left:-20%;animation-delay:-12s;animation-duration:24s;transform:scaleX(-1)}
+      .panel{position:fixed;z-index:5;background:#fffffff0;border:3px solid white;border-radius:24px;box-shadow:0 12px 30px #41548733;padding:16px;font-weight:900}
+      #menu{inset:0;display:grid;place-items:center;background:linear-gradient(160deg,#bdfaffee,#4acbe7dd 48%,#1575b5e8)}
+      #menu .card{width:min(720px,calc(100vw - 28px));text-align:center}
+      h1{font-size:clamp(2rem,6vw,4.2rem);margin:.2em;color:#176faf;text-shadow:0 3px #fff,0 8px 18px #0a558744}
+      select,label{font:inherit}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;text-align:left}.field{display:grid;gap:6px}.field select,.check{border:2px solid #a89af2;border-radius:14px;background:white;padding:12px}
+      .check{display:flex;align-items:center;gap:10px}.check input{width:22px;height:22px;accent-color:#ff6fae}
+      button{font:inherit;font-weight:900;border:0;border-radius:999px;padding:14px 28px;cursor:pointer}.primary{color:white;background:linear-gradient(135deg,#ff6fae,#ff9d63);box-shadow:0 5px 0 #d85a78}.secondary{color:#6153d9;background:white;border:2px solid #8d7deb}
+      #hud{display:none;position:fixed;inset:0;z-index:4;pointer-events:none;padding:14px}.row{display:flex;justify-content:space-between;gap:8px}.chip{background:#ffffffe8;border:2px solid white;border-radius:18px;padding:10px 14px;box-shadow:0 5px 18px #40528a33;font-weight:900}
+      #target{position:absolute;left:50%;top:14px;transform:translateX(-50%);text-align:center;min-width:260px;color:#6153d9}#target b{font-size:1.55rem}.bar{height:8px;border-radius:99px;background:#e8e9fb;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#ff6fae,#ffd45a)}
+      #status{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);max-width:min(620px,calc(100vw - 20px));text-align:center;color:#4c5877}
+      #choices{position:fixed;z-index:3;inset:0;pointer-events:none}.bubble{position:fixed;width:178px;height:178px;border-radius:50%;border:3px solid white;display:grid;place-items:center;text-align:center;pointer-events:auto;box-shadow:inset 12px 14px 20px #ffffffa0,inset -18px -22px 26px #ffffff40,0 16px 24px #34406755,0 0 0 9px #ffffff2e;transition:transform .12s,filter .12s;animation:bubbleIn .38s cubic-bezier(.2,1.55,.45,1) backwards}
+      .bubble:before{content:"";position:absolute;left:24px;top:22px;width:58px;height:38px;border-radius:50%;background:#ffffffe5;box-shadow:0 0 22px white;transform:rotate(-28deg)}
+      .bubble:after{content:"";position:absolute;inset:13px;border:2px solid #ffffffa8;border-radius:50%}
+      .bubble.hot{transform:scale(1.1);filter:saturate(1.25) brightness(1.04);box-shadow:inset 12px 14px 20px #ffffffa0,inset -18px -22px 26px #ffffff40,0 20px 30px #ff6fae88,0 0 0 12px #ffffff66}
+      .bubble.pop{pointer-events:none;animation:bubblePop .3s ease-out forwards}
+      .bubble .tag{position:absolute;top:28px;background:#ffffffd9;border-radius:999px;padding:4px 14px;color:#687493;font-size:12px}.bubble .word{font-size:48px;font-weight:900;text-shadow:0 3px #fff,0 8px 12px #34406733}.bubble .hint{position:absolute;bottom:16px;background:#fffffff0;border-radius:12px;padding:4px 12px;color:#687493;font-size:12px}
+      #cursor{--hold:0%;position:fixed;z-index:7;width:50px;height:50px;margin:-25px;border:4px solid white;border-radius:50%;background:conic-gradient(#39d49a var(--hold),#ffdc5b88 0);box-shadow:0 0 0 6px #ff6fae88,0 0 22px white;pointer-events:none;display:none;opacity:0;transition:opacity .1s}
+      #toast{position:fixed;z-index:8;left:50%;top:70%;transform:translate(-50%,-50%);background:white;border-radius:22px;padding:16px 24px;box-shadow:0 9px 30px #34406755;font-weight:900;font-size:1.15rem;display:none}
+      #result{display:none;inset:0;place-items:center;background:linear-gradient(180deg,#8ef1f0b5,#0876b8bb)}.heart{color:#f25d88;font-size:1.3rem;letter-spacing:2px}
+      @keyframes rays{to{transform:rotate(2deg) scaleX(1.08);opacity:.72}}
+      @keyframes caustics{to{background-position:180px 0}}
+      @keyframes sway{from{transform:rotate(-7deg)}to{transform:rotate(8deg)}}
+      @keyframes swim{0%{left:-18%;translate:0 0}48%{translate:0 18px}100%{left:112%;translate:0 -8px}}
+      @keyframes bubbleIn{0%{opacity:0;transform:scale(.08)}70%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+      @keyframes bubblePop{0%{opacity:1;transform:scale(1.08)}38%{transform:scale(1.34);filter:brightness(1.4) saturate(1.5)}100%{opacity:0;transform:scale(.05) rotate(16deg);filter:brightness(1.8)}}
+      @media(prefers-reduced-motion:reduce){.shade:before,.shade:after,.weed,.fish{animation:none}}
+      @media(max-width:640px){.grid{grid-template-columns:1fr}.bubble{width:31vw;height:31vw}.bubble .word{font-size:32px}#target{top:88px}.chip{font-size:.85rem;padding:8px 10px}}
+    </style>
+  </head>
+  <body>
+    <video id="camera" autoplay playsinline muted></video><div class="shade"></div><div id="reef" aria-hidden="true"><i class="fish f1">🐠</i><i class="fish f2">🐟</i><i class="fish f3">🐠</i><i class="weed w1"></i><i class="weed w2"></i><i class="weed w3"></i><i class="weed w4"></i><i class="coral c1">🪸</i><i class="coral c2">🪸</i></div><canvas id="fx"></canvas><div id="cursor"></div>
+    <main id="menu" class="panel"><section class="card"><div style="font-size:4rem">🫧🌈</div><h1>เกมฟองคำ 9 มาตรา</h1><p><b>ใช้นิ้วชี้ควบคุมฟองคำ</b> หรือแตะ/คลิกเพื่อเล่นได้</p><div class="grid"><label class="field">ระดับชั้น<select id="level"><option value="1">ป.1–2 เริ่มต้น</option><option value="2" selected>ป.3–4 ฝึกฝน</option><option value="3">ป.5–6 ท้าทาย</option></select></label><label class="field">เวลาเล่น<select id="duration"><option>30</option><option>45</option><option selected>60</option><option>90</option><option>120</option></select></label></div><label class="check"><input id="useCam" type="checkbox" checked /> เปิดกล้องและใช้ MediaPipe ควบคุมด้วยนิ้ว</label><label class="check"><input id="mirrorX" type="checkbox" checked /> สลับแกนมือ ถ้า cursor วิ่งสวนทาง</label><p style="font-size:12px;color:#687493">ไฟล์นี้เป็น vanilla JavaScript เปิด HTML ได้โดยตรง แต่ MediaPipe ต้องใช้อินเทอร์เน็ตครั้งแรกเพื่อโหลดจาก CDN</p><button class="primary" id="start">เริ่มเล่น</button></section></main>
+    <section id="hud"><div class="row"><div class="chip">หัวใจ <span id="hearts" class="heart">♥♥♥♥♥</span></div><div class="chip">คะแนน <span id="score">0</span></div></div><div id="target" class="chip"><small>ภารกิจรอบนี้</small><br><b id="mission">แม่กน</b><div><span id="time">60</span> วินาที</div><div class="bar"><i id="timebar" style="width:100%"></i></div></div><div id="status" class="chip">ยกนิ้วชี้ให้กล้องเห็น แล้วแตะฟองคำแป๊บเดียว</div></section>
+    <section id="choices"></section><div id="toast"></div>
+    <section id="result" class="panel"><div class="card" style="text-align:center;width:min(480px,calc(100vw - 28px))"><div style="font-size:4rem">🎉</div><h1>จบเกม</h1><div style="font-size:3rem;color:#f39a2e;font-weight:900" id="final">0</div><p id="breakdown"></p><button class="primary" id="again">เล่นอีกครั้ง</button> <button class="secondary" id="back">เมนู</button></div></section>
+    <script>
+      (() => {
+        "use strict";
+        const $ = (id) => document.getElementById(id);
+        const ui = { video:$("camera"), fx:$("fx"), menu:$("menu"), hud:$("hud"), choices:$("choices"), cursor:$("cursor"), status:$("status"), toast:$("toast"), result:$("result") };
+        // ใช้เฉพาะรูปคำไม่ซ้ำที่ผ่านตัวกรองหนึ่งพยางค์ สูงสุดมาตราละ 250 คำ
+        // d = สะกดตรงมาตรา, i = สะกดไม่ตรงมาตรา (มีเฉพาะแม่กก กด กบ กน)
+        const wordGroups={
+          "แม่ ก กา":{"d":["กอ","กะ","กา","กี","กุ","ขอ","ขา","ขู","คอ","คะ","คา","คุ","คู","งอ","งะ","งา","งู","จอ","จะ","จา","จิ","จี","จุ","จู","ฉะ","ฉุ","ชะ","ชา","ชิ","ชี","ชู","ซอ","ซา","ซิ","ซี","ดะ","ดา","ดี","ดุ","ดู","ตอ","ตะ","ตา","ติ","ตี","ตึ","ตุ","ตู","ถะ","ถา","ถี","ถู","ทอ","ทา","ที","ทุ","ทู","นอ","นะ","นา","นุ","บอ","บา","บิ","บุ","ปอ","ปะ","ปา","ปี","ปู","ผา","ผิ","ผี","ผุ","ฝา","ฝี","พอ","พะ","พา","พี","พุ","พู","ฟู","ภา","ภู","มอ","มะ","มา","มิ","มี","มุ","ยอ","ยะ","ยา","ยี","ยุ","ยู","รอ","ระ","รา","ริ","รี","รุ","รู","ละ","ลา","ลิ","ลี","ลุ","วอ","วา","วิ","วี","ศอ","สอ","สะ","สี","สุ","สู","หอ","หา","หึ","หู","อา","อี","อึ","อุ","ฮะ","ฮา","ฮึ","เก","เข","เจ","เฉ","เซ","เด","เต","เท","เส","เอ","เฮ","แก","แข","แค","แง","แจ","แฉ","แช","แซ","แด","แถ","แบ","แป","แพ","แร","แล","แส","แห","แฮ","โข","โค","โง","โซ","โต","โถ","โท","โน","โบ","โป","โผ","โพ","โอ","โฮ","ใจ","ใด","ใน","ใบ","ใย","ใส","ไก","ไข","ไค","ไจ","ไช","ไซ","ไต","ไถ","ไท","ไน","ไป","ไฝ","ไพ","ไฟ","ไย","ไร","ไว","ไส","ไห","ไอ","กรอ","กระ","กรี","กรุ","กรู","กลา","กี่","กี้","กี๊","กี๋","กู่","กู้","ก่อ","ก้อ","ก๋า","ขวา","ขัว","ขี่","ขี้","ขู่","ข่า","ข้อ","ข้า","ครา","ครึ","ครุ","ครู","คลอ","คละ","คลี","คี่","คือ","คู่","คู้","ค่ะ","ค่า","ค้อ","ค้า","ฆ่า","งัว","ง่า","ง้อ","จัว","จี่","จี้","จี๋","จู่","จู้","จู๋","จ่อ","จ่า"],"i":[]},
+          "แม่กก":{"d":["กก","งก","จก","ฉก","ชก","ดก","ตก","ถก","ทก","นก","บก","ปก","ผก","พก","ฟก","มก","ยก","รก","ลก","วก","ศก","สก","หก","อก","กอก","กัก","กาก","กิก","กึก","กุก","ก๊ก","ขาก","ขิก","ครก","คอก","คึก","คุก","งอก","จวก","จอก","จัก","จาก","จิก","จุก","ฉอก","ฉาก","ฉีก","ฉุก","ชอก","ชัก","ชุก","ซอก","ซัก","ซาก","ซิก","ซีก","ซึก","ซุก","ซ่ก","ดอก","ดัก","ดิก","ดึก","ดุก","ตอก","ตัก","ตาก","ตึก","ถอก","ถัก","ถาก","ถึก","ถูก","ทัก","ทาก","ทึก","ทุก","นอก","นัก","นาก","นึก","บวก","บอก","บาก","บึก","บุก","ปลก","ปอก","ปัก","ปาก","ปีก","ปึก","ผอก","ผัก","ผาก","ผูก","ฝัก","ฝาก","ฝึก","พวก","พอก","พัก","พุก","ฟอก","ฟัก","ฟาก","ฟูก","มัก","มาก","มึก","มุก","มูก","ยอก","ยัก","ยาก","ยิก","รอก","รัก","ราก","รุก","ลวก","ลอก","ลัก","ลาก","ลึก","ลุก","ลูก","วอก","วัก","ศอก","ศึก","สัก","สาก","สึก","สุก","หมก","หยก","หอก","หัก","หาก","ออก","อิก","อีก","อึก","อุก","ฮัก","ฮึก","ฮูก","เกก","เขก","เงก","เปก","เลก","เสก","เอก","แขก","แจก","แฉก","แซก","แดก","แตก","แถก","แบก","แฝก","แมก","แยก","แรก","แลก","แสก","แหก","แอก","โขก","โคก","โงก","โจก","โชก","โซก","โตก","โบก","โปก","โพก","โมก","โยก","โลก","โศก","โสก","โอก","โฮก","กรอก","กราก","กลอก","กลัก","กลาก","กั๊ก","กิ๊ก","กุ๊ก","ก๊อก","ขลุก","ขวาก","ครอก"],"i":["นัข","นาค","ภัค","ภาค","มิค","มุข","ยุค","สุข","เมฆ","เลข","โชค","โภค","โรค","พรรค","มรรค","มารค","วรรค","เช็ค","ขัค","นัค","วัค","สัค","ลุค","เธค","ทริค","น็อค","ล็อค","แพ็ค","โอ๊ค","แบล็ค","กค","ชค","นข","ชัค","ชิค","นิค","พีค","องค","เทค","เมค","แซค","แมค","โยค","ช็อค","ดุ๊ค","ร็อค","สังค","เบรค","แบ็ค","แม็ค"]},
+          "แม่กด":{"d":["กด","ขด","คด","งด","จด","ชด","ซด","ตด","ถด","ทด","บด","ปด","ผด","มด","รด","ลด","สด","หด","อด","ฮด","กรด","กลด","กวด","กอด","กัด","กาด","กีด","กุด","กูด","ขวด","ขอด","ขัด","ขาด","ขีด","ขุด","ขูด","คอด","คัด","คาด","คิด","คุด","งวด","งอด","งัด","งุด","จวด","จอด","จัด","จาด","จืด","จุด","ฉัด","ฉาด","ฉีด","ฉุด","ชวด","ชัด","ชาด","ชิด","ชืด","ชุด","ซวด","ซัด","ซาด","ซีด","ดวด","ดอด","ดัด","ดาด","ดีด","ดูด","ตอด","ตัด","ตาด","ติด","ตืด","ตูด","ถอด","ถัด","ถาด","ทวด","ทอด","ทัด","นวด","นัด","นาด","นิด","บอด","บัด","บาด","บิด","บูด","ปลด","ปวด","ปอด","ปัด","ปาด","ปิด","ปุด","ปูด","ผัด","ผาด","ผิด","ผุด","ฝัด","ฝาด","ฝืด","พัด","พาด","พืด","พุด","พูด","ฟอด","ฟัด","ฟาด","ฟูด","มอด","มัด","มาด","มิด","มีด","มืด","มุด","ยวด","ยอด","ยัด","ยาด","ยึด","ยืด","ยุด","รวด","รอด","รัด","ราด","รีด","รูด","ลวด","ลอด","ลัด","ลาด","ลิด","วอด","วัด","วาด","วิด","วุด","สวด","สอด","สัด","สาด"],"i":["กช","กฎ","ทศ","นท","บฏ","บท","ยศ","รถ","รส","กบฏ","กลศ","กัฐ","กิจ","กุฎ","คีต","ฆาต","จิต","ฉัฐ","ชัฏ","ชิต","ซอส","ดวจ","ดาษ","ดุจ","ทัศ","ทาส","ทิศ","ทูต","ธัช","ธุช","นอต","นัจ","นาฏ","นาถ","นาศ","นิจ","นุช","บวช","บัฏ","บาท","บาศ","ปัฏ","พรต","พัช","พาท","พาธ","พาส","พิศ","พิษ","พืช","พุฒ","พุธ","ฟิต","ฟุต","ภัต","ภาษ","ภุต","ภูต","มาศ","มาส","รัช","รัฐ","รัต","รัถ","ราช","รีต","ลิต","วัช","วาท","วุฒ","ษัฏ","ษัฑ","สัจ","สัต","สูท","หัช","หัส","หิต","อัฐ","อาจ","อิฐ","อิส","อีส","อูฐ","เกศ","เกส","เขต","เจต","เฉท","เดช","เทศ","เบส","เพศ","เพส","เภท","เลศ","เวช","เวท","เศษ","โกฐ"]},
+          "แม่กบ":{"d":["กบ","ขบ","คบ","งบ","จบ","ซบ","ตบ","ถบ","ทบ","นบ","พบ","รบ","ลบ","สบ","อบ","กรบ","กอบ","กับ","กาบ","กีบ","กุบ","กูบ","ขวบ","ขอบ","ขับ","ขาบ","ครบ","ควบ","คับ","คาบ","คีบ","คืบ","งอบ","งับ","งีบ","งุบ","จวบ","จอบ","จับ","จาบ","จิบ","จีบ","จุบ","จูบ","ฉับ","ฉาบ","ฉิบ","ชอบ","ชุบ","ซับ","ซิบ","ซุบ","ซูบ","ญิบ","ดับ","ดาบ","ดิบ","ตอบ","ตับ","ตาบ","ตีบ","ตูบ","ถอบ","ถับ","ถีบ","ทับ","ทาบ","ทึบ","ทุบ","นอบ","นับ","นาบ","บวบ","บอบ","บีบ","บุบ","ปรบ","ปอบ","ปุบ","ผอบ","ผับ","พลบ","พับ","ฟุบ","มอบ","มาบ","ยวบ","ยอบ","ยับ","ยาบ","ยิบ","ยุบ","รวบ","รอบ","รับ","ราบ","ริบ","รีบ","ลอบ","ลับ","ลาบ","ลิบ","ลีบ","ลืบ","ลูบ","วับ","วาบ","วุบ","วูบ","สวบ","สอบ","สับ","สาบ","สิบ","สืบ","สูบ","หลบ","หอบ","หับ","หีบ","หุบ","อวบ","อับ","อาบ","อุบ","ฮวบ","ฮุบ","แคบ","แถบ","แทบ","แนบ","แบบ","แปบ","แฟบ","แยบ","แลบ","แวบ","แสบ","แหบ","แอบ","โฉบ","โอบ","กรวบ","กรอบ","กรับ","กราบ","กรุบ","กิ๊บ","ขริบ","ขลับ","ขลิบ","ขวับ","ครอบ","ครับ","คราบ","ครีบ","จุ๊บ","ตรับ","ตราบ","ตุ้บ","ทราบ","ปรับ","ปราบ","ปลอบ","ปลาบ","ปั๊บ","ปี๊บ","ปุ๊บ","ผลับ","ผลุบ","พริบ","พรึบ","พลับ","ยุ่บ","หงุบ","หญิบ","หนับ","หนีบ","หนึบ","หนุบ"],"i":["นพ","ภพ","ศพ","กัป","จาป","ชีพ","ซิป","ซุป","ทัพ","ทิพ","ทีป","ธูป","บัพ","บาป","ภาพ","รูป","ลัภ","ลาภ","สาป","เทพ","เสพ","โลภ","กราฟ","บรรพ","สรรพ","แก๊ป","ปรู๊ฟ","รพ","ลพ","คุป","ฉุป","ชัพ","ภัพ","สัพ","โป๊ป","ชิป","ทิป","บุพ","เชฟ","เซฟ","เทป","เวฟ","เอฟ","คลิป","ช็อป","ป๊อป","เลิฟ","แร็พ","โด๊ป","กรุ๊ป","เคียฟ","อป","คัพ","ชิพ","ซัพ","รีฟ","ลิป","ลูป","วิป","ออฟ","อัป","อุป","เดฟ","เลป","แคป","แอพ","โฮป","จี๊ป","ท็อป","บลัฟ"]},
+          "แม่กง":{"d":["กง","ขง","คง","งง","จง","ชง","ดง","ตง","ธง","นง","บง","ปง","ผง","พง","มง","ยง","รง","ลง","วง","หง","อง","กรง","กอง","กัง","กาง","กึง","ก่ง","ก้ง","ก๊ง","ขวง","ของ","ขัง","ขาง","ขิง","ขึง","ควง","คัง","คาง","คิง","คุง","งวง","จวง","จอง","จัง","จาง","จึง","จูง","จ่ง","จ๋ง","ฉาง","ชอง","ชัง","ชิง","ซอง","ซัง","ซาง","ซึง","ซุง","ซ่ง","ดวง","ดอง","ดัง","ดึง","ตรง","ตวง","ตอง","ตัง","ติง","ตึง","ตุง","ต๋ง","ถอง","ถัง","ถาง","ถึง","ถุง","ทรง","ทวง","ทอง","ทาง","ท่ง","นอง","นาง","นึง","นุง","บอง","บัง","บาง","บึง","บ่ง","ปรง","ปลง","ปวง","ปอง","ปัง","ปาง","ปึง","ป่ง","ผอง","ผัง","ผาง","ผิง","ผึง","ฝัง","ฝาง","ฝูง","พวง","พอง","พัง","พิง","พึง","พุง","ฟอง","ฟัง","ฟาง","มอง","มุง","ม่ง","ยวง","ยอง","ยัง","ยาง","ยิง","ยุง","ยูง","รวง","รอง","รัง","ราง","รึง","ลวง","ลอง","ลัง","ลาง","ลิง","ลุง","วัง","วาง","วิง","สรง","สอง","สาง","สิง","สูง","ส่ง","หลง","หวง","หอง","หาง","หึง","หุง","อัง","อิง","อึง","เทง","เผง","เอง","เฮง","แกง","แจง","แซง","แดง","แตง","แถง","แทง","แผง","แฝง","แพง","แฟง","แมง","แยง","แรง","แลง","แวง","แสง","โกง","โขง","โจง","โถง","โปง","โผง","โมง","โยง","โรง","โลง","โหง","กรอง","กรัง","กรุง","กลอง","กลาง","กลึง","กวาง","กั้ง","กิ่ง","กุ้ง","ก่อง","ก้อง","ก้าง","ขลัง","ขวาง","ขึ้ง","ข่วง","ข่าง","ข้อง","ข้าง","ครอง","คราง","คลอง","คลัง","คลึง","คั่ง","คุ้ง","ค่าง","ค้าง","ฆ้อง","งั่ง","ง่วง","ง่อง","ง้าง","จริง","จั้ง","จั๋ง","จิ่ง","จึ่ง","จึ้ง","จุ่ง","จ่าง","จ้วง","จ้อง","จ้าง","จ๋วง","จ๋อง","ฉิ่ง","ฉ่อง","ฉ่าง","ชั่ง","ชิ่ง","ช่วง","ช่อง","ช่าง","ช้อง","ช้าง","ซึ่ง","ซึ้ง","ซ่อง","ซ่าง","ซ้อง","ดั่ง","ดั้ง"],"i":[]},
+          "แม่กน":{"d":["กน","ขน","คน","จน","ชน","ซน","ตน","ทน","บน","ปน","ฝน","พน","ลน","สน","หน","กรน","กวน","กัน","กาน","กิน","กุน","กูน","ก่น","ก้น","ขอน","ขัน","ขาน","ขืน","ขุน","ข้น","ควน","คอน","คัน","คาน","คืน","คูน","ค้น","ฆาน","งอน","งัน","งาน","งึน","จวน","จอน","จัน","จาน","จีน","จุน","จ้น","ฉัน","ฉาน","ฉิน","ฉุน","ชวน","ชอน","ชัน","ชาน","ชิน","ชุน","ซวน","ซอน","ซาน","ซุน","ซ่น","ซ้น","ฌาน","ญวน","ฐาน","ดอน","ดัน","ดาน","ดิน","ดุน","ด้น","ตอน","ตัน","ตีน","ตุน","ต้น","ถอน","ถัน","ถาน","ถุน","ทวน","ทอน","ทัน","ทาน","ทิน","ทุน","ทูน","ท้น","นอน","นาน","นูน","บอน","บัน","บาน","บิน","บ่น","ปรน","ปอน","ปัน","ปาน","ปีน","ปืน","ปูน","ป่น","ผวน","ผัน","ผิน","ผืน","ฝัน","ฝาน","ฝืน","พวน","พัน","พาน","พูน","พ่น","พ้น","ฟอน","ฟัน","ฟืน","ฟุน","มวน","มอน","มัน","มาน","มีน","มึน","มืน","มูน","ยวน","ยอน","ยัน","ยาน","ยิน","ยีน","ยืน","ย่น","รวน","รอน","รัน","ราน","ริน","รุน","ร่น","ลอน","ลัน","ลาน"],"i":["กร","กล","จญ","จร","จล","ชร","ชล","ดร","ดล","ทล","ธร","ผล","พร","พล","มล","ยล","รณ","รร","ศร","กรร","กัญ","การ","กาล","กาฬ","กุล","ขาล","ควณ","ควร","คัล","คุณ","คูณ","จาร","จุณ","ชวร","ชาญ","ญาณ","ดาล","ดุล","ตาล","ติณ","ทูล","ธัญ","ธาร","นวล","นิล","บอล","บาล","บุญ","ปาล","พาล","พาฬ","พิณ","ภาร","มวล","มอญ","มาร","มูล","ยัญ","ราญ","ลาญ","วัณ","วาร","วาฬ","ศาล","ศีล","สรร","สาร","สูญ","สูร","หาญ","หาร","เณร","เถร","เปล","เพล","แกล","แตร","แปร","แปล","แผล","แพร","โคล","โจร","โหล","ใคร","กรรณ","กอปร","ขวัญ","ครวญ","คราญ","ควาญ","จักร","จิตร","ฉัตร","บรรณ","บัตร","บาตร","บุตร","ปราณ","ผลาญ"]},
+          "แม่กม":{"d":["กม","กำ","ขม","ขำ","คม","คำ","งม","งำ","จม","จำ","ฉม","ชม","ชำ","ซม","ซำ","ดม","ดำ","ตม","ตำ","ถม","ทำ","ธม","นม","นำ","ปม","ปำ","ผม","ผำ","พำ","ยม","ยำ","รม","รำ","ลม","ลำ","สม","หำ","อม","อำ","กรม","กลม","กวม","กาม","กุม","ก่ำ","ก้ม","ก้ำ","ขอม","ขาม","ขิม","ขุม","ข่ม","ครำ","คลำ","คอม","คาม","คีม","คุม","ค่ำ","ค้ำ","งอม","งาม","งึม","ง่ำ","ง้ำ","จอม","จาม","จ่ม","จ้ำ","ฉ่ำ","ชาม","ชิม","ชุม","ช้ำ","ซึม","ซ้ำ","ดาม","ดุม","ด้ำ","ตรม","ตรำ","ตอม","ตาม","ตูม","ต่ำ","ต้ม","ถาม","ถ่ม","ถ้ำ","ทาม","ทิม","ทีม","ทึม","ทูม","นวม","นาม","น้ำ","บวม","บ่ม","ปรำ","ปอม","ปูม","ป้ำ","ผอม","พรม","พรำ","พึม","ฟูม","ภูม","มอม","มุม","ยอม","ยาม","ยืม","ย่ำ","ย้ำ","รวม","รอม","ราม","ริม","รีม","รุม","ร่ม","ร่ำ","ลอม","ลาม","ลืม","ล่ม","ล่ำ","ล้ม","ล้ำ","วาม","สวม","สาม","สุม","ส้ม","หงำ","หนำ","หอม","หาม","ห่ม","ออม","อูม","อ่ำ","อ้ม","ฮูม","เกม","เอม","แขม","แคม","แซม","แถม","แนม","แยม","แรม","แหม","แฮม","โคม","โจม","โฉม","โซม","โดม","โถม","โยม","โรม","โลม","โสม","โหม","โอม","กรรม","กรอม","กราม","กริม","กล่ำ","กล้ำ","กุ่ม","ก้าม","ข้าม","คราม","ครีม","ครึม","คร่ำ","คลุม","คล้ำ","ความ","คว่ำ","คุ่ม","คุ้ม","ค่อม","ค้อม","งุ้ม","ง่าม","จิ่ม","จิ้ม","จุ่ม","จุ้ม","จ่อม","ชุ่ม","ซุ่ม","ซุ้ม","ซ่อม","ซ้อม","ดื่ม","ดุ่ม","ด้อม","ด้าม","ตุ่ม","ตุ้ม","ตุ๋ม","ต่อม","ต๋อม","ถ่อม","ทราม","ทิ่ม","ทึ่ม","ทุ่ม","ทุ้ม","ท่วม","ท้วม","ธรรม","นิ่ม","นุ่ม","น่วม","น้อม","บุ๋ม","บ้อม","ปราม","ปลอม","ปล้ำ","ปั๊ม","ปุ่ม","ป้อม","พรหม","พร่ำ","พร้ำ","พุ่ม","ฟ่าม","มิ่ม","มิ้ม","ม้าม","ยิ้ม","ย่อม","ย่าม","ย้อม","รุ่ม","ร่วม","ลิ่ม","ลิ้ม","ลุ่ม","ล่าม"],"i":[]},
+          "แม่เกย":{"d":["โย","กวย","กาย","กุย","ขวย","ขัย","ขาย","ขุย","คอย","คาย","คุย","งอย","งาย","งุย","ฉวย","ฉาย","ฉุย","ชวย","ชัย","ชาย","ซวย","ซอย","ซุย","ดอย","ดาย","ถอย","ถุย","ทวย","ทอย","ทาย","ทุย","นัย","นาย","บาย","ปอย","ปุย","ผวย","ผาย","ฝอย","ฝาย","พวย","พาย","ฟาย","ภัย","ภาย","มวย","มาย","ยาย","รวย","รอย","รัย","ราย","ลอย","ลัย","ลาย","ลุย","วัย","วาย","สวย","สอย","สาย","หวย","หอย","หาย","อวย","อาย","อุย","ฮึย","เกย","เขย","เคย","เงย","เฉย","เชย","เตย","เนย","เผย","เลย","เสย","เอย","แหย","โกย","โชย","โดย","โบย","โพย","โรย","โวย","โอย","กรวย","กราย","กลาย","กุ๊ย","กุ๋ย","ก่าย","ก้อย","ข่อย","ข่าย","ข้อย","ครุย","คลาย","ควาย","คุ้ย","ค่อย","ค่าย","ง่อย","ง่าย","จุ้ย","จ่าย","จ้อย","จ๋อย","ชุ่ย","ช่วย","ช้อย","ซ้าย","ดุ่ย","ด้วย","ด้อย","ด้าย","ตรัย","ตุ่ย","ตุ้ย","ตุ๊ย","ต่อย","ต้อย","ถ่อย","ถ่าย","ถ้วย","ถ้อย","ทราย","ท่วย","ท้วย","ท้าย","นุ้ย","น้อย","บุ้ย","บ่อย","บ่าย","บ้าย","บ๊วย","ปรอย","ปราย","ปลาย","ปุ้ย","ปุ๋ย","ป่วย","ป่าย","ป้าย","ผ็อย","ฝ่าย","ฝ้าย","พราย","พลอย","พลาย","พุ้ย","พ่าย","ม่อย","ม่าย","ยุ่ย","ยุ้ย","ย่อย","ย้วย","ย้อย","ย้าย","ร่อย","ร่าย","ร้อย","ร้าย","ลุ่ย","ลุ้ย","วุ้ย","ว่าย","ว้าย","ส่วย","ส่าย","ส้าย","หงอย","หงาย","หมวย","หมาย","หลาย","หวาย","ห้วย","ห้อย","อุ่ย","อุ้ย","อ่อย","อ้อย","อ้าย","อ๋อย","ฮึ่ย","เย้ย","เว้ย","เอ่ย","เอ๊ย","เอ๋ย","เฮ่ย","เฮ้ย","โว้ย","โอ๊ย","กร่อย","กล้วย","ขลุ่ย","คล้อย","คล้าย","ปล่อย","ผล็อย","พร้อย","พลุ้ย","พล่อย","สร้อย","หงุ่ย","หนุ่ย","หน่วย","หน่อย","หน่าย","หม้าย","เดือย","เนือย","เฟือย","เจื้อย","เฉื่อย","เปลือย","เปื่อย","เฟื้อย","เมื่อย","เรื่อย","เลื่อย","เลื้อย","เอื่อย","เหนื่อย","กอย","นวย","มัย","หัย","เหย","ฉ่อย","ทุ้ย","ป้อย","ผ่อย","ผ่าย","มุ่ย","ม้วย","รุ่ย","ส้วย","อุ๊ย","เพ้ย","หย็อย","เอื้อย","ปาย"],"i":[]},
+          "แม่เกอว":{"d":["โว","กาว","ขาว","คาว","คิว","จาว","ฉาว","ฉิว","ชาว","ซาว","ซิว","ดาว","ตาว","ทิว","นาว","ผิว","ยาว","ราว","ลาว","วาว","สาว","สิว","หาว","หิว","เขว","เลว","เอว","แกว","แคว","แจว","แซว","แถว","แนว","แมว","แวว","แหว","กราว","กริว","กิ่ว","กิ๋ว","ก้าว","ขวาว","ข่าว","ข้าว","คราว","คิ้ว","ค้าว","งิ้ว","ง้าว","จิ๋ว","จ้าว","ดิ่ว","ด่าว","ด้าว","ตริว","ติ้ว","ถ่าว","ท่าว","ท้าว","นิ่ว","นิ้ว","น้าว","บ่าว","ปลิว","ปิ๋ว","ป่าว","ป๊าว","พราว","ย้าว","ริ้ว","ร้าว","ลิ่ว","ว่าว","สิ่ว","หนาว","หยาว","หลาว","หลิว","หวิว","หิ้ว","ห้าว","อิ้ว","อ่าว","อ้าว","เยอว","เร็ว","เร่ว","เฮ้ว","แก้ว","แจ่ว","แจ้ว","แจ๋ว","แซ่ว","แต้ว","แน่ว","แป้ว","แผ่ว","แผ้ว","แม้ว","แร้ว","แล้ว","แว่ว","แห้ว","แอ่ว","กริ้ว","กร้าว","กล่าว","ขว้าว","คร่าว","คว่าว","พลิ้ว","หง่าว","หลิ่ว","เขียว","เคียว","เจียว","เฉียว","เชียว","เซียว","เดียว","เตียว","เทียว","เปียว","เยียว","เรียว","เลียว","เสียว","แผล็ว","เกรียว","เกลียว","เกี่ยว","เกี้ยว","เกี๊ยว","เขี้ยว","เครียว","เคี่ยว","เคี้ยว","เงี้ยว","เจี๊ยว","เฉี่ยว","เชี่ยว","เซี่ยว","เซี้ยว","เดี่ยว","เดี๋ยว","เตี่ยว","เที่ยว","เบี้ยว","เปรียว","เปี้ยว","เปี๊ยว","เพรียว","เฟี้ยว","เรี่ยว","เลี้ยว","เวี่ยว","เสี่ยว","เสี้ยว","เหนียว","เหมียว","เหลียว","เหี่ยว","เอี่ยว","เฮี้ยว","เกรี้ยว","เปรี้ยว","เปลี่ยว","เหนี่ยว","เหยี่ยว","ลิว","อาว","แฉว","แอว","โหว","ค่าว","ดิ้ว","ต๋าว","ผ่าว","เอ๊ว","แป๊ว","แพ้ว","คล่าว","หย้าว","แหน็ว","เอี้ยว","งาว","ทาว","นิว","ยิว","วิว","ว้าว","แด่ว","แป๋ว","โอ้ว","พริ้ว","พร้าว","จิว","ติว","ฟิว","มิว","ริว","ศิว","โจว","โอว","ควิว","ง่าว","ซิ่ว","หงาว","หมิว","เท่ว","เนาว","เสาว","แก่ว","แข่ว","แง่ว","แซ็ว","แต๋ว","แป่ว","แว้ว","แอ๋ว","โป๊ว","โอ๊ว","เพียว","เปี่ยว","เหมี่ยว"],"i":[]}
+        };
+        const words=Object.entries(wordGroups).flatMap(([m,g])=>{
+          const make=(items,d)=>items.map((w,index)=>({w,m,d,r:m==="แม่ ก กา"?"ไม่มีตัวสะกด":d?"สะกดตรงตามมาตรา":"ออกเสียงตามมาตรา แต่ใช้ตัวสะกดไม่ตรงมาตรา",icon:"🫧",minLevel:d?(index<100?1:index<200?2:3):(index<Math.ceil(items.length/2)?2:3)}));
+          return [...make(g.d,true),...make(g.i,false)];
+        }).map((x,id)=>({...x,id}));
+        const DWELL_MS=180;
+        let state, hands, stream, raf, roundTimer, gameToken=0, lastFrame=0, lastVideo=-1, hand=null, poseState="none", bursts=[];
+        const pick = (a) => a[Math.floor(Math.random()*a.length)], shuffle = (a) => a.sort(()=>Math.random()-.5);
+        function start(){
+          clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam();
+          const now=performance.now(), token=++gameToken;
+          state={score:0,hearts:5,duration:+$("duration").value,level:+$("level").value,start:now,token,round:null,hover:-1,hoverAt:0,fired:false,bubbles:[]};
+          ui.menu.style.display="none"; ui.result.style.display="none"; ui.hud.style.display="block"; updateHud(); makeRound(); resize(); if($("useCam").checked) startCam(token); else ui.status.textContent="โหมดแตะ/คลิก เลือกฟองคำได้ทันที"; lastFrame=now; loop(now);
+        }
+        function makeRound(){
+          if(!state) return;
+          const pool=words.filter(x=>x.minLevel<=state.level), matras=[...new Set(pool.map(x=>x.m))], target=pick(matras), good=pool.filter(x=>x.m===target);
+          const uncommon=good.filter(x=>!x.d), preferUncommon=state.level===3&&uncommon.length&&Math.random()<.7;
+          const ans=pick(preferUncommon?uncommon:good), others=shuffle(pool.filter(x=>x.m!==target)).slice(0,2);
+          state.round={target,answer:ans,options:shuffle([ans,...others]).map((x,i)=>({...x,id:i}))}; state.hover=-1; state.hoverAt=0; state.fired=false; $("mission").textContent=target; renderBubbles();
+        }
+        function randomPosition(placed,r){
+          const minX=r+10,maxX=Math.max(minX,innerWidth-r-10),minY=Math.max(r+10,innerHeight*.3),maxY=Math.max(minY,innerHeight-r-68); let best={x:(minX+maxX)/2,y:(minY+maxY)/2},bestGap=-1;
+          for(let n=0;n<48;n++){const p={x:minX+Math.random()*(maxX-minX),y:minY+Math.random()*(maxY-minY)},gap=placed.length?Math.min(...placed.map(b=>Math.hypot(p.x-b.x,p.y-b.y))):1e9;if(gap>bestGap){best=p;bestGap=gap}if(gap>r*2+20)return p} return best;
+        }
+        function renderBubbles(){
+          ui.choices.innerHTML=""; const colors=["#ffd76a,#ff9a72","#9ee9ff,#58b9ec","#ffacd4,#e879b5"];
+          state.bubbles=state.round.options.map(o=>({o,vx:(Math.random()<.5?-1:1)*(5+Math.random()*13),vy:(Math.random()<.5?-1:1)*(3+Math.random()*8),phase:Math.random()*9}));
+          state.bubbles.forEach((b,i)=>{const el=document.createElement("button"); el.className="bubble"; el.dataset.id=b.o.id; el.style.background=`radial-gradient(circle at 35% 28%,#fff,${colors[i]})`; el.style.animationDelay=Math.floor(Math.random()*140)+"ms"; el.innerHTML=`<span class=tag>${b.o.icon||"ฟองคำ"}</span><span class=word>${b.o.w}</span><span class=hint>แตะนิดเดียวก็แตก</span>`; el.onclick=()=>answer(b.o,b); ui.choices.appendChild(el); b.el=el;});
+          // bubble size is responsive (178px desktop, 31vw on narrow screens) — measure the
+          // real rendered size instead of assuming a fixed desktop pixel value, so boundary
+          // clamping and hover-hit-testing stay correct on phones/tablets.
+          state.bubbleR = (state.bubbles[0] && state.bubbles[0].el.offsetWidth/2) || 89;
+          const placed=[]; state.bubbles.forEach(b=>{Object.assign(b,randomPosition(placed,state.bubbleR));placed.push(b);b.el.style.left=(b.x-state.bubbleR)+"px";b.el.style.top=(b.y-state.bubbleR)+"px"});
+        }
+        function burstBubble(b,ok){
+          if(!b)return; b.el.classList.add("pop"); const palette=ok?["#fff35c","#4fffc0","#75d7ff","#ff79be"]:["#ffcf5c","#ff7897","#c99cff","#ffffff"],particles=[];
+          for(let i=0;i<22;i++){const angle=Math.PI*2*i/22+(Math.random()-.5)*.2,speed=90+Math.random()*150;particles.push({vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-35,size:3+Math.random()*5,color:pick(palette)})}
+          bursts.push({x:b.x,y:b.y,start:performance.now(),life:720,ok,particles});
+        }
+        function answer(o,bubble){
+          if(!state||!state.round) return; const round=state.round, token=state.token; state.round=null;
+          const ok=o.w===round.answer.w; burstBubble(bubble||state.bubbles.find(b=>b.o.id===o.id),ok); state.score+=ok?10:0; if(!ok) state.hearts--; toast((ok?"ป๊อบ! ถูกต้อง! ":"ป๊อบ! ยังไม่ใช่ • ")+o.r,ok); updateHud();
+          if(state.hearts<=0) return end("หัวใจหมดแล้ว"); roundTimer=setTimeout(()=>{if(state&&state.token===token)makeRound()},ok?750:1100);
+        }
+        function updateHud(){ $("score").textContent=state.score; $("hearts").textContent="♥".repeat(state.hearts)+"♡".repeat(5-state.hearts); }
+        function toast(t,ok){ ui.toast.textContent=t; ui.toast.style.display="block"; ui.toast.style.color=ok?"#147a57":"#df4775"; setTimeout(()=>ui.toast.style.display="none",850); }
+        async function startCam(token){
+          try{
+            const nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}},audio:false});
+            if(!state||state.token!==token){nextStream.getTracks().forEach(t=>t.stop());return}
+            stream=nextStream; ui.video.srcObject=stream; await ui.video.play();
+            if(!state||state.token!==token){stopCam();return} ui.cursor.style.display="block";
+            hands=new Hands({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
+            hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});
+            hands.onResults(onHands); ui.status.textContent="ยกนิ้วชี้ให้กล้องเห็น แล้วแตะฟองคำแป๊บเดียว";
+          }catch(e){if(state&&state.token===token){ui.status.textContent="เปิด AR ไม่สำเร็จ ใช้คลิกหรือแตะฟองคำแทนได้";stopCam()}}
+        }
+        function mapToVideoCover(p){
+          const vw=innerWidth,vh=innerHeight,sw=ui.video.videoWidth||vw,sh=ui.video.videoHeight||vh,scale=Math.max(vw/sw,vh/sh),dw=sw*scale,dh=sh*scale,ox=(dw-vw)/2,oy=(dh-vh)/2;
+          const rawX=p.x*dw-ox; return {x:$("mirrorX").checked?vw-rawX:rawX,y:p.y*dh-oy};
+        }
+        function landmarkAngle(a,b,c){
+          const ab=[a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0)],cb=[c.x-b.x,c.y-b.y,(c.z||0)-(b.z||0)],dot=ab[0]*cb[0]+ab[1]*cb[1]+ab[2]*cb[2],size=Math.hypot(...ab)*Math.hypot(...cb)||1;
+          return Math.acos(Math.max(-1,Math.min(1,dot/size)))*180/Math.PI;
+        }
+        function fingerStraight(h,mcp,pip,dip,tip){
+          const wrist=h[0],tipDistance=Math.hypot(h[tip].x-wrist.x,h[tip].y-wrist.y,(h[tip].z||0)-(wrist.z||0)),pipDistance=Math.hypot(h[pip].x-wrist.x,h[pip].y-wrist.y,(h[pip].z||0)-(wrist.z||0));
+          return landmarkAngle(h[mcp],h[pip],h[dip])>145&&landmarkAngle(h[pip],h[dip],h[tip])>145&&tipDistance>pipDistance*1.18;
+        }
+        function isPointingPose(h){
+          const indexStraight=fingerStraight(h,5,6,7,8),otherFingers=[[9,10,11,12],[13,14,15,16],[17,18,19,20]];
+          return indexStraight&&otherFingers.every(ids=>!fingerStraight(h,...ids));
+        }
+        function onHands(res){
+          const h=res.multiHandLandmarks&&res.multiHandLandmarks[0]; if(!h){hand=null;poseState="none";ui.cursor.style.opacity="0";return}
+          const p=h[8], wrist=h[0], valid=p&&p.x>.01&&p.x<.99&&p.y>.01&&p.y<.99&&wrist.x>.01&&wrist.x<.99&&wrist.y>.01&&wrist.y<.99;
+          if(!valid){hand=null;poseState="none";ui.cursor.style.opacity="0";return}
+          if(!isPointingPose(h)){hand=null;poseState="notPointing";ui.cursor.style.opacity="0";return}
+          poseState="pointing"; ui.cursor.style.opacity="1"; const mapped=mapToVideoCover(p), sx=mapped.x, sy=mapped.y;
+          hand=hand?{x:hand.x*.68+sx*.32,y:hand.y*.68+sy*.32}:{x:sx,y:sy}; ui.cursor.style.left=hand.x+"px"; ui.cursor.style.top=hand.y+"px";
+        }
+        function updateHover(now){
+          if(!state.round) return;
+          if(!hand){state.hover=-1;state.hoverAt=0;state.fired=false;ui.cursor.style.setProperty("--hold","0%");if(hands)ui.status.textContent=poseState==="notPointing"?"เห็นมือแล้ว: เหยียดเฉพาะนิ้วชี้ และพับนิ้วกลาง–นาง–ก้อย":"ยกมือให้เห็นครบ แล้วทำท่าชี้ด้วยนิ้วชี้";return}
+          let best=-1, bd=1e9;
+          const hitR=(state.bubbleR||89)+61;
+          state.bubbles.forEach(b=>{const d=Math.hypot(hand.x-b.x,hand.y-b.y); if(d<hitR&&d<bd){bd=d;best=b.o.id}});
+          if(best!==state.hover){state.hover=best;state.hoverAt=now;state.fired=false}
+          const hold=best>=0?Math.min(100,(now-state.hoverAt)/DWELL_MS*100):0; ui.cursor.style.setProperty("--hold",hold+"%");
+          if(best>=0&&now-state.hoverAt>DWELL_MS&&!state.fired){state.fired=true;const bubble=state.bubbles.find(b=>b.o.id===best);answer(state.round.options.find(o=>o.id===best),bubble)}
+          ui.status.textContent=best>=0?"โดนฟองแล้ว—ป๊อบ!":"ขยับนิ้วชี้ไปแตะฟองคำที่ต้องการ";
+        }
+        function draw(now){
+          const c=ui.fx, x=c.getContext("2d"); x.clearRect(0,0,innerWidth,innerHeight); x.globalAlpha=.55;
+          for(let i=0;i<22;i++){const px=(i*137+Math.sin(now*.0007+i)*42)%(innerWidth+50)-25,py=innerHeight-((i*83+now*(.018+i%4*.004))%(innerHeight+90));x.strokeStyle=i%3?"#e9ffff":"#8debf5";x.lineWidth=1.5+i%2;x.beginPath();x.arc(px,py,4+i%6,0,Math.PI*2);x.stroke()}
+          bursts=bursts.filter(b=>now-b.start<b.life); bursts.forEach(b=>{const age=now-b.start,p=age/b.life,t=age/1000;x.globalAlpha=1-p;x.strokeStyle=b.ok?"#fff35c":"#ff7da5";x.lineWidth=8*(1-p)+2;x.beginPath();x.arc(b.x,b.y,24+p*105,0,Math.PI*2);x.stroke();x.lineWidth=3;x.beginPath();x.arc(b.x,b.y,12+p*145,0,Math.PI*2);x.stroke();b.particles.forEach(q=>{x.fillStyle=q.color;x.beginPath();x.arc(b.x+q.vx*t,b.y+q.vy*t+110*t*t,q.size*(1-p*.45),0,Math.PI*2);x.fill()});x.fillStyle="#fff";x.font="900 28px Tahoma";x.textAlign="center";x.shadowColor=b.ok?"#ff6fae":"#7c5ce7";x.shadowBlur=12;x.fillText(b.ok?"เยี่ยม!":"ป๊อบ!",b.x,b.y-45-p*35);x.shadowBlur=0});x.globalAlpha=1;
+        }
+        function moveBubbles(dt,now){
+          if(!state.round) return; const r=state.bubbleR||89, pad=r+6;
+          state.bubbles.forEach((b,i)=>{b.x+=b.vx*dt+Math.sin(now*.001+b.phase)*.35; b.y+=b.vy*dt+Math.cos(now*.0013+b.phase)*.28; const min=pad,maxX=innerWidth-pad,maxY=innerHeight-pad,minY=innerHeight*.35; if(b.x<min||b.x>maxX)b.vx*=-1; if(b.y<minY||b.y>maxY)b.vy*=-1; b.el.style.left=(b.x-r)+"px"; b.el.style.top=(b.y-r)+"px"; b.el.classList.toggle("hot",state.hover===b.o.id);});
+        }
+        let camBusy=false;
+        async function processCam(){
+          if(hands&&!camBusy&&ui.video.readyState>=2&&ui.video.currentTime!==lastVideo){
+            lastVideo=ui.video.currentTime; camBusy=true;
+            try{await hands.send({image:ui.video});}
+            catch(e){ui.status.textContent="MediaPipe โหลดไม่สำเร็จ ใช้คลิกหรือแตะฟองคำแทนได้"; stopCam();}
+            finally{camBusy=false;}
+          }
+        }
+        function loop(now){ raf=requestAnimationFrame(loop); draw(now); if(!state)return; const dt=Math.min(.04,Math.max(0,(now-lastFrame)/1000)); lastFrame=now; const left=Math.max(0,state.duration-(now-state.start)/1000); $("time").textContent=Math.ceil(left); $("timebar").style.width=(left/state.duration*100)+"%"; if(left<=0)return end("หมดเวลา"); moveBubbles(dt,now); updateHover(now); processCam(); }
+        function end(reason){ if(!state)return; const finished=state; state=null; gameToken++; clearTimeout(roundTimer); cancelAnimationFrame(raf); stopCam(); const final=finished.score+finished.hearts*10; $("final").textContent=final; $("breakdown").textContent=`${reason} • คะแนนคำศัพท์ ${finished.score} + โบนัสหัวใจ ${finished.hearts*10} = ${final}`; ui.hud.style.display="none"; ui.choices.innerHTML=""; ui.result.style.display="grid"; }
+        function stopCam(){ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null} ui.video.srcObject=null; ui.cursor.style.display="none"; ui.cursor.style.opacity="0"; ui.cursor.style.setProperty("--hold","0%"); hands=null; hand=null; poseState="none"; lastVideo=-1; }
+        function resize(){ ui.fx.width=innerWidth; ui.fx.height=innerHeight; if(state&&state.bubbles&&state.bubbles[0]) state.bubbleR=state.bubbles[0].el.offsetWidth/2; }
+        $("start").onclick=start; $("again").onclick=start; $("back").onclick=()=>{ui.result.style.display="none";ui.menu.style.display="grid"}; addEventListener("resize",resize); resize();
+      })();
+    </script>
+  </body>
+</html>
