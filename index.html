@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Bee Edu Games | รวมเกมภาษาไทย</title>
+    <style>
+      *{box-sizing:border-box}
+      html,body{margin:0;min-height:100%;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#183457}
+      body{
+        min-height:100vh;
+        background:
+          radial-gradient(circle at 16% 10%,#fff8 0 6%,transparent 7%),
+          radial-gradient(circle at 78% 18%,#bcfff7aa 0 5%,transparent 6%),
+          linear-gradient(180deg,#7ff3ee 0%,#23a8d1 46%,#075a93 100%);
+        overflow-x:hidden;
+      }
+      body:before{
+        content:"";position:fixed;inset:-35% -15% auto;height:95vh;pointer-events:none;
+        background:repeating-conic-gradient(from 250deg at 50% 0%,#ffffff00 0deg 8deg,#ffffff35 10deg 16deg,#ffffff00 19deg 31deg);
+        filter:blur(10px);opacity:.72;animation:rays 8s ease-in-out infinite alternate;
+      }
+      .sea{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+      .sea:after{content:"";position:absolute;left:-8%;right:-8%;bottom:-42px;height:18vh;min-height:105px;background:linear-gradient(180deg,#f5d18ccc,#aa714be0);border-radius:50% 50% 0 0/30% 35% 0 0;box-shadow:0 -10px 26px #06466d66}
+      .bubble{position:absolute;border:2px solid #eaffff;border-radius:50%;opacity:.55;animation:floatUp linear infinite}
+      .b1{width:18px;height:18px;left:8%;bottom:-30px;animation-duration:8s}.b2{width:30px;height:30px;left:22%;bottom:-60px;animation-duration:13s;animation-delay:-4s}.b3{width:15px;height:15px;right:18%;bottom:-40px;animation-duration:9s;animation-delay:-2s}.b4{width:26px;height:26px;right:7%;bottom:-80px;animation-duration:15s;animation-delay:-8s}
+      .fish{position:absolute;font-size:clamp(28px,4vw,54px);filter:drop-shadow(0 5px 5px #073c5e66);animation:swim 18s linear infinite}.f1{top:24%;left:-15%}.f2{top:62%;left:-20%;animation-duration:24s;animation-delay:-8s}
+      main{position:relative;z-index:1;width:min(1040px,calc(100% - 28px));min-height:100vh;margin:auto;padding:40px 0 56px;display:grid;align-content:center;gap:22px}
+      header{text-align:center;color:white;text-shadow:0 3px 14px #07507588}
+      .brand{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:#ffffffd9;color:#176a9c;font-weight:900;text-shadow:none;box-shadow:0 8px 20px #06466d35}
+      h1{margin:16px 0 8px;font-size:clamp(2.1rem,7vw,5rem);line-height:1.05;color:white}
+      .lead{margin:0 auto;max-width:720px;font-size:clamp(1rem,2.5vw,1.22rem);font-weight:700}
+      .games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+      .card{
+        position:relative;overflow:hidden;min-height:300px;padding:22px;border:3px solid #fff;border-radius:24px;background:#fffffff0;
+        box-shadow:0 18px 38px #073c5e38;display:grid;align-content:space-between;gap:20px;
+      }
+      .card:before{content:"";position:absolute;right:-30px;top:-38px;width:150px;height:150px;border-radius:50%;background:#9ee9ff88;box-shadow:inset 18px 20px 28px #fff9}
+      .icon{font-size:3.2rem}
+      h2{position:relative;margin:0;color:#176faf;font-size:clamp(1.45rem,3vw,2.1rem)}
+      p{position:relative;margin:0;line-height:1.65;color:#4d5f7a}
+      .tags{position:relative;display:flex;flex-wrap:wrap;gap:8px}
+      .tag{padding:7px 12px;border-radius:999px;background:#eef9ff;color:#267aa8;font-size:.9rem;font-weight:900}
+      a.play{
+        position:relative;justify-self:start;display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:999px;
+        color:white;background:linear-gradient(135deg,#ff6fae,#ff9d63);font-weight:900;text-decoration:none;box-shadow:0 5px 0 #d85a78;
+      }
+      a.play:focus-visible{outline:4px solid #ffd45a;outline-offset:4px}
+      .note{padding:14px 18px;border-radius:18px;background:#ffffffd9;color:#4d5f7a;text-align:center;font-weight:700;box-shadow:0 8px 24px #073c5e22}
+      @keyframes rays{to{transform:rotate(2deg) scaleX(1.08);opacity:.9}}
+      @keyframes floatUp{to{transform:translateY(-115vh) translateX(24px)}}
+      @keyframes swim{to{left:112%;transform:translateY(18px)}}
+      @media(max-width:760px){
+        main{padding-top:24px;align-content:start}
+        .games{grid-template-columns:1fr}
+        .card{min-height:260px;border-radius:20px}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sea" aria-hidden="true">
+      <i class="bubble b1"></i><i class="bubble b2"></i><i class="bubble b3"></i><i class="bubble b4"></i>
+      <i class="fish f1">🐠</i><i class="fish f2">🐟</i>
+    </div>
+    <main>
+      <header>
+        <div class="brand">Bee Edu Games</div>
+        <h1>รวมเกมภาษาไทย</h1>
+        <p class="lead">เลือกเกมแล้วเข้าเล่นได้ทันที เหมาะสำหรับฝึกภาษาไทยแบบสนุก ๆ บนคอมพิวเตอร์ แท็บเล็ต และมือถือ</p>
+      </header>
+      <section class="games" aria-label="รายการเกม">
+        <article class="card">
+          <div>
+            <div class="icon">🫧</div>
+            <h2>เกมฟองคำ 9 มาตรา</h2>
+            <p>ฝึกตัวสะกด 9 มาตรา ด้วยฟองคำใต้ทะเล ใช้กล้อง AR นิ้วชี้ หรือแตะ/คลิกเล่นได้</p>
+          </div>
+          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">ตัวสะกด</span><span class="tag">AR + Touch</span></div>
+          <a class="play" href="เกมฟองคำ9มาตรา-แก้ไขแล้ว.html">เข้าเล่นเกม</a>
+        </article>
+        <article class="card">
+          <div>
+            <div class="icon">🌟</div>
+            <h2>เกมคำเป็นคำตาย</h2>
+            <p>ฝึกแยกคำเป็นและคำตายผ่านเกมภาษาไทย เล่นง่าย เหมาะสำหรับใช้ในห้องเรียนหรือฝึกเอง</p>
+          </div>
+          <div class="tags"><span class="tag">ภาษาไทย</span><span class="tag">คำเป็นคำตาย</span><span class="tag">Touch + Mouse</span></div>
+          <a class="play" href="คำเป็นคำตาย.html">เข้าเล่นเกม</a>
+        </article>
+      </section>
+      <p class="note">หมายเหตุ: โหมด AR ต้องเปิดผ่าน HTTPS และกดอนุญาตกล้อง หากกล้องไม่พร้อม เกมฟองคำยังเล่นด้วยการแตะหรือคลิกได้</p>
+    </main>
+  </body>
+</html>
