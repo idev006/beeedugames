@@ -133,6 +133,9 @@
         function toast(t,ok){ ui.toast.textContent=t; ui.toast.style.display="block"; ui.toast.style.color=ok?"#147a57":"#df4775"; setTimeout(()=>ui.toast.style.display="none",850); }
         async function startCam(token){
           try{
+            if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error("กล้องไม่พร้อมใน browser นี้");
+            if(typeof Hands!=="function") throw new Error("MediaPipe ยังโหลดไม่สำเร็จ");
+            ui.status.textContent="กำลังเปิดกล้อง AR...";
             const nextStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480},frameRate:{ideal:15,max:24}},audio:false});
             if(!state||state.token!==token){nextStream.getTracks().forEach(t=>t.stop());return}
             stream=nextStream; ui.video.srcObject=stream; await ui.video.play();
@@ -140,7 +143,7 @@
             hands=new Hands({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`});
             hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});
             hands.onResults(onHands); ui.status.textContent="ยกนิ้วชี้ให้กล้องเห็น แล้วแตะฟองคำแป๊บเดียว";
-          }catch(e){if(state&&state.token===token){ui.status.textContent="เปิด AR ไม่สำเร็จ ใช้คลิกหรือแตะฟองคำแทนได้";stopCam()}}
+          }catch(e){if(state&&state.token===token){ui.status.textContent=`เปิด AR ไม่สำเร็จ: ${e.message||"browser ไม่อนุญาตกล้อง"} • ใช้คลิกหรือแตะฟองคำแทนได้`;stopCam()}}
         }
         function mapToVideoCover(p){
           const vw=innerWidth,vh=innerHeight,sw=ui.video.videoWidth||vw,sh=ui.video.videoHeight||vh,scale=Math.max(vw/sw,vh/sh),dw=sw*scale,dh=sh*scale,ox=(dw-vw)/2,oy=(dh-vh)/2;
@@ -150,13 +153,20 @@
           const ab=[a.x-b.x,a.y-b.y,(a.z||0)-(b.z||0)],cb=[c.x-b.x,c.y-b.y,(c.z||0)-(b.z||0)],dot=ab[0]*cb[0]+ab[1]*cb[1]+ab[2]*cb[2],size=Math.hypot(...ab)*Math.hypot(...cb)||1;
           return Math.acos(Math.max(-1,Math.min(1,dot/size)))*180/Math.PI;
         }
-        function fingerStraight(h,mcp,pip,dip,tip){
+        function fingerStraight(h,mcp,pip,dip,tip,strict=false){
           const wrist=h[0],tipDistance=Math.hypot(h[tip].x-wrist.x,h[tip].y-wrist.y,(h[tip].z||0)-(wrist.z||0)),pipDistance=Math.hypot(h[pip].x-wrist.x,h[pip].y-wrist.y,(h[pip].z||0)-(wrist.z||0));
-          return landmarkAngle(h[mcp],h[pip],h[dip])>145&&landmarkAngle(h[pip],h[dip],h[tip])>145&&tipDistance>pipDistance*1.18;
+          const mcpAngle=landmarkAngle(h[mcp],h[pip],h[dip]), pipAngle=landmarkAngle(h[pip],h[dip],h[tip]);
+          return strict
+            ? mcpAngle>150&&pipAngle>150&&tipDistance>pipDistance*1.25
+            : mcpAngle>128&&pipAngle>132&&tipDistance>pipDistance*1.06;
+        }
+        function fingerBent(h,mcp,pip,dip,tip){
+          const wrist=h[0],tipDistance=Math.hypot(h[tip].x-wrist.x,h[tip].y-wrist.y,(h[tip].z||0)-(wrist.z||0)),pipDistance=Math.hypot(h[pip].x-wrist.x,h[pip].y-wrist.y,(h[pip].z||0)-(wrist.z||0));
+          return !fingerStraight(h,mcp,pip,dip,tip,true)||tipDistance<pipDistance*1.16;
         }
         function isPointingPose(h){
           const indexStraight=fingerStraight(h,5,6,7,8),otherFingers=[[9,10,11,12],[13,14,15,16],[17,18,19,20]];
-          return indexStraight&&otherFingers.every(ids=>!fingerStraight(h,...ids));
+          return indexStraight&&otherFingers.every(ids=>fingerBent(h,...ids));
         }
         function onHands(res){
           const h=res.multiHandLandmarks&&res.multiHandLandmarks[0]; if(!h){hand=null;poseState="none";ui.cursor.style.opacity="0";return}
