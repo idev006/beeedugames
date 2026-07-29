@@ -1,0 +1,13 @@
+{
+  "letters": [
+    {"id":"ko-kai","char":"ก","name":"ไก่","sound":"กอ","spriteIndex":0,"isMiddleClass":true},
+    {"id":"cho-chan","char":"จ","name":"จาน","sound":"จอ","spriteIndex":1,"isMiddleClass":true},
+    {"id":"do-chada","char":"ฎ","name":"ชฎา","sound":"ดอ","spriteIndex":2,"isMiddleClass":true},
+    {"id":"to-patak","char":"ฏ","name":"ปฏัก","sound":"ตอ","spriteIndex":3,"isMiddleClass":true},
+    {"id":"do-dek","char":"ด","name":"เด็ก","sound":"ดอ","spriteIndex":4,"isMiddleClass":true},
+    {"id":"to-tao","char":"ต","name":"เต่า","sound":"ตอ","spriteIndex":5,"isMiddleClass":true},
+    {"id":"bo-baimai","char":"บ","name":"ใบไม้","sound":"บอ","spriteIndex":6,"isMiddleClass":true},
+    {"id":"po-pla","char":"ป","name":"ปลา","sound":"ปอ","spriteIndex":7,"isMiddleClass":true},
+    {"id":"o-ang","char":"อ","name":"อ่าง","sound":"ออ","spriteIndex":8,"isMiddleClass":true}
+  ]
+}
