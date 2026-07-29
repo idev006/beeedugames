@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#10234c" />
+  <title>ภารกิจป่าเห็ดมหัศจรรย์ | อักษรกลาง</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Itim&family=Noto+Sans+Thai:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/app.css" />
+  <link rel="stylesheet" href="css/overrides.css?v=20260729-11" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div id="app" v-cloak>
+    <main class="app-shell" :class="{ 'is-game': screen === 'game' }">
+      <header class="topbar">
+        <div class="brand dynamic-brand"><span class="brand-mushroom">🍄</span><span>ป่าเห็ด{{ categoryLabel }}</span></div>
+        <div class="brand"><span class="brand-mushroom">🍄</span><span>ป่าเห็ดอักษรกลาง</span></div>
+        <div class="top-actions">
+          <button v-if="screen !== 'game'" class="ghost-btn top-settings" @click="settingsOpen = true">⚙️ ตั้งค่า</button>
+          <label class="volume-control" title="ปรับเสียงเพลงพื้นหลัง">🎵 <input type="range" min="0" max="1" step="0.05" :value="musicVolume" @input="setMusicVolume" aria-label="ระดับเสียงเพลงพื้นหลัง" /></label>
+          <button class="icon-btn" @click="toggleSound" :aria-label="soundOn ? 'ปิดเสียง' : 'เปิดเสียง'">{{ soundOn ? '🔊' : '🔇' }}</button>
+          <button v-if="screen === 'game'" class="ghost-btn" @click="goHome">ออกจากด่าน</button>
+        </div>
+      </header>
+
+      <button v-if="screen !== 'game'" class="settings-launch ghost-btn" @click="settingsOpen = true">⚙️ ตั้งค่า</button>
+      <section v-if="screen === 'home'" class="home-screen">
+        <div class="hero-copy">
+          <div class="category-home-copy"><div class="eyebrow">ภารกิจหมวด {{ categoryLabel }}</div><h1>ผจญภัยใน<br /><span>ป่าเห็ด{{ categoryLabel }}</span></h1><p v-if="settings.category === 'all'">ช่วยอ่างน้อยตามหาอักษรให้ครบทั้ง 3 หมู่<br />เรียนรู้พยัญชนะไทยผ่านการเล่นที่สนุกและปลอดภัย</p><p v-else>ช่วยอ่างน้อยตามหา{{ categoryLabel }}ให้ครบ<br />เรียนรู้พยัญชนะไทยผ่านการเล่นที่สนุกและปลอดภัย</p></div>
+          <div class="eyebrow">ภารกิจตามหาเพื่อนทั้ง 9 ตัว</div>
+          <h1>ผจญภัยใน<br /><span>ป่าเห็ดมหัศจรรย์</span></h1>
+          <p>ช่วย “อ” ตามหาอักษรกลางให้ครบ<br />เรียนรู้ภาษาไทยผ่านการเล่นที่สนุกและปลอดภัย</p>
+          <div class="home-buttons">
+            <button class="primary-btn" @click="startGame">เริ่มผจญภัย <span>→</span></button>
+            <button class="secondary-btn" @click="showCollection = true">ดูห้องสะสมอักษร</button>
+          </div>
+          <div class="feature-row"><span>✨ เล่นง่าย</span><span>🎯 ฝึกจำแนก</span><span>🖐️ เล่นด้วย AR</span></div>
+        </div>
+        <div class="hero-art" aria-label="ตัวละครเห็ดอ">
+          <div class="orb orb-one"></div><div class="orb orb-two"></div><div class="sparkle s1">✦</div><div class="sparkle s2">✦</div>
+          <div class="hero-glow"></div>
+          <div class="hero-character-wrap" role="img" aria-label="เห็ดอ"><div class="hero-character" :style="heroSpriteStyle"></div></div>
+          <div class="letter-bubble">อ</div>
+          <div class="floating-letter fl-a">ก</div><div class="floating-letter fl-b">ด</div><div class="floating-letter fl-c">ป</div>
+        </div>
+      </section>
+
+      <section v-else-if="screen === 'game'" class="game-screen">
+        <div class="level-banner"><span>ด่าน {{ activeLevel?.number || activeLevelIndex + 1 }}</span><strong>{{ activeLevel?.title || 'ภารกิจสวนเห็ด' }}</strong><small>{{ activeLevel?.description || '' }}</small></div>
+        <div class="game-hud">
+          <div class="hud-dynamic-mission"><div class="hud-label">ภารกิจ</div><strong>{{ categoryMission }}</strong></div>
+          <div><div class="hud-label">ภารกิจ</div><strong>หาอักษรกลางให้ตรงกับโจทย์</strong></div>
+          <div class="hud-stats"><span><i class="reward-icon reward-star"></i>{{ progression.stars }}</span><span><i class="reward-icon reward-heart"></i>{{ lives }}</span></div>
+        </div>
+        <div class="session-status"><span>⏱️ เหลือเวลา <strong>{{ sessionTime }}</strong> วินาที</span><span>ชุดที่ <strong>{{ waveNumber }}</strong></span><span>คอมโบ <strong>{{ combo }}</strong></span></div>
+        <div class="progress-track"><div class="progress-fill" :style="{width: `${timerProgress}%`}"></div></div>
+        <div class="game-layout">
+          <div class="game-wrap">
+            <canvas ref="gameCanvas" width="960" height="600" @pointermove="onPointerMove" @pointerdown="onPointerDown"></canvas>
+            <div class="guide-widget">
+              <div class="guide-sprite" :style="heroGuideStyle" aria-label="อ่างน้อย"></div>
+              <img class="guide-bubble" src="assets/speech-bubble.png" alt="กล่องคำพูด" />
+              <div class="guide-message">ช่วยหา <strong>{{ target.char }}</strong> {{ target.name }} ให้หน่อยนะ!</div>
+            </div>
+            <video ref="cameraVideo" class="camera-preview" autoplay playsinline muted v-show="arOn"></video>
+            <div class="ar-pointer" :class="{ active: arOn }" :style="pointerStyle">✦</div>
+            <div v-if="arError" class="ar-error">{{ arError }}</div>
+          </div>
+          <aside class="game-side-panel" aria-label="แผงช่วยเล่น">
+            <section class="side-card mission-panel">
+              <div class="meta-inline">
+                <div class="dynamic-mission"><div class="side-kicker">ภารกิจรอบนี้</div><h2>{{ categoryMission }}</h2><p>เลือกเห็ดที่อยู่ในหมวด {{ categoryLabel }} ให้ครบในแต่ละชุด</p></div>
+                <div class="meta-level"><span>ด่าน {{ activeLevel?.number || activeLevelIndex + 1 }}</span><strong>{{ activeLevel?.title || 'ภารกิจสวนเห็ด' }}</strong></div>
+                <small>{{ activeLevel?.description || '' }}</small>
+                <div class="meta-category">หมวด: {{ settings.category === 'all' ? 'ทบทวน 3 หมู่' : settings.category === 'high' ? 'อักษรสูง' : settings.category === 'low' ? 'อักษรต่ำ' : 'อักษรกลาง' }}</div>
+                <div class="meta-stats"><span>⭐ {{ progression.stars }}</span><span>💗 {{ lives }}</span></div>
+                <div class="meta-time">⏱️ เหลือ <strong>{{ sessionTime }}</strong> วินาที · ชุดที่ <strong>{{ waveNumber }}</strong> · คอมโบ <strong>{{ combo }}</strong></div>
+                <div class="meta-progress"><span :style="{ width: `${timerProgress}%` }"></span></div>
+                <div class="meta-wave-progress">ช่วยอักษรในชุดนี้แล้ว {{ waveMiddleCollected }} / {{ waveMiddleTotal }} ตัว</div>
+              </div>
+              <div class="side-kicker">ภารกิจรอบนี้</div>
+              <h2>หาอักษรกลางให้ตรงกับคำบอก</h2>
+              <p>อ่านตัวอักษรบนเห็ด แล้วหาอักษรกลางที่อ่างน้อยกำลังขอ</p>
+              <div class="side-progress"><span :style="{width: `${levelProgress}%`}"></span></div>
+              <div class="side-progress-label">ช่วยเพื่อนได้แล้ว {{ collected }} / {{ levelLetters.length }} ตัว</div>
+              <div class="side-progress-label">ปลดล็อกแล้ว {{ unlockedCount }} / {{ letters.length }} เห็ด</div>
+            </section>
+            <section class="side-card learning-panel">
+              <div class="dynamic-learning"><div class="side-kicker">สิ่งที่กำลังเรียนรู้</div><h3>{{ categoryLabel }}</h3><div class="letter-mini-grid"><span v-for="letter in displayLetters" :key="`active-mini-${letter.id}`" :class="{ found: game?.items.find(item => item.letter.id === letter.id)?.collected }">{{ letter.char }}</span></div><p class="learning-note">เรียนรู้รูปและเสียงของอักษรในหมวดนี้</p></div>
+              <div class="side-kicker">สิ่งที่กำลังเรียนรู้</div>
+              <h3>อักษรกลาง</h3>
+              <div class="letter-mini-grid"><span v-for="letter in letters" :key="`mini-${letter.id}`" :class="{ found: game?.items.find(item => item.letter.id === letter.id)?.collected }">{{ letter.char }}</span></div>
+              <p class="learning-note">จำรูปและเสียงของพยัญชนะให้แม่นยำ</p>
+            </section>
+            <section class="side-card control-panel">
+              <div class="side-kicker">วิธีเล่น</div>
+              <div class="play-hint">{{ arOn ? 'ชี้นิ้วค้างบนเห็ด 0.5 วินาที' : 'แตะเห็ดที่ต้องการ' }}</div>
+              <button class="ar-btn" :class="{ on: arOn }" @click="toggleAR">{{ arOn ? 'ปิด AR' : '🖐️ เปิดโหมด AR' }}</button>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section v-else-if="screen === 'result'" class="result-screen">
+        <div class="story-summary">อ่างน้อยและสวนเห็ดขอบคุณนักผจญภัยที่ช่วยฟื้นฟูแสงอักษรกลาง</div>
+        <div class="story-progress">เคลียร์แล้ว {{ waveCleared }} ชุด · คอมโบสูงสุด {{ bestCombo }}</div>
+        <div class="result-card">
+          <div class="result-award">Stars earned: {{ roundStars }} · Total stars: {{ progression.stars }}</div>
+          <button v-if="activeLevelIndex < levels.length - 1 && levelUnlocked(activeLevelIndex + 1)" class="primary-btn next-level-btn" @click="nextLevel">ไปด่านถัดไป →</button>
+          <div class="result-stars">✦ ✦ ✦</div>
+          <div class="result-hero">🍄</div>
+          <div class="eyebrow">ภารกิจสำเร็จ</div>
+          <h1>เก่งมาก นักผจญภัย!</h1>
+          <p>ช่วยเพื่อนเห็ดอักษรกลางกลับบ้านครบทั้ง 9 ตัวแล้ว</p>
+          <div class="result-stats"><div><strong>{{ collected }}</strong><small>อักษรที่ช่วยได้</small></div><div><strong>{{ score }}</strong><small>คะแนนสะสม</small></div></div>
+          <div class="result-actions"><button class="primary-btn" @click="startGame">เล่นอีกครั้ง</button><button class="secondary-btn" @click="goHome">กลับหน้าแรก</button></div>
+        </div>
+      </section>
+
+      <div v-if="showCollection" class="modal-backdrop" @click.self="showCollection = false">
+        <section class="collection-modal">
+          <button class="close-btn" @click="showCollection = false">×</button>
+          <div class="eyebrow">ห้องสะสมของฉัน</div><h2>อักษรกลางทั้ง 9 ตัว</h2>
+          <div class="letter-grid"><div v-for="letter in letters" :key="letter.id" class="letter-chip" :class="{ locked: !isLetterUnlocked(letter) }"><span>{{ isLetterUnlocked(letter) ? letter.char : '?' }}</span><small>{{ isLetterUnlocked(letter) ? letter.name : 'ยังไม่พบ' }}</small></div></div>
+          <p class="modal-note">เล่นด่านเพื่อสะสมดาวและปลดล็อกเห็ดให้ครบทุกตัวนะ!</p>
+        </section>
+      </div>
+      <div v-if="settingsOpen" class="modal-backdrop" @click.self="settingsOpen = false">
+        <section class="settings-modal card bg-base-100 text-base-content shadow-2xl" aria-label="ตั้งค่าเกม">
+          <button class="close-btn" @click="settingsOpen = false">×</button>
+          <h2>ตั้งค่าภารกิจ</h2>
+          <label class="setting-field">หมวดอักษร
+            <select class="select select-bordered w-full" v-model="settings.category"><option value="middle">อักษรกลาง</option><option value="high">อักษรสูง</option><option value="low">อักษรต่ำ</option><option value="all">ทบทวน 3 หมู่</option></select>
+          </label>
+          <label class="setting-field">เวลาเล่น: <strong>{{ settings.time }} วินาที</strong><input class="range range-warning" type="range" min="60" max="180" step="30" v-model.number="settings.time" /></label>
+          <label class="setting-field">หัวใจ: <strong>{{ settings.hearts }} ดวง</strong><input class="range range-secondary" type="range" min="3" max="5" step="1" v-model.number="settings.hearts" /></label>
+          <label class="setting-field">เห็ดต่อชุด: <strong>{{ settings.mushrooms }} ตัว</strong><input class="range range-success" type="range" min="5" max="10" step="1" v-model.number="settings.mushrooms" /></label>
+          <label class="setting-field">ระดับความท้าทาย
+            <select class="select select-bordered w-full" v-model="settings.difficulty"><option value="easy">ง่าย</option><option value="normal">ปกติ</option><option value="hard">ท้าทาย</option></select>
+          </label>
+          <label class="setting-toggle"><input class="toggle toggle-primary" type="checkbox" v-model="settings.reducedMotion" /> ลดการเคลื่อนไหวของเห็ด</label>
+          <button class="btn btn-primary w-full" @click="saveSettings">บันทึกการตั้งค่า</button>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script type="module" src="js/app.js?v=20260729-7"></script>
+</body>
+</html>
