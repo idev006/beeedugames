@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เมืองแสงซ่อนกล: ทีมช่างพลังคูณ</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='50' font-size='48'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="assets/processed/hall-of-fame/background.png">
+  <link rel="stylesheet" href="css/styles.css?v=20260802-89">
+  <link rel="stylesheet" href="css/responsive.css?v=20260802-01">
+  <link rel="stylesheet" href="css/progression-hall.css?v=20260802-03">
+  <link rel="stylesheet" href="css/asset-components.css?v=20260731-32">
+  <link rel="stylesheet" href="css/city.css?v=20260802-02">
+</head>
+<body>
+  <div id="app" v-cloak>
+    <main class="app-shell" :class="{ 'is-playing': screen === 'play' }">
+      <section v-if="screen === 'start'" class="start-screen">
+        <div class="hero-copy">
+          <p class="eyebrow">AR Multiplication Adventure</p>
+          <h1>เมืองแสงซ่อนกล</h1>
+          <h2>ทีมช่างพลังคูณ</h2>
+          <p class="story">
+            ลูมินและทีมช่างต้องซ่อมเมืองที่พลังงานกระจายเป็นกลุ่ม ๆ
+            เด็กจะช่วยเลือกแกนพลังที่ถูกจังหวะ โดยไม่ต้องนั่งทำแบบฝึกหัดบนกระดาษ
+          </p>
+          <div class="team-roster" aria-label="ทีมช่างพลังคูณ">
+            <div v-for="member in teamPortraits" :key="member.id" class="team-member">
+              <img :src="member.path" :alt="member.name">
+              <span><b>{{ member.name }}</b><small>{{ member.role }}</small></span>
+            </div>
+          </div>
+          <div class="player-entry">
+            <label for="player-name">ชื่อช่างซ่อม</label>
+            <input id="player-name" v-model="playerName" maxlength="12" autocomplete="nickname" placeholder="พิมพ์ชื่อเล่น">
+            <small>ใช้เฉพาะในเครื่องนี้ ไม่ใช้ชื่อเป็นรหัสผู้เล่น</small>
+          </div>
+          <div class="start-actions">
+            <button class="btn primary" @click="startGame(false)" :disabled="gameStarting"><i class="ui-sprite icon-play"></i>{{ gameStarting ? 'กำลังเตรียมภารกิจ…' : 'เริ่มผจญภัย' }}</button>
+            <button class="btn secondary" @click="startGame(true)" :disabled="gameStarting"><i class="ui-sprite icon-play"></i>{{ gameStarting ? 'กำลังเตรียมฉาก…' : 'เริ่มแบบ AR' }}</button>
+            <button class="icon-btn" @click="openSettings" aria-label="ตั้งค่า"><i class="ui-sprite icon-settings"></i></button>
+            <button class="icon-btn hall-button" @click="openHall" aria-label="หอเกียรติยศ" title="หอเกียรติยศ"><i class="ui-sprite icon-trophy"></i></button>
+            <button class="btn city-button" @click="openCity"><i class="ui-sprite icon-map"></i>แผนที่ซ่อมเมือง</button>
+            <button class="btn secondary" @click="privacyOpen = true">ข้อมูลและความเป็นส่วนตัว</button>
+          </div>
+        </div>
+        <div class="hero-stage">
+          <div class="hero-lumin" aria-hidden="true"></div>
+          <div class="hero-core">24</div>
+          <div class="spark spark-a"></div>
+          <div class="spark spark-b"></div>
+          <div class="spark spark-c"></div>
+        </div>
+      </section>
+
+      <section v-if="screen === 'play'" class="play-screen">
+        <div class="game-column">
+          <img class="dom-game-bg" :class="{ 'is-ready': playSceneReady }" :src="currentBgPath" alt="" @load="onPlaySceneLoad" @error="onPlaySceneError">
+          <div v-if="!playSceneReady" class="play-scene-loading" role="status">
+            <span class="play-loader-core" aria-hidden="true"></span>
+            <strong>{{ playSceneFailed ? 'เปิดฉากภารกิจไม่สำเร็จ' : 'กำลังเตรียมเขตซ่อมแสง…' }}</strong>
+            <small>{{ playSceneFailed ? 'กลับหน้าเริ่มแล้วลองอีกครั้ง' : 'กำลังประกอบฉากและเครื่องมือให้พร้อม' }}</small>
+          </div>
+          <div id="phaser-root" class="phaser-root"></div>
+          <video id="ar-video" class="ar-video" :class="arVideoClass" autoplay playsinline muted></video>
+          <div v-if="ar.enabled && !ar.tracking" class="ar-hand-guide" :class="{ 'has-hand': ar.handDetected }">
+            <span class="ar-hand-icon" aria-hidden="true">☝</span>
+            <div>
+              <strong>{{ arGuideTitle }}</strong>
+              <small>{{ arGuideHint }}</small>
+            </div>
+          </div>
+          <div v-if="ar.enabled && ar.visible" class="ar-layer">
+            <div class="ar-pointer" :class="arPointerClass" :style="arPointerStyle">
+              <span>{{ ar.progressLabel }}</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hud-panel">
+          <div class="brand-row">
+            <div>
+              <p class="tiny-label"><i class="ui-sprite icon-map"></i>เขตที่ {{ store.levelIndex + 1 }}</p>
+              <h2>{{ currentDistrictLabel }}</h2>
+            </div>
+            <button class="icon-btn" @click="openSettings" aria-label="ตั้งค่า"><i class="ui-sprite icon-settings"></i></button>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat"><span><i class="ui-sprite icon-star"></i>ดาว</span><strong>{{ starsValue }}</strong></div>
+            <div class="stat heart-stat" :class="{ 'heart-hit': heartPulse }"><span><i class="ui-sprite icon-heart"></i>หัวใจ</span><strong>{{ heartsText }}</strong></div>
+            <div class="stat"><span><i class="ui-sprite icon-timer"></i>เวลา</span><strong>{{ secondsValue }}</strong></div>
+            <div class="stat"><span>คอมโบ</span><strong>{{ comboValue }}</strong></div>
+          </div>
+          <div class="repair-kit"><i class="ui-sprite icon-gift"></i><span>ความคืบหน้าเขตนี้</span><strong>{{ restorationStage }}/4</strong></div>
+          <div class="repair-node-strip" aria-label="จุดซ่อมเมืองสี่จุด">
+            <span
+              v-for="node in currentRestorationNodes"
+              :key="node.id"
+              :class="{ restored: node.restored, ready: node.available && !node.restored }"
+              :title="node.name"
+            >{{ node.restored ? '✓' : node.icon }}</span>
+          </div>
+          <div class="material-grid" aria-label="คลังวัสดุซ่อมเมือง">
+            <span title="เฟือง"><b>⚙</b>{{ inventoryValue.gear || 0 }}</span>
+            <span title="คริสตัล"><b>◆</b>{{ inventoryValue.crystal || 0 }}</span>
+            <span title="เซลล์พลัง"><b>▣</b>{{ inventoryValue.energyCell || 0 }}</span>
+            <span title="ปริซึม"><b>✦</b>{{ inventoryValue.prism || 0 }}</span>
+          </div>
+
+          <div class="progress-track">
+            <div class="progress-fill" :style="{ width: sessionProgress + '%' }"></div>
+          </div>
+
+          <section class="mission-card">
+            <p class="tiny-label">{{ learningPhaseLabel }}</p>
+            <h3>{{ missionTitle }}</h3>
+            <p>{{ missionHint }}</p>
+            <div class="energy-mini">
+              <span v-for="n in miniGroups" :key="n"></span>
+            </div>
+          </section>
+
+          <section class="learning-card">
+            <p class="tiny-label"><i class="ui-sprite icon-help"></i>กำลังฝึก</p>
+            <h3>แม่ {{ tableMinValue }} ถึง {{ tableMaxValue }}</h3>
+            <p>ตัวคูณ 1 ถึง 12 ผ่านภาพกลุ่มพลังงาน</p>
+          </section>
+
+          <section class="control-card">
+            <button class="btn ar" @click="toggleAR" :disabled="ar.busy">
+              <i class="ui-sprite" :class="ar.enabled ? 'icon-pause' : 'icon-play'"></i>
+              {{ ar.enabled ? 'ปิด AR' : 'เปิด AR' }}
+            </button>
+            <button class="btn secondary full" @click="toggleARMirror">
+              <i class="ui-sprite icon-replay"></i>สลับซ้าย-ขวา AR
+            </button>
+            <button class="btn secondary full" @click="endGame"><i class="ui-sprite icon-back"></i>ออกจากด่าน</button>
+            <p class="ar-status">{{ ar.status }}</p>
+            <div v-if="ar.enabled" class="ar-self-check" aria-live="polite">
+              <strong>ตรวจระบบ AR</strong>
+              <div class="ar-check-grid">
+                <span v-for="check in arChecks" :key="check.id" :class="{ pass: check.pass }">
+                  <b>{{ check.pass ? '✓' : '○' }}</b>{{ check.label }}
+                </span>
+              </div>
+              <small v-if="ar.lastSelection">ล่าสุด: {{ ar.lastSelection }}</small>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section v-if="screen === 'result'" class="result-screen">
+        <div class="result-card">
+          <p class="eyebrow"><i class="ui-sprite icon-trophy"></i>รายงานซ่อมเมือง</p>
+          <h1>{{ resultTitle }}</h1>
+          <div class="result-stats">
+            <div><span>ดาว</span><strong>{{ starsValue }}</strong></div>
+            <div><span>ซ่อมสำเร็จ</span><strong>{{ repairedValue }}</strong></div>
+            <div><span>ความแม่น</span><strong>{{ accuracyText }}</strong></div>
+          </div>
+          <p>{{ resultMessage }}</p>
+          <div class="start-actions">
+            <button class="btn primary" @click="startGame(false)"><i class="ui-sprite icon-replay"></i>เล่นอีกครั้ง</button>
+            <button class="btn secondary" @click="screen = 'start'"><i class="ui-sprite icon-home"></i>กลับหน้าแรก</button>
+            <button class="btn city-button" @click="openCity"><i class="ui-sprite icon-map"></i>นำวัสดุไปซ่อมเมือง</button>
+            <button class="btn hall-button" @click="openHall"><i class="ui-sprite icon-trophy"></i>ดูหอเกียรติยศ</button>
+          </div>
+        </div>
+      </section>
+
+      <section v-if="screen === 'city'" class="city-screen">
+        <header class="city-heading">
+          <div>
+            <p class="eyebrow">CITY RESTORATION MAP</p>
+            <h1>แผนที่ซ่อมเมืองลูมินารา</h1>
+            <p>ใช้วัสดุจากภารกิจซ่อมทีละจุด เมื่อครบ 4 จุดจะเปิดเขตถัดไป</p>
+          </div>
+          <button class="btn secondary" @click="screen = 'start'"><i class="ui-sprite icon-back"></i>กลับหน้าเริ่ม</button>
+        </header>
+
+        <div class="city-inventory" aria-label="วัสดุที่มี">
+          <strong>กระเป๋าช่าง</strong>
+          <span>⚙ เฟือง {{ inventoryValue.gear || 0 }}</span>
+          <span>◆ คริสตัล {{ inventoryValue.crystal || 0 }}</span>
+          <span>▣ เซลล์พลัง {{ inventoryValue.energyCell || 0 }}</span>
+          <span>✦ ปริซึม {{ inventoryValue.prism || 0 }}</span>
+        </div>
+        <p class="city-message" role="status">{{ cityMessage }}</p>
+
+        <div class="city-district-grid">
+          <article
+            v-for="district in cityDistricts"
+            :key="district.id"
+            class="district-card"
+            :class="{ locked: !district.unlocked, active: district.active, complete: district.complete }"
+            :style="{ '--restoration-stage': district.restoredNodes }"
+          >
+            <div class="district-visual">
+              <img :src="district.path" :alt="district.label">
+              <span v-if="!district.unlocked" class="district-lock">🔒 ซ่อมเขตก่อนหน้าให้ครบ</span>
+              <span v-else-if="district.complete" class="district-complete">✨ ฟื้นฟูสมบูรณ์</span>
+              <span v-else class="district-progress">{{ district.restoredNodes }}/4 จุด</span>
+            </div>
+            <div class="district-copy">
+              <p class="tiny-label">เขตที่ {{ district.index + 1 }}</p>
+              <h2>{{ district.label }}</h2>
+              <div class="city-node-list">
+                <button
+                  v-for="node in district.nodes"
+                  :key="node.id"
+                  class="city-node"
+                  :class="{ restored: node.restored, available: node.available && !node.restored }"
+                  :disabled="cityBusy || !district.unlocked || node.restored || !node.available"
+                  @click="repairCityNode(district.id, node.id)"
+                >
+                  <span class="city-node-icon">{{ node.restored ? '✓' : node.icon }}</span>
+                  <span><b>{{ node.name }}</b><small>{{ node.restored ? 'ซ่อมแล้ว' : recipeText(node.recipe) }}</small></span>
+                </button>
+              </div>
+              <button
+                class="btn full"
+                :class="district.active ? 'primary' : 'secondary'"
+                :disabled="cityBusy || !district.unlocked || district.active"
+                @click="selectCityDistrict(district.id)"
+              >{{ district.active ? 'เขตภารกิจปัจจุบัน' : 'เลือกเป็นเขตภารกิจ' }}</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <section v-if="screen === 'hall'" class="hall-screen">
+      <div class="hall-stage">
+        <div v-if="hallDataLoading" class="hall-data-overlay" role="status" aria-live="polite">
+          <span class="hall-loader-orb" aria-hidden="true"></span>
+          <strong>กำลังโหลดอันดับจาก server…</strong>
+          <small>{{ hallBoardLabel }}</small>
+        </div>
+        <div class="hall-heading">
+          <p class="eyebrow">HALL OF FAME</p>
+          <h1>หอเกียรติยศช่างซ่อมแสง</h1>
+          <p>อันดับจาก server สำหรับกติกาเดียวกัน</p>
+          <label v-if="hallBoards.length" class="hall-board-picker">
+            <span>กระดานคะแนน</span>
+            <select v-model="selectedHallBoardKey" @change="loadHallBoard">
+              <option v-for="board in hallBoards" :key="board.boardKey" :value="board.boardKey">
+                {{ hallBoardOptionLabel(board) }}
+              </option>
+            </select>
+          </label>
+          <small class="hall-board-label">{{ hallBoardLabel }}</small>
+        </div>
+        <div class="hall-showcase" :class="{ 'is-ready': hallSceneReady, 'is-failed': hallSceneFailed }">
+          <img
+            class="hall-scene-image"
+            :src="config.assets.hallOfFame.background"
+            alt=""
+            @load="onHallSceneLoad"
+            @error="onHallSceneError"
+          >
+          <div v-if="!hallSceneReady" class="hall-scene-loading" role="status">
+            <span class="hall-loader-orb" aria-hidden="true"></span>
+            <strong>{{ hallSceneFailed ? 'เปิดหอเกียรติยศไม่สำเร็จ' : 'กำลังเปิดม่านหอเกียรติยศ…' }}</strong>
+            <small>{{ hallSceneFailed ? 'ตรวจการเชื่อมต่อแล้วลองเปิดใหม่อีกครั้ง' : 'เหล่าช่างกำลังจัดแสงบนเวที' }}</small>
+          </div>
+          <template v-if="hallSceneReady">
+            <div class="hall-spotlights" aria-hidden="true">
+              <span class="spotlight beam-left"></span>
+              <span class="spotlight beam-center"></span>
+              <span class="spotlight beam-right"></span>
+            </div>
+            <div class="hall-camera-flashes" aria-hidden="true"></div>
+            <div class="hall-podiums" v-if="leaderboardEntries.length">
+              <article
+                v-for="(entry, index) in leaderboardEntries.slice(0, 3)"
+                :key="entry.sessionId"
+                :class="'rank-' + (index + 1)"
+                :style="hallPodiumStyle(index)"
+              >
+                <div class="winner-emblem">
+                  <div class="avatar-medal">{{ index + 1 }}</div>
+                </div>
+                <h3>{{ entry.displayName }}</h3>
+                <strong class="winner-stars">⭐ {{ entry.score }} ดาว</strong>
+              </article>
+            </div>
+          </template>
+        </div>
+        <div class="hall-list">
+          <div v-if="hallDataError" class="empty-hall hall-error">{{ hallDataError }}</div>
+          <div v-else-if="!hallDataLoading && !leaderboardEntries.length" class="empty-hall">ยังไม่มีคะแนนบน server สำหรับกติกานี้</div>
+          <div v-for="(entry, index) in leaderboardEntries" :key="entry.sessionId" class="hall-row">
+            <b>#{{ index + 1 }}</b><span>{{ entry.displayName }}</span><small>แม่น {{ Math.round(entry.accuracy * 100) }}%</small><strong>⭐ {{ entry.score }}</strong>
+          </div>
+        </div>
+        <button class="btn primary" @click="screen = 'start'"><i class="ui-sprite icon-back"></i>กลับหน้าเริ่ม</button>
+      </div>
+    </section>
+
+    <div v-if="settingsOpen" class="modal-backdrop" @click.self="settingsOpen = false">
+      <section class="settings-modal">
+        <div class="brand-row">
+          <h2><i class="ui-sprite icon-settings"></i>ตั้งค่า</h2>
+          <button class="icon-btn" @click="settingsOpen = false" aria-label="ปิด">×</button>
+        </div>
+        <label>
+          <span>แม่คูณเริ่ม</span>
+          <input type="range" min="2" max="25" v-model.number="store.settings.tableMin" :disabled="store.started">
+          <b>{{ store.settings.tableMin }}</b>
+        </label>
+        <label>
+          <span>แม่คูณสุดท้าย</span>
+          <input type="range" min="2" max="25" v-model.number="store.settings.tableMax" :disabled="store.started">
+          <b>{{ store.settings.tableMax }}</b>
+        </label>
+        <label>
+          <span><i class="ui-sprite icon-timer"></i>เวลาเล่น</span>
+          <input type="range" :min="config.session.minSeconds" :max="config.session.maxSeconds" step="30" v-model.number="store.settings.seconds" :disabled="store.started">
+          <b>{{ store.settings.seconds }} วิ</b>
+        </label>
+        <div class="time-presets">
+          <button v-for="seconds in [60,180,300,600]" :key="seconds" @click="store.settings.seconds = seconds" :class="{ active: store.settings.seconds === seconds }" :disabled="store.started">{{ seconds / 60 }} นาที</button>
+        </div>
+        <label>
+          <span>รูปแบบการเล่น</span>
+          <select v-model="store.settings.mode" :disabled="store.started">
+            <option value="challenge">ท้าทาย · หัวใจหมดจบรอบ</option>
+            <option value="practice">ฝึกฝน · เล่นต่อได้เสมอ</option>
+          </select>
+          <b>{{ store.settings.mode === 'practice' ? 'ฝึก' : 'ท้าทาย' }}</b>
+        </label>
+        <label>
+          <span><i class="ui-sprite icon-sound-on"></i>ดนตรี</span>
+          <input type="range" min="0" max="1" step="0.05" v-model.number="store.settings.musicVolume" @input="syncAudio">
+          <b>{{ Math.round(store.settings.musicVolume * 100) }}%</b>
+        </label>
+        <label>
+          <span><i class="ui-sprite icon-volume"></i>SFX</span>
+          <input type="range" min="0" max="1" step="0.05" v-model.number="store.settings.sfxVolume">
+          <b>{{ Math.round(store.settings.sfxVolume * 100) }}%</b>
+        </label>
+        <label>
+          <span><i class="ui-sprite icon-trophy"></i>ระดับ</span>
+          <select v-model="store.settings.difficulty" :disabled="store.started">
+            <option value="gentle">ชิล</option>
+            <option value="adventure">ผจญภัย</option>
+            <option value="rush">ท้าทาย</option>
+          </select>
+        </label>
+        <label>
+          <span>เวลาค้าง pointer เพื่อเลือกคำตอบ</span>
+          <input
+            type="range"
+            :min="config.ar.answerDwellMinMs"
+            :max="config.ar.answerDwellMaxMs"
+            step="100"
+            v-model.number="store.settings.arAnswerDwellMs"
+          >
+          <b>{{ (store.settings.arAnswerDwellMs / 1000).toFixed(1) }} วิ</b>
+        </label>
+        <button class="btn primary full" @click="settingsOpen = false">ตกลง</button>
+        <button class="btn secondary full" @click="privacyOpen = true">ข้อมูลและความเป็นส่วนตัว</button>
+      </section>
+    </div>
+
+    <div v-if="privacyOpen" class="modal-backdrop" @click.self="privacyOpen = false">
+      <section class="settings-modal privacy-modal">
+        <div class="brand-row">
+          <h2>ข้อมูลและความเป็นส่วนตัว</h2>
+          <button class="icon-btn" @click="privacyOpen = false" aria-label="ปิด">×</button>
+        </div>
+        <p>เกมเก็บชื่อเล่น รหัสผู้เล่นแบบสุ่ม คะแนน การตั้งค่า และความก้าวหน้า ชื่อเล่นกับคะแนนอาจแสดงใน Hall of Fame ออนไลน์</p>
+        <p>กล้องใช้ตรวจมือตอนเล่น AR ภายในอุปกรณ์ เกมไม่ส่งหรือบันทึกภาพจากกล้องลงตารางคะแนน</p>
+        <p><strong>สำหรับผู้ปกครอง:</strong> ก่อนเปิดบริการทั่วโลก ผู้ดูแลต้องเผยแพร่นโยบายฉบับเต็ม ช่องทางติดต่อ และกระบวนการยินยอม/ลบข้อมูลที่เหมาะกับประเทศผู้เล่น</p>
+        <label class="delete-confirm"><input type="checkbox" v-model="deleteConfirm"> ฉันเข้าใจว่าการลบจะรีเซ็ตชื่อ คะแนนในเครื่อง วัสดุ และเมืองที่ซ่อมแล้ว</label>
+        <button class="btn danger full" @click="eraseLocalData" :disabled="!deleteConfirm || store.started">ลบข้อมูลทั้งหมดในเครื่องนี้</button>
+        <small v-if="store.started">ออกจากด่านก่อนจึงจะลบข้อมูลได้</small>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-demi@0.14.10/lib/index.iife.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pinia@2/dist/pinia.iife.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+  <script type="module" src="js/app.js?v=20260802-94"></script>
+</body>
+</html>

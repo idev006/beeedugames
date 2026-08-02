@@ -1,0 +1,449 @@
+{
+  "version": 1,
+  "background": {
+    "source": "assets/hall-of-fame-background.png",
+    "output": "assets/processed/hall-of-fame/background.png",
+    "width": 2560,
+    "height": 1440
+  },
+  "podiums": {
+    "source": "assets/sprite-hall-podiums.png",
+    "output": "assets/processed/hall-of-fame/podiums.png",
+    "sheet": {
+      "width": 1536,
+      "height": 512,
+      "columns": 3,
+      "rows": 1
+    },
+    "frames": [
+      {
+        "index": 0,
+        "sourceCell": {
+          "x": 0,
+          "y": 0,
+          "w": 1195,
+          "h": 1184
+        },
+        "sourceBounds": {
+          "x": 288,
+          "y": 88,
+          "w": 608,
+          "h": 1080
+        },
+        "output": {
+          "x": 130,
+          "y": 20,
+          "w": 253,
+          "h": 450
+        },
+        "pivot": {
+          "x": 256,
+          "y": 470
+        }
+      },
+      {
+        "index": 1,
+        "sourceCell": {
+          "x": 1195,
+          "y": 0,
+          "w": 1194,
+          "h": 1184
+        },
+        "sourceBounds": {
+          "x": 328,
+          "y": 277,
+          "w": 538,
+          "h": 891
+        },
+        "output": {
+          "x": 632,
+          "y": 20,
+          "w": 272,
+          "h": 450
+        },
+        "pivot": {
+          "x": 768,
+          "y": 470
+        }
+      },
+      {
+        "index": 2,
+        "sourceCell": {
+          "x": 2389,
+          "y": 0,
+          "w": 1195,
+          "h": 1184
+        },
+        "sourceBounds": {
+          "x": 313,
+          "y": 347,
+          "w": 544,
+          "h": 821
+        },
+        "output": {
+          "x": 1131,
+          "y": 20,
+          "w": 298,
+          "h": 450
+        },
+        "pivot": {
+          "x": 1280,
+          "y": 470
+        }
+      }
+    ]
+  },
+  "avatarFrames": {
+    "source": "assets/sprite-avatar-frames.png",
+    "output": "assets/processed/hall-of-fame/avatar-frames.png",
+    "sheet": {
+      "width": 2048,
+      "height": 512,
+      "columns": 4,
+      "rows": 1
+    },
+    "frames": [
+      {
+        "index": 0,
+        "sourceCell": {
+          "x": 0,
+          "y": 0,
+          "w": 1032,
+          "h": 1024
+        },
+        "sourceBounds": {
+          "x": 24,
+          "y": 7,
+          "w": 983,
+          "h": 1004
+        },
+        "output": {
+          "x": 40,
+          "y": 36,
+          "w": 431,
+          "h": 440
+        },
+        "pivot": {
+          "x": 256,
+          "y": 256
+        }
+      },
+      {
+        "index": 1,
+        "sourceCell": {
+          "x": 1032,
+          "y": 0,
+          "w": 1032,
+          "h": 1024
+        },
+        "sourceBounds": {
+          "x": 15,
+          "y": 28,
+          "w": 1003,
+          "h": 971
+        },
+        "output": {
+          "x": 548,
+          "y": 43,
+          "w": 440,
+          "h": 426
+        },
+        "pivot": {
+          "x": 768,
+          "y": 256
+        }
+      },
+      {
+        "index": 2,
+        "sourceCell": {
+          "x": 2064,
+          "y": 0,
+          "w": 1032,
+          "h": 1024
+        },
+        "sourceBounds": {
+          "x": 17,
+          "y": 21,
+          "w": 995,
+          "h": 979
+        },
+        "output": {
+          "x": 1060,
+          "y": 40,
+          "w": 440,
+          "h": 433
+        },
+        "pivot": {
+          "x": 1280,
+          "y": 256
+        }
+      },
+      {
+        "index": 3,
+        "sourceCell": {
+          "x": 3096,
+          "y": 0,
+          "w": 1032,
+          "h": 1024
+        },
+        "sourceBounds": {
+          "x": 54,
+          "y": 50,
+          "w": 922,
+          "h": 922
+        },
+        "output": {
+          "x": 1572,
+          "y": 36,
+          "w": 440,
+          "h": 440
+        },
+        "pivot": {
+          "x": 1792,
+          "y": 256
+        }
+      }
+    ]
+  },
+  "celebrationVfx": {
+    "source": "assets/sprite-hall-celebration-vfx.png",
+    "sourceRepair": "opaque black converted to alpha using recovered additive luminance",
+    "output": "assets/processed/hall-of-fame/celebration-vfx.png",
+    "sheet": {
+      "width": 3072,
+      "height": 1024,
+      "columns": 6,
+      "rows": 2
+    },
+    "frames": [
+      {
+        "index": 0,
+        "source": {
+          "x": 0,
+          "y": 0,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 8,
+          "y": 10,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 256,
+          "y": 256
+        }
+      },
+      {
+        "index": 1,
+        "source": {
+          "x": 597,
+          "y": 0,
+          "w": 598,
+          "h": 592
+        },
+        "output": {
+          "x": 520,
+          "y": 10,
+          "w": 496,
+          "h": 491
+        },
+        "pivot": {
+          "x": 768,
+          "y": 256
+        }
+      },
+      {
+        "index": 2,
+        "source": {
+          "x": 1195,
+          "y": 0,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 1032,
+          "y": 10,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 1280,
+          "y": 256
+        }
+      },
+      {
+        "index": 3,
+        "source": {
+          "x": 1792,
+          "y": 0,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 1544,
+          "y": 10,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 1792,
+          "y": 256
+        }
+      },
+      {
+        "index": 4,
+        "source": {
+          "x": 2389,
+          "y": 0,
+          "w": 598,
+          "h": 592
+        },
+        "output": {
+          "x": 2056,
+          "y": 10,
+          "w": 496,
+          "h": 491
+        },
+        "pivot": {
+          "x": 2304,
+          "y": 256
+        }
+      },
+      {
+        "index": 5,
+        "source": {
+          "x": 2987,
+          "y": 0,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 2568,
+          "y": 10,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 2816,
+          "y": 256
+        }
+      },
+      {
+        "index": 6,
+        "source": {
+          "x": 0,
+          "y": 592,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 8,
+          "y": 522,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 256,
+          "y": 768
+        }
+      },
+      {
+        "index": 7,
+        "source": {
+          "x": 597,
+          "y": 592,
+          "w": 598,
+          "h": 592
+        },
+        "output": {
+          "x": 520,
+          "y": 522,
+          "w": 496,
+          "h": 491
+        },
+        "pivot": {
+          "x": 768,
+          "y": 768
+        }
+      },
+      {
+        "index": 8,
+        "source": {
+          "x": 1195,
+          "y": 592,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 1032,
+          "y": 522,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 1280,
+          "y": 768
+        }
+      },
+      {
+        "index": 9,
+        "source": {
+          "x": 1792,
+          "y": 592,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 1544,
+          "y": 522,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 1792,
+          "y": 768
+        }
+      },
+      {
+        "index": 10,
+        "source": {
+          "x": 2389,
+          "y": 592,
+          "w": 598,
+          "h": 592
+        },
+        "output": {
+          "x": 2056,
+          "y": 522,
+          "w": 496,
+          "h": 491
+        },
+        "pivot": {
+          "x": 2304,
+          "y": 768
+        }
+      },
+      {
+        "index": 11,
+        "source": {
+          "x": 2987,
+          "y": 592,
+          "w": 597,
+          "h": 592
+        },
+        "output": {
+          "x": 2568,
+          "y": 522,
+          "w": 496,
+          "h": 492
+        },
+        "pivot": {
+          "x": 2816,
+          "y": 768
+        }
+      }
+    ]
+  }
+}

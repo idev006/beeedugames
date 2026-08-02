@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 2,
+  "gameId": "multiplication-luminara-ar",
+  "title": "เมืองแสงซ่อนกล",
+  "subtitle": "ทีมช่างพลังคูณ",
+  "language": "th-TH",
+  "tables": {
+    "min": 2,
+    "max": 25,
+    "defaultMin": 2,
+    "defaultMax": 12
+  },
+  "multipliers": {
+    "min": 1,
+    "max": 12
+  },
+  "session": {
+    "defaultSeconds": 180,
+    "minSeconds": 30,
+    "maxSeconds": 600,
+    "startingLives": 5
+  },
+  "progression": {
+    "repairsPerDistrict": 4,
+    "restorationNodesPerDistrict": 4,
+    "autoDistrictDuringSession": false,
+    "cityRepair": {
+      "districtStartIndex": 1,
+      "nodes": [
+        {
+          "id": "street-lamps",
+          "name": "โคมไฟถนน",
+          "description": "จุดแสงนำทางกลับเข้าสู่เขตช่าง",
+          "icon": "💡",
+          "recipe": { "gear": 1 }
+        },
+        {
+          "id": "crystal-bridge",
+          "name": "สะพานคริสตัล",
+          "description": "เชื่อมทางส่งพลังระหว่างสองฝั่งเมือง",
+          "icon": "🌉",
+          "recipe": { "gear": 2 }
+        },
+        {
+          "id": "district-generator",
+          "name": "เครื่องกำเนิดเขต",
+          "description": "หมุนเฟืองหลักให้แสงกลับมาทำงาน",
+          "icon": "⚙️",
+          "recipe": { "gear": 2, "crystal": 1 }
+        },
+        {
+          "id": "sky-beacon",
+          "name": "ประภาคารฟ้า",
+          "description": "ส่งสัญญาณว่าทั้งเขตได้รับการฟื้นฟูแล้ว",
+          "icon": "🔆",
+          "recipe": { "gear": 2, "crystal": 1, "energyCell": 1 }
+        }
+      ]
+    },
+    "normalRoundDelayMs": 900,
+    "milestoneDelayMs": 3200,
+    "announcementLeadMs": 600,
+    "announcementVisibleMs": 2350
+  },
+  "player": {
+    "defaultDisplayName": "นักซ่อมแสง",
+    "maxDisplayNameLength": 12
+  },
+  "leaderboard": {
+    "provider": "hybrid-google-sheets",
+    "presentation": {
+      "goldAnchor": { "xPercent": 50, "yPercent": 42.1 },
+      "horizontalStepPercent": 14.5,
+      "silverDropPercent": 3.8,
+      "bronzeDropPercent": 6.4,
+      "labelAnchorYPercent": 64.3
+    },
+    "online": {
+      "enabled": true,
+      "webAppUrl": "https://script.google.com/macros/s/AKfycbysNEbFofm1NaG3FAROHWoZyd6F_nN8FaE6Zp4uxXf4rYoz2woTievKs743EWwmQ_LhUg/exec",
+      "scriptId": "1v9zbl8aqAjWJRmdFGvv2vj-I7ffrLwKpcRjpJPzwsfyVBFc0XlzB10rm",
+      "timeoutMs": 15000,
+      "queueKey": "luminara.leaderboard.sync.v1"
+    }
+  },
+  "learning": {
+    "equalGroupsMode": "required",
+    "answerDistractors": {
+      "sameUnitByAnswerCount": {
+        "3": 1,
+        "4": 1,
+        "5": 2
+      },
+      "decadeStep": 10,
+      "maxDecadeDistance": 3
+    },
+    "adaptiveScaffold": {
+      "enabled": true,
+      "minCorrectAttempts": 2,
+      "minAccuracy": 0.8,
+      "transformDurationMs": 850,
+      "remediateFastTrackMistake": true
+    },
+    "representation": {
+      "smallTableMax": 12,
+      "maxVisibleGroups": 12,
+      "tensUnit": 10,
+      "quarterHundredTable": 25,
+      "quarterGroupSize": 4
+    },
+    "verticalSlice": {
+      "enabled": false,
+      "table": 25,
+      "multiplier": 12
+    }
+  },
+  "difficulty": {
+    "default": "adventure",
+    "levels": {
+      "gentle": {
+        "label": "ชิล",
+        "answers": 3,
+        "secondsBonus": 40,
+        "mistakeSpread": 2
+      },
+      "adventure": {
+        "label": "ผจญภัย",
+        "answers": 4,
+        "secondsBonus": 0,
+        "mistakeSpread": 4
+      },
+      "rush": {
+        "label": "ท้าทาย",
+        "answers": 5,
+        "secondsBonus": -30,
+        "mistakeSpread": 6
+      }
+    }
+  },
+  "ar": {
+    "enabled": true,
+    "dwellMs": 500,
+    "groupDwellMs": 180,
+    "batchDwellMs": 450,
+    "answerDwellMs": 500,
+    "answerDwellMinMs": 300,
+    "answerDwellMaxMs": 1500,
+    "pointerSize": 76,
+    "mirrorInput": true,
+    "delegate": "CPU",
+    "maxInferenceFps": 15,
+    "maxMainThreadBudget": 0.5,
+    "captureWidth": 1280,
+    "captureHeight": 720,
+    "captureFps": 30,
+    "inferenceWidth": 512,
+    "inferenceHeight": 512,
+    "minHandDetectionConfidence": 0.3,
+    "minHandPresenceConfidence": 0.3,
+    "minTrackingConfidence": 0.35,
+    "tasksVisionUrl": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.0/vision_bundle.mjs",
+    "tasksVisionWasmRoot": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.0/wasm",
+    "handLandmarkerModelUrl": "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+  },
+  "audio": {
+    "musicVolume": 0.55,
+    "sfxVolume": 0.9
+  },
+  "accessibility": {
+    "reducedMotion": false,
+    "highContrast": false,
+    "captions": true
+  },
+  "assets": {
+    "manifest": "assets/processed/asset-manifest.json",
+    "hallOfFame": {
+      "background": "assets/processed/hall-of-fame/background.png"
+    },
+    "backgrounds": [
+      { "id": "main", "path": "assets/processed/backgrounds/main-background.png", "label": "เมืองแสงลูมินารา" },
+      { "id": "spark-workshop-gate", "path": "assets/processed/backgrounds/spark-workshop-gate.png", "label": "ประตูโรงช่างประกาย" },
+      { "id": "crystal-canal", "path": "assets/processed/backgrounds/crystal-canal.png", "label": "คลองคริสตัล" },
+      { "id": "gear-garden", "path": "assets/processed/backgrounds/gear-garden.png", "label": "สวนเฟืองกล" },
+      { "id": "lantern-market", "path": "assets/processed/backgrounds/lantern-market.png", "label": "ตลาดโคมพลัง" },
+      { "id": "echo-train-depot", "path": "assets/processed/backgrounds/echo-train-depot.png", "label": "สถานีรถไฟเสียงสะท้อน" },
+      { "id": "sky-battery-dock", "path": "assets/processed/backgrounds/sky-battery-dock.png", "label": "ท่าแบตเตอรี่ลอยฟ้า" },
+      { "id": "prism-observatory", "path": "assets/processed/backgrounds/prism-observatory.png", "label": "หอดูดาวปริซึม" },
+      { "id": "festival-core-plaza", "path": "assets/processed/backgrounds/festival-core-plaza.png", "label": "ลานแกนพลังเทศกาล" }
+    ],
+    "characters": {
+      "lumin": "assets/processed/characters/lumin/lumin-spritesheet.png",
+      "pix": "assets/processed/characters/pix/pix-spritesheet.png",
+      "maru": "assets/processed/characters/maru/maru-spritesheet.png",
+      "zen": "assets/processed/characters/zen/zen-spritesheet.png",
+      "glimshade": "assets/processed/characters/glimshade/glimshade-spritesheet.png"
+    },
+    "characterPortraits": {
+      "lumin": { "name": "ลูมิน", "role": "หัวหน้าทีม", "arrivalLine": "นำทีมช่างออกตามหาแสงที่หายไป", "path": "assets/processed/characters/lumin/lumin-idle.png" },
+      "pix": { "name": "พิกซ์", "role": "ผู้ช่วยสแกน", "arrivalLine": "จะช่วยสแกนหาจังหวะพลังที่พอดี", "path": "assets/processed/characters/pix/pix-idle.png" },
+      "maru": { "name": "มารุ", "role": "ช่างกล", "arrivalLine": "พร้อมขนชิ้นส่วนไปซ่อมเขตถัดไป", "path": "assets/processed/characters/maru/maru-idle.png" },
+      "zen": { "name": "เซน", "role": "ผู้คุมจังหวะ", "arrivalLine": "จะช่วยจับจังหวะกลุ่มพลังที่ซับซ้อนขึ้น", "path": "assets/processed/characters/zen/zen-idle.png" },
+      "glimshade": { "name": "เงาลวง", "role": "ผู้ทดสอบ", "arrivalLine": "จะเปลี่ยนภาพลวงให้กลายเป็นเส้นทางแห่งแสง", "path": "assets/processed/characters/glimshade/glimshade-idle.png" }
+    },
+    "districtCompanions": ["pix", "maru", "zen", "glimshade"],
+    "atlases": {
+      "gameplayObjectsRewards": {
+        "path": "assets/processed/atlases/gameplay-objects-rewards.png",
+        "frameWidth": 512,
+        "frameHeight": 512,
+        "rewardFrames": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "rewardNames": ["เฟืองทอง", "ประแจช่าง", "เหรียญดาว", "ชุดเฟือง", "ประกายพลัง", "ดาวเพื่อน", "น้ำยาพลัง", "เหรียญเมือง", "ค้อนช่าง", "กุญแจเขต", "กระเป๋าช่าง", "แผงควบคุม"]
+      },
+      "uiIcons": {
+        "path": "assets/processed/ui/ui-icon-set.png",
+        "columns": 4,
+        "rows": 4
+      }
+    },
+    "gameplayObjects": {
+      "energyPods": {
+        "empty": "assets/processed/objects/energy-pods/empty.png",
+        "charging": "assets/processed/objects/energy-pods/charging.png",
+        "full": "assets/processed/objects/energy-pods/full.png",
+        "damaged": "assets/processed/objects/energy-pods/damaged.png"
+      },
+      "answerCores": {
+        "cyan": "assets/processed/objects/answer-cores/cyan.png",
+        "gold": "assets/processed/objects/answer-cores/gold.png",
+        "magenta": "assets/processed/objects/answer-cores/magenta.png",
+        "violet": "assets/processed/objects/answer-cores/violet.png"
+      }
+    },
+    "rewards": {
+      "gear": "assets/processed/rewards/gear.png",
+      "crystal": "assets/processed/rewards/crystal.png",
+      "energy-cell": "assets/processed/rewards/energy-cell.png",
+      "prism": "assets/processed/rewards/prism.png",
+      "spring": "assets/processed/rewards/spring.png",
+      "star-core": "assets/processed/rewards/star-core.png"
+    },
+    "vfx": {
+      "energy": "assets/processed/vfx/energy-vfx-spritesheet.png"
+    }
+  }
+}

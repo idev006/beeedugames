@@ -1,0 +1,92 @@
+@media (max-width: 1120px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .start-screen,
+  .play-screen {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .game-column,
+  .hud-panel {
+    height: auto;
+    max-height: none;
+  }
+
+  .game-column {
+    aspect-ratio: 16 / 10;
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 12px;
+  }
+
+  .start-screen {
+    min-height: auto;
+  }
+
+  .hero-stage {
+    min-height: 440px;
+  }
+
+  .settings-modal label {
+    grid-template-columns: 1fr;
+  }
+
+  .result-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* AR pointer states: visible guidance even before MediaPipe locks onto a finger. */
+.ar-pointer::before {
+  content: "☝";
+}
+
+.ar-pointer.is-searching {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0 34%, transparent 35%),
+    conic-gradient(#82ffe4 var(--progress), rgba(255, 255, 255, 0.2) 0);
+  border-color: rgba(130, 255, 228, 0.92);
+  box-shadow: 0 0 38px rgba(130, 255, 228, 0.88);
+  animation: arSearchPulse 1.05s ease-in-out infinite;
+}
+
+.ar-pointer.is-searching::before {
+  content: "👋";
+}
+
+.ar-pointer.is-tracking {
+  animation: arTrackingPulse 0.9s ease-in-out infinite;
+}
+
+@keyframes arSearchPulse {
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0.82;
+  }
+}
+
+@keyframes arTrackingPulse {
+  50% {
+    box-shadow: 0 0 46px rgba(255, 212, 77, 1);
+  }
+}
