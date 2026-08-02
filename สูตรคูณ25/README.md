@@ -83,6 +83,7 @@ npm run qa:static
 
 ## Knowledge Pack
 
+- `docs/franchise/README.md` — Franchise Guidebook สำหรับสร้างเกมใหม่อย่างรวดเร็วและเป็นระบบ
 - `docs/59-project-closeout-report.md` — final status และ architecture truth
 - `docs/60-reusable-education-game-playbook.md` — กระบวนการ/เทคนิคสำหรับเกมถัดไป
 - `docs/61-ai-team-handoff.md` — context และข้อห้ามสำหรับทีม/AI ใหม่

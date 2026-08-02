@@ -11,6 +11,19 @@
 | `61-ai-team-handoff.md` | developer/AI ใหม่ต้องทำงานต่ออย่างปลอดภัย |
 | `62-operations-maintenance-runbook.md` | deploy, monitor, debug incident และ rollback |
 
+## Franchise Guidebook — สร้างเกมใหม่อย่างรวดเร็ว
+
+เริ่มที่ `franchise/README.md` หากเป้าหมายคือสร้างเกมการศึกษาโครงการใหม่ ไม่ใช่เพียงบำรุงรักษาเกมนี้
+
+| Module | Outcome |
+|---|---|
+| `franchise/README.md` | Golden Path และ Franchise Contract |
+| `franchise/01-product-blueprint.md` | แปลงบทเรียนเป็น core loop/story/vertical slice |
+| `franchise/02-production-operating-system.md` | Kanban, architecture, lifecycle และ asset pipeline |
+| `franchise/03-quality-scorecards.md` | quality bar, anti-patterns และ hard release gates |
+| `franchise/04-ai-execution-protocol.md` | protocol/prompt สำหรับ AI ที่ตรวจสอบได้ |
+| `franchise/templates/` | brief, feature loop, asset request และ release templates |
+
 ## Document Status
 
 เอกสารแบ่งเป็นสามประเภท:
@@ -99,6 +112,7 @@
 
 ```text
 README.md
+docs/franchise/README.md
 docs/59-project-closeout-report.md
 docs/60-reusable-education-game-playbook.md
 docs/61-ai-team-handoff.md
@@ -108,4 +122,3 @@ relevant ADR and tests
 ```
 
 จากนั้นจึง inspect runtime code ที่เป็น owner ของงาน ห้ามแก้จากภาพหน้าจอโดยเดาสาเหตุ
-
