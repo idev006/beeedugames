@@ -1,0 +1,41 @@
+{
+  "version": "phaser-visual-layer-v1",
+  "currentRuntime": {
+    "appShell": "vue-global-composition",
+    "router": "vue-router-hash-shell",
+    "stateStore": "pinia-shell-ui-state",
+    "uiSystem": "custom-css",
+    "gameRenderer": "dom-css-fallback-with-phaser-visual-layer",
+    "audio": "webaudio-test-slice"
+  },
+  "targetRuntime": {
+    "appShell": "vue-3-composition-api",
+    "router": "vue-router",
+    "stateStore": "pinia",
+    "uiSystem": "tailwindcss-daisyui",
+    "gameRenderer": "phaser",
+    "optionalVisualLayer": "threejs-contained-ambience"
+  },
+  "loadingStrategy": {
+    "development": "cdn-static-script-tags",
+    "classroomBeta": "vendor-or-cache-after-offline-decision",
+    "production": "pinned-version-static-package",
+    "npmPolicy": "do-not-require-npm-for-current-machine"
+  },
+  "orderedMigration": [
+    "vue-router-shell",
+    "pinia-state-seams",
+    "tailwind-daisyui-design-system",
+    "phaser-play-scene-parity",
+    "threejs-optional-ambience"
+  ],
+  "parityGates": [
+    "equal-sharing-correct-path",
+    "wrong-feedback-and-remediation",
+    "replay-generation-safety",
+    "mouse-touch-baseline",
+    "counts-never-occluded",
+    "reduced-motion-fallback",
+    "local-progress-no-pii"
+  ]
+}
