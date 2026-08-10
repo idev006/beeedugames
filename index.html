@@ -1,160 +1,329 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" data-theme="beeedu">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#39c8e8" />
     <title>Bee Edu Games | รวมเกมเพื่อการศึกษา</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-      *{box-sizing:border-box}
-      html,body{margin:0;min-height:100%;font-family:Tahoma,"Noto Sans Thai",sans-serif;color:#183457}
-      body{
-        min-height:100vh;
+      :root,
+      [data-theme="beeedu"] {
+        --color-base-100: #fff8e6;
+        --color-base-200: #e8f8ef;
+        --color-base-300: #b8e8dd;
+        --color-base-content: #12305c;
+        --color-primary: #1565d8;
+        --color-primary-content: #ffffff;
+        --color-secondary: #ff5aa7;
+        --color-secondary-content: #ffffff;
+        --color-accent: #ffd33d;
+        --color-accent-content: #4a2d00;
+        --color-neutral: #17325f;
+        --color-neutral-content: #ffffff;
+        --radius-selector: 1rem;
+        --radius-field: 1rem;
+        --radius-box: 1.25rem;
+        --border: 2px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        font-family: "Mali", system-ui, sans-serif;
+        color: #12305c;
         background:
-          radial-gradient(circle at 16% 10%,#fff8 0 6%,transparent 7%),
-          radial-gradient(circle at 78% 18%,#bcfff7aa 0 5%,transparent 6%),
-          linear-gradient(180deg,#7ff3ee 0%,#23a8d1 46%,#075a93 100%);
-        overflow-x:hidden;
+          radial-gradient(circle at 12% 9%, rgba(255,255,255,.9) 0 5%, transparent 6%),
+          radial-gradient(circle at 80% 16%, rgba(255,227,74,.45) 0 5%, transparent 6%),
+          linear-gradient(180deg, #6ce7f4 0%, #2fb7de 34%, #1680bc 66%, #0f4f88 100%);
       }
-      body:before{
-        content:"";position:fixed;inset:-35% -15% auto;height:95vh;pointer-events:none;
-        background:repeating-conic-gradient(from 250deg at 50% 0%,#ffffff00 0deg 8deg,#ffffff35 10deg 16deg,#ffffff00 19deg 31deg);
-        filter:blur(10px);opacity:.72;animation:rays 8s ease-in-out infinite alternate;
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(110deg, transparent 0 34%, rgba(255,255,255,.28) 38%, transparent 44%),
+          linear-gradient(70deg, transparent 0 62%, rgba(255,255,255,.2) 66%, transparent 72%);
+        opacity: .58;
+        animation: sunlight 7s ease-in-out infinite alternate;
       }
-      .sea{position:fixed;inset:0;overflow:hidden;pointer-events:none}
-      .sea:after{content:"";position:absolute;left:-8%;right:-8%;bottom:-42px;height:18vh;min-height:105px;background:linear-gradient(180deg,#f5d18ccc,#aa714be0);border-radius:50% 50% 0 0/30% 35% 0 0;box-shadow:0 -10px 26px #06466d66}
-      .bubble{position:absolute;border:2px solid #eaffff;border-radius:50%;opacity:.55;animation:floatUp linear infinite}
-      .b1{width:18px;height:18px;left:8%;bottom:-30px;animation-duration:8s}.b2{width:30px;height:30px;left:22%;bottom:-60px;animation-duration:13s;animation-delay:-4s}.b3{width:15px;height:15px;right:18%;bottom:-40px;animation-duration:9s;animation-delay:-2s}.b4{width:26px;height:26px;right:7%;bottom:-80px;animation-duration:15s;animation-delay:-8s}
-      .fish{position:absolute;font-size:clamp(28px,4vw,54px);filter:drop-shadow(0 5px 5px #073c5e66);animation:swim 18s linear infinite}.f1{top:24%;left:-15%}.f2{top:62%;left:-20%;animation-duration:24s;animation-delay:-8s}
-      main{position:relative;z-index:1;width:min(1040px,calc(100% - 28px));min-height:100vh;margin:auto;padding:40px 0 56px;display:grid;align-content:center;gap:22px}
-      header{text-align:center;color:white;text-shadow:0 3px 14px #07507588}
-      .brand{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:#ffffffd9;color:#176a9c;font-weight:900;text-shadow:none;box-shadow:0 8px 20px #06466d35}
-      h1{margin:16px 0 8px;font-size:clamp(2.1rem,7vw,5rem);line-height:1.05;color:white}
-      .lead{margin:0 auto;max-width:720px;font-size:clamp(1rem,2.5vw,1.22rem);font-weight:700}
-      .games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-      .card{
-        position:relative;overflow:hidden;min-height:300px;padding:22px;border:3px solid #fff;border-radius:24px;background:#fffffff0;
-        box-shadow:0 18px 38px #073c5e38;display:grid;align-content:space-between;gap:20px;
+      .sea-world { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+      .sea-floor {
+        position: absolute;
+        left: -8%;
+        right: -8%;
+        bottom: -46px;
+        height: 18vh;
+        min-height: 118px;
+        border-radius: 50% 50% 0 0 / 28% 36% 0 0;
+        background: linear-gradient(180deg, rgba(255,209,128,.9), rgba(177,112,71,.95));
+        box-shadow: 0 -14px 34px rgba(7,60,94,.38);
       }
-      .card:before{content:"";position:absolute;right:-30px;top:-38px;width:150px;height:150px;border-radius:50%;background:#9ee9ff88;box-shadow:inset 18px 20px 28px #fff9}
-      .icon{font-size:3.2rem}
-      h2{position:relative;margin:0;color:#176faf;font-size:clamp(1.45rem,3vw,2.1rem)}
-      p{position:relative;margin:0;line-height:1.65;color:#4d5f7a}
-      .tags{position:relative;display:flex;flex-wrap:wrap;gap:8px}
-      .tag{padding:7px 12px;border-radius:999px;background:#eef9ff;color:#267aa8;font-size:.9rem;font-weight:900}
-      a.play{
-        position:relative;justify-self:start;display:inline-flex;align-items:center;gap:10px;padding:14px 24px;border-radius:999px;
-        color:white;background:linear-gradient(135deg,#ff6fae,#ff9d63);font-weight:900;text-decoration:none;box-shadow:0 5px 0 #d85a78;
+      .bubble {
+        position: absolute;
+        bottom: -48px;
+        border: 2px solid rgba(234,255,255,.95);
+        border-radius: 999px;
+        opacity: .54;
+        animation: float-up linear infinite;
       }
-      a.play:focus-visible{outline:4px solid #ffd45a;outline-offset:4px}
-      .note{padding:14px 18px;border-radius:18px;background:#ffffffd9;color:#4d5f7a;text-align:center;font-weight:700;box-shadow:0 8px 24px #073c5e22}
-      @keyframes rays{to{transform:rotate(2deg) scaleX(1.08);opacity:.9}}
-      @keyframes floatUp{to{transform:translateY(-115vh) translateX(24px)}}
-      @keyframes swim{to{left:112%;transform:translateY(18px)}}
-      @media(max-width:760px){
-        main{padding-top:24px;align-content:start}
-        .games{grid-template-columns:1fr}
-        .card{min-height:260px;border-radius:20px}
+      .b1 { width: 18px; height: 18px; left: 8%; animation-duration: 8s; }
+      .b2 { width: 30px; height: 30px; left: 22%; animation-duration: 13s; animation-delay: -4s; }
+      .b3 { width: 15px; height: 15px; right: 18%; animation-duration: 9s; animation-delay: -2s; }
+      .b4 { width: 26px; height: 26px; right: 7%; animation-duration: 15s; animation-delay: -8s; }
+      .fish {
+        position: absolute;
+        right: -96px;
+        font-size: clamp(30px, 4vw, 58px);
+        filter: drop-shadow(0 7px 8px rgba(7,60,94,.35));
+        animation: swim-left 20s linear infinite;
       }
-      @media(min-width:761px) and (max-width:1020px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      .featured-card{border-color:#ffe06b;box-shadow:0 18px 42px #07507555,0 0 0 4px #ffe06b55}
-      .featured-card .play{background:linear-gradient(135deg,#ffda53,#ff9e4a);color:#4c285d}
+      .f1 { top: 24%; animation-duration: 18s; }
+      .f2 { top: 62%; animation-duration: 25s; animation-delay: -8s; }
+      .shell {
+        position: relative;
+        z-index: 1;
+        width: min(1180px, calc(100% - 28px));
+        min-height: 100vh;
+        margin: auto;
+        padding: 32px 0 58px;
+      }
+      .hero-panel {
+        position: relative;
+        overflow: hidden;
+        border: 3px solid rgba(255,255,255,.86);
+        border-radius: 32px;
+        background:
+          linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,248,230,.84)),
+          radial-gradient(circle at 82% 12%, rgba(255,211,61,.5), transparent 34%);
+        box-shadow: 0 24px 52px rgba(7,60,94,.28);
+      }
+      .hero-panel::after {
+        content: "➗";
+        position: absolute;
+        right: clamp(16px, 5vw, 54px);
+        top: clamp(20px, 4vw, 44px);
+        width: clamp(82px, 14vw, 148px);
+        height: clamp(82px, 14vw, 148px);
+        display: grid;
+        place-items: center;
+        border: 5px solid #12305c;
+        border-radius: 28px;
+        background: #ffd33d;
+        color: #12305c;
+        font-size: clamp(2.6rem, 7vw, 5.2rem);
+        transform: rotate(6deg);
+        box-shadow: 0 12px 0 rgba(18,48,92,.18);
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 16px;
+        border: 2px solid rgba(21,101,216,.2);
+        border-radius: 999px;
+        background: rgba(255,255,255,.88);
+        color: #1565d8;
+        font-weight: 800;
+      }
+      .game-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+      .game-card {
+        position: relative;
+        min-height: 306px;
+        overflow: hidden;
+        border: 3px solid rgba(255,255,255,.92);
+        border-radius: 26px;
+        background: rgba(255,255,255,.93);
+        box-shadow: 0 18px 34px rgba(7,60,94,.24);
+        transition: transform .2s ease, box-shadow .2s ease;
+      }
+      .game-card:hover { transform: translateY(-5px); box-shadow: 0 26px 42px rgba(7,60,94,.3); }
+      .game-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 86% 9%, rgba(255,211,61,.58) 0 18%, transparent 19%),
+          linear-gradient(180deg, rgba(232,248,239,.64), transparent 42%);
+        pointer-events: none;
+      }
+      .game-card.featured { border-color: #ffd33d; background: linear-gradient(180deg, rgba(255,253,238,.96), rgba(255,255,255,.92)); }
+      .game-card.math-card { border-color: #45d483; box-shadow: 0 18px 34px rgba(21,101,216,.22), 0 0 0 5px rgba(69,212,131,.22); }
+      .icon-tile {
+        display: grid;
+        width: 74px;
+        height: 74px;
+        place-items: center;
+        border: 3px solid #12305c;
+        border-radius: 20px;
+        background: #fff1a8;
+        box-shadow: 0 7px 0 rgba(18,48,92,.17);
+        font-size: 2.25rem;
+      }
+      .game-title { color: #12305c; line-height: 1.15; }
+      .game-copy { color: #365479; line-height: 1.68; }
+      .play-btn { min-height: 48px; border-radius: 999px; box-shadow: 0 5px 0 rgba(18,48,92,.2); }
+      .footer-note {
+        border: 2px solid rgba(255,255,255,.78);
+        border-radius: 24px;
+        background: rgba(255,255,255,.84);
+        box-shadow: 0 14px 28px rgba(7,60,94,.18);
+      }
+      @keyframes sunlight { to { opacity: .82; transform: translateX(18px) skewX(-2deg); } }
+      @keyframes float-up { to { transform: translateY(-116vh) translateX(24px); } }
+      @keyframes swim-left {
+        from { transform: translateX(0) translateY(0); }
+        50% { transform: translateX(calc(-52vw - 96px)) translateY(18px); }
+        to { transform: translateX(calc(-112vw - 180px)) translateY(-6px); }
+      }
+      @media (max-width: 780px) {
+        .shell { padding-top: 18px; }
+        .hero-panel { border-radius: 24px; }
+        .hero-panel::after { opacity: .2; right: -18px; top: 12px; }
+        .game-grid { grid-template-columns: 1fr; }
+        .game-card { min-height: 276px; border-radius: 22px; }
+      }
+      @media (min-width: 781px) and (max-width: 1080px) {
+        .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+      }
     </style>
   </head>
   <body>
-    <div class="sea" aria-hidden="true">
+    <div class="sea-world" aria-hidden="true">
       <i class="bubble b1"></i><i class="bubble b2"></i><i class="bubble b3"></i><i class="bubble b4"></i>
       <i class="fish f1">🐠</i><i class="fish f2">🐟</i>
+      <i class="sea-floor"></i>
     </div>
-    <main>
-      <header>
-        <div class="brand">Bee Edu Games</div>
-        <h1>รวมเกมเพื่อการศึกษา</h1>
-        <p class="lead">เลือกเกมแล้วเข้าเล่นได้ทันที เรียนรู้ภาษาไทยและคณิตศาสตร์อย่างสนุกบนคอมพิวเตอร์ แท็บเล็ต และมือถือ</p>
-      </header>
-      <section class="games" aria-label="รายการเกม">
-        <article class="card">
-          <div>
-            <div class="icon">🫧</div>
-            <h2>เกมฟองคำ 9 มาตรา</h2>
-            <p>ฝึกตัวสะกด 9 มาตรา ด้วยฟองคำใต้ทะเล ใช้กล้อง AR นิ้วชี้ หรือแตะ/คลิกเล่นได้</p>
+    <main class="shell grid gap-6">
+      <section class="hero-panel p-6 sm:p-8 lg:p-10">
+        <div class="relative z-10 max-w-3xl">
+          <div class="brand-mark">Bee Edu Games</div>
+          <h1 class="mt-5 text-4xl font-black leading-tight text-[#12305c] sm:text-6xl lg:text-7xl">รวมเกมเพื่อการศึกษา</h1>
+          <p class="mt-4 max-w-2xl text-lg font-semibold leading-8 text-[#365479] sm:text-xl">
+            เลือกเกมแล้วเข้าเล่นได้ทันที ฝึกภาษาไทยและคณิตศาสตร์ผ่านภารกิจสั้น ๆ ที่เหมาะกับห้องเรียน คอมพิวเตอร์ แท็บเล็ต และมือถือ
+          </p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a class="btn btn-primary play-btn px-7 text-base font-bold" href="#games">ดูเกมทั้งหมด</a>
+            <a class="btn btn-accent play-btn px-7 text-base font-bold" href="เกมหาร/">เล่นสวนผลไม้แบ่งปัน</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">ตัวสะกด</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมฟองคำ9มาตรา-แก้ไขแล้ว.html">เข้าเล่นเกม</a>
+        </div>
+      </section>
+
+      <section id="games" class="game-grid" aria-label="รายการเกม">
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🫧</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">เกมฟองคำ 9 มาตรา</h2>
+              <p class="game-copy font-medium">ฝึกตัวสะกด 9 มาตรา ด้วยฟองคำใต้ทะเล ใช้กล้อง AR นิ้วชี้ หรือแตะ/คลิกเล่นได้</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ป.1-6</span><span class="badge badge-info">ตัวสะกด</span><span class="badge badge-info">AR + Touch</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="เกมฟองคำ9มาตรา-แก้ไขแล้ว.html">เข้าเล่นเกม</a>
+          </div>
         </article>
-        <article class="card">
-          <div>
-            <div class="icon">🌟</div>
-            <h2>เกมคำเป็นคำตาย</h2>
-            <p>ฝึกแยกคำเป็นและคำตายผ่านเกมภาษาไทย เล่นง่าย เหมาะสำหรับใช้ในห้องเรียนหรือฝึกเอง</p>
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🌟</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">เกมคำเป็นคำตาย</h2>
+              <p class="game-copy font-medium">ฝึกแยกคำเป็นและคำตายผ่านเกมภาษาไทย เล่นง่าย เหมาะสำหรับใช้ในห้องเรียนหรือฝึกเอง</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ภาษาไทย</span><span class="badge badge-info">คำเป็นคำตาย</span><span class="badge badge-info">Touch + Mouse</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="คำเป็นคำตาย.html">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ภาษาไทย</span><span class="tag">คำเป็นคำตาย</span><span class="tag">Touch + Mouse</span></div>
-          <a class="play" href="คำเป็นคำตาย.html">เข้าเล่นเกม</a>
         </article>
-        <article class="card">
-          <div>
-            <div class="icon">🍣</div>
-            <h2>ซูชิคำเป็นคำตาย</h2>
-            <p>แยกคำเป็นคำตายในร้านซูชิ AR หยิบจานคำศัพท์บนสายพานให้ถูกหมวด</p>
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🍣</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">ซูชิคำเป็นคำตาย</h2>
+              <p class="game-copy font-medium">แยกคำเป็นคำตายในร้านซูชิ AR หยิบจานคำศัพท์บนสายพานให้ถูกหมวด</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ป.1-6</span><span class="badge badge-info">คำเป็นคำตาย</span><span class="badge badge-info">AR + Touch</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="เกมซูชิคำเป็นคำตาย.html">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">คำเป็นคำตาย</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมซูชิคำเป็นคำตาย.html">เข้าเล่นเกม</a>
         </article>
-        <article class="card">
-          <div>
-            <div class="icon">🐜</div>
-            <h2>รังมดอักษรสามหมู่</h2>
-            <p>สำรวจรังมดแฟนซี ฝึกแยกอักษรสูง อักษรกลาง และอักษรต่ำด้วยการจิ้ม AR</p>
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🐜</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">รังมดอักษรสามหมู่</h2>
+              <p class="game-copy font-medium">สำรวจรังมดแฟนซี ฝึกแยกอักษรสูง อักษรกลาง และอักษรต่ำด้วยการจิ้ม AR</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ป.1-6</span><span class="badge badge-info">อักษรสามหมู่</span><span class="badge badge-info">AR + Touch</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="เกมรังมดอักษรสามหมู่.html">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">อักษรสามหมู่</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมรังมดอักษรสามหมู่.html">เข้าเล่นเกม</a>
         </article>
-        <article class="card">
-          <div>
-            <div class="icon">🌳</div>
-            <h2>ป่าเวทมนตร์คำ ห. นำ</h2>
-            <p>เก็บของในป่าแฟนตาซี ฝึกคำที่มี ห. นำ พร้อมเหตุผลสั้น ๆ หลังตอบ</p>
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🌳</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">ป่าเวทมนตร์คำ ห. นำ</h2>
+              <p class="game-copy font-medium">เก็บของในป่าแฟนตาซี ฝึกคำที่มี ห. นำ พร้อมเหตุผลสั้น ๆ หลังตอบ</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ป.1-6</span><span class="badge badge-info">ห. นำ</span><span class="badge badge-info">AR + Touch</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="เกมป่าเวทมนตร์คำหอนำ.html">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">ห. นำ</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมป่าเวทมนตร์คำหอนำ.html">เข้าเล่นเกม</a>
         </article>
-        <article class="card">
-          <div>
-            <div class="icon">🍭</div>
-            <h2>บ้านลูกกวาดคำควบกล้ำ</h2>
-            <p>หยิบลูกกวาดคำศัพท์ใส่โหล ฝึกแยกคำควบแท้และคำควบไม่แท้แบบเป็นรอบ</p>
+        <article class="game-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🍭</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">บ้านลูกกวาดคำควบกล้ำ</h2>
+              <p class="game-copy font-medium">หยิบลูกกวาดคำศัพท์ใส่โหล ฝึกแยกคำควบแท้และคำควบไม่แท้แบบเป็นรอบ</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-info">ป.1-6</span><span class="badge badge-info">คำควบกล้ำ</span><span class="badge badge-info">AR + Touch</span></div>
+            <a class="btn btn-secondary play-btn w-fit px-6 font-bold" href="เกมบ้านลูกกวาดคำควบกล้ำ.html">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">คำควบกล้ำ</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมบ้านลูกกวาดคำควบกล้ำ.html">เข้าเล่นเกม</a>
         </article>
-        <article class="card featured-card">
-          <div>
-            <div class="icon">🍄✨</div>
-            <h2>ป่าเห็ดอักษร 3 หมู่</h2>
-            <p>เกมการศึกษา AR ฝึกจำแนกอักษรสูง อักษรกลาง และอักษรต่ำ จากพยัญชนะไทยครบ 44 ตัว</p>
+        <article class="game-card featured p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🍄✨</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">ป่าเห็ดอักษร 3 หมู่</h2>
+              <p class="game-copy font-medium">เกมการศึกษา AR ฝึกจำแนกอักษรสูง อักษรกลาง และอักษรต่ำ จากพยัญชนะไทยครบ 44 ตัว</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-warning">ป.1-6</span><span class="badge badge-warning">ไตรยางศ์</span><span class="badge badge-warning">AR + Touch</span></div>
+            <a class="btn btn-accent play-btn w-fit px-6 font-bold" href="เกมอักษรกลาง/">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">ไตรยางศ์</span><span class="tag">AR + Touch</span></div>
-          <a class="play" href="เกมอักษรกลาง/">เข้าเล่นเกม</a>
         </article>
-        <article class="card featured-card">
-          <div>
-            <div class="icon">⚙️✨</div>
-            <h2>เมืองแสงซ่อนกล</h2>
-            <p>ผจญภัยกับทีมช่างพลังคูณ ฝึกความเข้าใจสูตรคูณแม่ 2–25 ผ่านภาพกลุ่มพลัง การซ่อมเมือง และการควบคุมด้วย AR</p>
+        <article class="game-card featured p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">⚙️✨</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">เมืองแสงซ่อนกล</h2>
+              <p class="game-copy font-medium">ผจญภัยกับทีมช่างพลังคูณ ฝึกสูตรคูณแม่ 2–25 ผ่านภาพกลุ่มพลัง การซ่อมเมือง และการควบคุมด้วย AR</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-warning">อายุ 8-12 ปี</span><span class="badge badge-warning">สูตรคูณ 2-25</span><span class="badge badge-warning">AR + Touch</span></div>
+            <a class="btn btn-accent play-btn w-fit px-6 font-bold" href="สูตรคูณ25/">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">อายุ 8–12 ปี</span><span class="tag">สูตรคูณ 2–25</span><span class="tag">AR + Touch + Mouse</span></div>
-          <a class="play" href="สูตรคูณ25/">เข้าเล่นเกม</a>
         </article>
-        <article class="card featured-card">
-          <div>
-            <div class="icon">🍎➗</div>
-            <h2>สวนผลไม้แบ่งปัน</h2>
-            <p>เกมฝึกการหารจากสูตรคูณแม่ 2–25 ให้เด็กแบ่งผลไม้เป็นกลุ่มเท่า ๆ กัน เห็นความสัมพันธ์ว่า หารคือส่วนกลับของการคูณ</p>
+        <article class="game-card featured math-card p-5 sm:p-6">
+          <div class="relative z-10 flex h-full flex-col gap-5">
+            <div class="icon-tile">🍎➗</div>
+            <div class="space-y-3">
+              <h2 class="game-title text-2xl font-black">สวนผลไม้แบ่งปัน</h2>
+              <p class="game-copy font-medium">ฝึกการหารจากสูตรคูณแม่ 2–25 แบ่งผลไม้เป็นกลุ่มเท่า ๆ กัน และเห็นว่า หารคือส่วนกลับของการคูณ</p>
+            </div>
+            <div class="mt-auto flex flex-wrap gap-2"><span class="badge badge-success">ป.1-6</span><span class="badge badge-success">การหาร</span><span class="badge badge-success">Touch + Mouse</span></div>
+            <a class="btn btn-primary play-btn w-fit px-6 font-bold" href="เกมหาร/">เข้าเล่นเกม</a>
           </div>
-          <div class="tags"><span class="tag">ป.1-6</span><span class="tag">การหาร</span><span class="tag">Touch + Mouse</span></div>
-          <a class="play" href="เกมหาร/">เข้าเล่นเกม</a>
         </article>
       </section>
-      <p class="note">หมายเหตุ: โหมด AR ต้องเปิดผ่าน HTTPS และกดอนุญาตกล้อง บาง browser อาจไม่รองรับกล้องบน file:// หาก AR ไม่พร้อม เกมยังเล่นด้วยการแตะหรือคลิกได้</p>
+
+      <p class="footer-note p-4 text-center font-semibold leading-7 text-[#365479]">
+        หมายเหตุ: โหมด AR ต้องเปิดผ่าน HTTPS และกดอนุญาตกล้อง หาก AR ไม่พร้อม เกมยังเล่นด้วยการแตะหรือคลิกได้
+      </p>
     </main>
   </body>
 </html>
