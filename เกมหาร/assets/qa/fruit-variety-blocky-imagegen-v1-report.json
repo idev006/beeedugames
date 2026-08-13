@@ -1,0 +1,92 @@
+{
+  "batchId": "fruit-variety-blocky-imagegen-v1",
+  "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+  "fruits": [
+    {
+      "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+      "label": "ส้ม",
+      "output": "assets/processed/items/blocky-v2/orange-round.png",
+      "outputSize": [
+        512,
+        512
+      ],
+      "alphaCorners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "subjectCoverage": 0.251,
+      "passed": true
+    },
+    {
+      "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+      "label": "แตงโม",
+      "output": "assets/processed/items/blocky-v2/watermelon-block.png",
+      "outputSize": [
+        512,
+        512
+      ],
+      "alphaCorners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "subjectCoverage": 0.2155,
+      "passed": true
+    },
+    {
+      "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+      "label": "แพร์",
+      "output": "assets/processed/items/blocky-v2/pear-green.png",
+      "outputSize": [
+        512,
+        512
+      ],
+      "alphaCorners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "subjectCoverage": 0.2261,
+      "passed": true
+    },
+    {
+      "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+      "label": "มะม่วง",
+      "output": "assets/processed/items/blocky-v2/mango-gold.png",
+      "outputSize": [
+        512,
+        512
+      ],
+      "alphaCorners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "subjectCoverage": 0.2374,
+      "passed": true
+    },
+    {
+      "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+      "label": "สตรอเบอร์รี่",
+      "output": "assets/processed/items/blocky-v2/strawberry-red.png",
+      "outputSize": [
+        512,
+        512
+      ],
+      "alphaCorners": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "subjectCoverage": 0.2201,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,16 @@
+{
+  "output": "assets/processed/characters/teebo-moss-monster-spritesheet-v2.png",
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3758,
+  "passed": true,
+  "sampledKey": "#EC06EB"
+}

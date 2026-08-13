@@ -45,6 +45,13 @@ export const ICONS = Object.freeze({
   sparkle: { glyph: '✦', label: 'เป้าหมาย' },
   bloom: { glyph: '🌼', label: 'สวนผลิบาน' },
   back: { glyph: '◀', label: 'กลับไปยังกองกลาง' },
+  secret: { glyph: '❓', label: 'ไอเทมลับถัดไป' },
+  // Difficulty gauge growth stages (P1-1): the flow channel rendered as a plant
+  growthSeed: { glyph: '🌱', label: 'ต้นกล้า' },
+  growthLeaf: { glyph: '🌿', label: 'ใบไม้' },
+  growthFlower: { glyph: '🌸', label: 'ดอกไม้' },
+  growthFruit: { glyph: '🍎', label: 'ผลไม้' },
+  growthBloom: { glyph: '🌼', label: 'ผลิบาน' },
   error: { glyph: '🌧', label: 'เปิดสวนไม่ได้' },
 
   // Item images (srcKey resolves against the runtime asset map)

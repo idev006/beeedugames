@@ -1,0 +1,16 @@
+{
+  "output": "assets/processed/items/p0-item-gift-sheet-blocky-rgba-v2.png",
+  "outputSize": [
+    1254,
+    1254
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3411,
+  "passed": true,
+  "sampledKey": "#F605F8"
+}

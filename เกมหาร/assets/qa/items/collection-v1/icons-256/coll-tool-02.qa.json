@@ -1,0 +1,16 @@
+{
+  "output": "assets\\processed\\items\\collection-v1\\icons-256\\coll-tool-02.png",
+  "outputSize": [
+    256,
+    256
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.4834,
+  "minTransparentMargin": 20,
+  "passed": true
+}

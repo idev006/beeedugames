@@ -1,0 +1,15 @@
+{
+  "output": "assets\\processed\\items\\apple-red.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3031,
+  "passed": true
+}

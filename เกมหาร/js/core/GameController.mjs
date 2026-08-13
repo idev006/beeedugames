@@ -1,6 +1,7 @@
+import { AdaptiveDifficulty } from './AdaptiveDifficulty.mjs';
 import { EventBus } from './EventBus.mjs';
 import { FeedbackDirector } from './FeedbackDirector.mjs';
-import { MultiplicationFactGenerator } from './MultiplicationFactGenerator.mjs';
+import { MultiplicationFactGenerator } from './MultiplicationFactGenerator.mjs?v=p11-chapter-driven-adaptive-v29';
 import { RoundStore } from './RoundStore.mjs';
 import { SceneDirector } from './SceneDirector.mjs';
 
@@ -23,6 +24,10 @@ export class GameController {
     this.scenes = new SceneDirector(config.cinematics);
     this.facts = new MultiplicationFactGenerator(config);
     this.#activeChapterId = config.progression?.chapters?.[0]?.id ?? null;
+    // The flow channel is built from the ACTIVE CHAPTER's practice profile so
+    // its range always matches the curriculum being played — the settings grade
+    // is only a fallback for chapters without a profile.
+    this.adaptive = this.#buildAdaptive();
   }
 
   subscribe(listener) {
@@ -52,13 +57,28 @@ export class GameController {
   setPracticeSettings(settings = {}) {
     const previousGrade = this.#practiceSettings.gradeLevel;
     this.#practiceSettings = { ...this.#practiceSettings, ...settings };
-    if (previousGrade && previousGrade !== this.#practiceSettings.gradeLevel) this.#scenarioCursor = 0;
+    if (previousGrade !== this.#practiceSettings.gradeLevel) {
+      this.#scenarioCursor = 0;
+      // Any grade change (including the first explicit set) starts a fresh flow
+      // channel from the active chapter's base profile.
+      this.adaptive = this.#buildAdaptive();
+    }
+  }
+
+  // Fresh flow channel for a new session (called by the shell on session
+  // restart/handoff): back to the active chapter's base, never carried across
+  // sittings.
+  resetAdaptive() {
+    this.adaptive = this.#buildAdaptive();
   }
 
   setActiveChapter(chapterId) {
     if (!this.config.progression?.chapters?.some((chapter) => chapter.id === chapterId)) return false;
     this.#activeChapterId = chapterId;
     this.#scenarioCursor = 0;
+    // A chapter is a new curriculum zone: each one starts its own flow channel
+    // from that chapter's base profile.
+    this.adaptive = this.#buildAdaptive();
     this.createDefaultRound();
     return true;
   }
@@ -134,6 +154,9 @@ export class GameController {
   #completeOnce(state) {
     if (this.#completedGenerations.has(state.generationId)) return;
     this.#completedGenerations.add(state.generationId);
+    // P1-1 flow signal: a round counts as mastered only when solved on the
+    // first check without a hint — the same quality bar the mastery window uses.
+    this.adaptive?.record({ correct: state.attempts === 1 && state.hintsUsed === 0 });
     const scenario = state.scenario ?? this.config.scenarios[state.scenarioId];
     const stars = Math.max(1, scenario.reward.stars - Math.max(0, state.attempts - 1) - state.hintsUsed);
     this.store.grantReward({ ...scenario.reward, stars });
@@ -183,11 +206,42 @@ export class GameController {
   #nextScenario() {
     const grade = this.#practiceSettings.gradeLevel ?? this.config.settingsDefaults?.gradeLevel;
     const practice = this.#activePractice();
-    const generated = this.facts.scenarioFor(practice.factPracticeProfile ?? this.config.practiceProfiles?.[grade]?.factPracticeProfile, this.#scenarioCursor, { random: this.#practiceSettings.randomFacts !== false, selectedDivisors: this.#practiceSettings.selectedDivisors ?? practice.selectedDivisors, allowRemainder: practice.allowRemainder ?? this.#practiceSettings.allowRemainder });
+    const generated = this.facts.scenarioFor(practice.factPracticeProfile ?? this.config.practiceProfiles?.[grade]?.factPracticeProfile, this.#scenarioCursor, { random: this.#practiceSettings.randomFacts !== false, selectedDivisors: this.#practiceSettings.selectedDivisors ?? practice.selectedDivisors, allowRemainder: practice.allowRemainder ?? this.#practiceSettings.allowRemainder, rangeOverride: this.adaptive?.bounds() });
     if (generated) return generated;
     const scenarioIds = this.#scenarioIds();
     const scenarioId = scenarioIds[this.#scenarioCursor % scenarioIds.length];
-    return { ...this.config.scenarios[scenarioId], id: scenarioId };
+    const fallback = { ...this.config.scenarios[scenarioId], id: scenarioId };
+    // P0-1 fruit novelty: static config scenarios hard-code apples — rotate the
+    // fruit by round cursor so even the fallback path varies (same mechanic).
+    if (!Array.isArray(fallback.objectTypes) || !fallback.objectTypes.length) {
+      const objectTypes = this.config.factPractice?.objectTypes ?? ['apple'];
+      const objectType = objectTypes[this.#scenarioCursor % objectTypes.length] ?? 'apple';
+      return { ...fallback, objectType, objectTypes: [objectType] };
+    }
+    return fallback;
+  }
+
+  #activePracticeProfile() {
+    const chapterProfile = this.config.progression?.chapters?.find((chapter) => chapter.id === this.#activeChapterId)?.practice?.factPracticeProfile;
+    return chapterProfile ?? this.#practiceSettings.gradeLevel ?? this.config.settingsDefaults?.gradeLevel ?? 'p1';
+  }
+
+  #buildAdaptive() {
+    const settings = this.config.factPractice;
+    const profile = settings?.gradeProfiles?.[this.#activePracticeProfile()];
+    if (!settings?.enabled || !profile) return null;
+    return new AdaptiveDifficulty({
+      baseRange: {
+        divisor: { min: profile.divisor.min, max: profile.divisor.max },
+        quotient: { min: profile.quotient.min, max: profile.quotient.max },
+      },
+      maxRange: {
+        divisor: { min: settings.divisor.min, max: settings.divisor.max },
+        quotient: { min: settings.quotient.min, max: settings.quotient.max },
+      },
+      windowSize: this.config.learning.mastery.windowSize,
+      correctRequired: this.config.learning.mastery.correctRequired,
+    });
   }
 
   dispose() {

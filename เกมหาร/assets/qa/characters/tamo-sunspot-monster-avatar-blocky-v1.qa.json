@@ -1,0 +1,15 @@
+{
+  "output": "assets/processed/characters/tamo-sunspot-monster-avatar-blocky-v1.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3295,
+  "passed": true
+}

@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\items\\p0-item-gift-sheet-keyed-v1.png",
+  "output": "assets\\processed\\items\\p0-item-gift-sheet-rgba-v1.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    1254,
+    1254
+  ],
+  "sampledKey": "#F904F9",
+  "keptCanvas": true,
+  "clearedBorder": 4,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2871,
+  "passed": true
+}

@@ -3,6 +3,7 @@ import { BasketGroup } from './components/BasketGroup.mjs';
 import { CloudLayer } from './components/CloudLayer.mjs';
 import { FestivalBunting } from './components/FestivalBunting.mjs?v=festival-bunting-v19';
 import { FruitPiece } from './components/FruitPiece.mjs?v=polish-anim-v1';
+import { GuidePanel } from './components/GuidePanel.mjs?v=r4map-p012-v22';
 import { HallOfFameDialog } from './components/HallOfFameDialog.mjs';
 import { MonsterSprite, SPRITE_FRAMES } from './components/MonsterSprite.mjs';
 import { HandoffDialog } from './components/HandoffDialog.mjs';
@@ -11,13 +12,20 @@ import { PhaserStage } from './components/PhaserStage.mjs';
 import { PauseDialog } from './components/PauseDialog.mjs';
 import { PlayerProfileDialog } from './components/PlayerProfileDialog.mjs';
 import { SelfCheckCard } from './components/SelfCheckCard.mjs';
+import { SessionMilestoneToast } from './components/SessionMilestoneToast.mjs?v=r4map-p012-v22';
 import { SessionSummaryDialog } from './components/SessionSummaryDialog.mjs';
 import { SettingsDialog } from './components/SettingsDialog.mjs';
+import { ShotStrip } from './components/ShotStrip.mjs?v=r4map-p012-v22';
 import { StoryDialog } from './components/StoryDialog.mjs';
+import { useSessionMilestone } from './composables/useSessionMilestone.mjs?v=r4map-p012-v22';
+import { framingPresentation } from './core/FramingCopy.mjs?v=p13-framing-v23';
+import { difficultyStage } from './core/DifficultyGauge.mjs?v=p11-difficulty-gauge-v28';
+import { nextCollectionTeaser } from './core/CollectionTeaser.mjs?v=p21-collection-teaser-v24';
+import { FUTURE_GATED_COLLECTION_IDS } from './core/CollectionUnlockRules.mjs';
 import { fruitBundles } from './core/FruitBundles.mjs?v=uniform-10-5-groups-v1';
-import { GameController } from './core/GameController.mjs';
+import { GameController } from './core/GameController.mjs?v=r4map-p012-v22';
 import { icon } from './core/IconLanguage.mjs';
-import { SessionDirector } from './core/SessionDirector.mjs';
+import { SessionDirector } from './core/SessionDirector.mjs?v=r4map-p012-v22';
 import { transferFruitIds } from './input/DragTransfer.mjs';
 import { fruitIdsInsideSelection, resetSelectionBox, updateSelectionBoxFromPointer } from './input/SelectionBox.mjs';
 import { LocalPlayerProfileRepository } from './repositories/LocalPlayerProfileRepository.mjs';
@@ -27,58 +35,13 @@ const { computed, createApp, onBeforeUnmount, onMounted, reactive, ref, watch } 
 const { createRouter, createWebHashHistory, RouterView, useRoute } = VueRouter;
 const { createPinia } = Pinia; const SETTINGS_KEY = 'sharing-orchard.settings.v1';
 
-const ShotStrip = {
-  props: ['cinematic', 'reducedSensory'],
-  emits: ['skip', 'reflect'],
-  computed: {
-    shot() {
-      return this.cinematic?.shot ?? null;
-    },
-    progressText() {
-      if (!this.shot || !this.cinematic?.shotCount) return '';
-      return `${this.cinematic.shotIndex + 1}/${this.cinematic.shotCount}`;
-    },
-  },
-  template: `
-    <aside v-if="shot" class="shot-strip" :class="{ 'reduced-motion': reducedSensory }" :data-shot-id="shot.id" aria-label="ลำดับฉากปัจจุบัน">
-      <div>
-        <p class="eyebrow">{{ cinematic.sceneTitle }} · ช็อต {{ progressText }}</p>
-        <strong>{{ shot.label }}</strong>
-        <p>{{ shot.copy }}</p>
-      </div>
-      <button v-if="cinematic.skipAllowed && shot.id !== 'reflection'" class="secondary-button compact" type="button" @click="$emit('skip')">ข้ามช็อต</button>
-      <button v-if="shot.id === 'reward-bloom'" class="secondary-button compact" type="button" @click="$emit('reflect')">ดูช็อตสรุป</button>
-    </aside>
-  `,
-};
-
-const GuidePanel = {
-  components: { MonsterSprite },
-  props: ['state', 'avatarSrc', 'spriteSrc', 'frameIndex', 'expectedShare'],
-  computed: {
-    message() {
-      if (this.state.phase === 'feedbackCorrect') return `เท่ากันทุกตะกร้า! แต่ละตะกร้ามี ${this.expectedShare} ผล ลองคูณกลับดูนะ`;
-      if (this.state.phase === 'feedbackWrong') return 'ใกล้แล้ว ลองดูเลขบนตะกร้าทีละใบ — เท่ากันหรือยัง?';
-      if (this.state.phase === 'remediation') return 'เราแบ่งทีละรอบได้: ให้ตะกร้าละ 1 ผล แล้ววนใหม่';
-      if (this.state.remediationEnabled) return 'กด “ช่วยแบ่งทีละรอบ” เพื่อดูวิธีแบ่งอย่างยุติธรรม';
-      return 'ลาก หรือแตะแอปเปิ้ล แล้วแตะตะกร้า เป้าหมายคือทุกตะกร้าได้เท่ากัน';
-    },
-  },
-  template: `
-    <aside class="guide-panel" :class="'phase-' + state.phase">
-      <MonsterSprite class="guide-avatar" :src="spriteSrc" :fallback-src="avatarSrc" label="ทีโบ" :frame-index="frameIndex" aria-hidden="true" />
-      <div><strong>ทีโบ</strong><p>{{ message }}</p></div>
-    </aside>
-  `,
-};
-
 async function bootstrap() {
   const response = await fetch('./config/game.config.json', { cache: 'no-store' });
   if (!response.ok) throw new Error('โหลด config ไม่สำเร็จ');
   const config = await response.json();
 
   const PlayView = {
-    components: { BasketGroup, CloudLayer, FestivalBunting, FruitPiece, GuidePanel, HallOfFameDialog, HandoffDialog, MonsterSprite, OrchardMap, PauseDialog, PhaserStage, PlayerProfileDialog, SelfCheckCard, SessionSummaryDialog, SettingsDialog, ShotStrip, StoryDialog },
+    components: { BasketGroup, CloudLayer, FestivalBunting, FruitPiece, GuidePanel, HallOfFameDialog, HandoffDialog, MonsterSprite, OrchardMap, PauseDialog, PhaserStage, PlayerProfileDialog, SelfCheckCard, SessionMilestoneToast, SessionSummaryDialog, SettingsDialog, ShotStrip, StoryDialog },
     setup() {
       const profileRepository = new LocalPlayerProfileRepository();
       const repository = new LocalProgressRepository(globalThis.localStorage, profileRepository);
@@ -110,6 +73,7 @@ async function bootstrap() {
       const session = new SessionDirector({ durationSeconds: settings.classroomTurnSeconds });
       const sessionState = reactive(session.snapshot());
       const sessionUnsubscribe = session.subscribe((next) => Object.assign(sessionState, next));
+      const { milestoneOpen, dispose: disposeMilestone } = useSessionMilestone({ session, sessionState, VueApi: Vue });
       const pauseOpen = ref(false), summaryOpen = ref(false);
       const progress = ref(repository.read());
       const pointerFruitId = ref(null), pointerFruitIds = ref([]);
@@ -131,6 +95,10 @@ async function bootstrap() {
         // key invalidated the whole component graph on each move, which showed up
         // as ~200ms of Vue flush per fruit placement on large rounds.
         Object.assign(state, snapshot);
+        // P1-1 gauge: mirror the flow channel into reactive state so the gauge
+        // re-renders when a mastery window moves it (the adaptive object is not).
+        const adaptive = controller.adaptive?.snapshot() ?? {};
+        Object.assign(state, { adaptiveLevel: adaptive.level ?? 0, adaptiveCeiling: adaptive.ceiling ?? NaN });
         controller.store.state.settings = { playerId: activeProfile.value.playerId, playerName: settings.playerName };
         controller.setPracticeSettings({ gradeLevel: settings.gradeLevel, selectedDivisors: settings.selectedFactDivisors, allowRemainder: settings.allowRemainderMode });
         if (`${state.generationId}:${state.phase}` !== lastAudioPhase) { if (state.phase === 'feedbackCorrect') sound.cue('correct'); if (state.phase === 'feedbackWrong') sound.cue('wrong'); if (state.phase === 'completed') sound.cue('unlock'); lastAudioPhase = `${state.generationId}:${state.phase}`; }
@@ -159,6 +127,13 @@ async function bootstrap() {
       });
 
       const scenario = computed(() => state.scenario ?? config.scenarios[state.scenarioId] ?? config.scenarios[config.missions[config.defaults.missionId].scenarioIds[0]]);
+      // P0-1 fruit novelty: the round's fruit drives the orient crate, the
+      // source-zone copy and the Phaser preview — not a hardcoded apple.
+      const scenarioFruit = computed(() => itemAssets.fruits?.[scenario.value.objectType] ?? itemAssets.fruits?.apple ?? { src: itemAssets.apple, label: 'ผลไม้' });
+      const scenarioFruitLabel = computed(() => scenarioFruit.value.label ?? 'ผลไม้');
+      // P1-3: framing-aware copy (partitive / quotative / transfer) — pure
+      // strings from FramingCopy; the mechanic itself never changes.
+      const mission = computed(() => framingPresentation({ scenario: scenario.value, fruitLabel: scenarioFruitLabel.value }));
       const expectedShare = computed(() => Math.floor((state.dividend || scenario.value.dividend) / (state.divisor || scenario.value.divisor)));
       const previewAppleCount = computed(() => Math.min(3, state.divisor || scenario.value.divisor));
       const baskets = computed(() => Array.from({ length: state.divisor || scenario.value.divisor }, (_, index) => {
@@ -242,6 +217,12 @@ async function bootstrap() {
         return 'ลานแบ่งปันยามเช้า';
       });
       const collectionItems = computed(() => (itemAssets.collectionRewards ?? []).map((item) => ({ ...item, unlocked: Boolean(progress.value.collection?.[item.id]), note: item.meaning, effect: item.story })));
+      // P2-1 Explorer bait: the book teases the next unlockable item (silhouette
+      // + condition) so replay always has a concrete goal. Future-gated items
+      // are skipped — teasing telemetry v1 cannot record would be a lie.
+      const collectionTeaser = computed(() => nextCollectionTeaser({ progress: progress.value, rewards: itemAssets.collectionRewards ?? [], futureGatedIds: FUTURE_GATED_COLLECTION_IDS }));
+      // P1-1 gauge: the flow channel's position as a growth stage (ต้นกล้า→ผลิบาน).
+      const difficultyGauge = computed(() => { const stage = difficultyStage({ level: state.adaptiveLevel ?? 0, ceiling: state.adaptiveCeiling ?? NaN }); return { ...icon(stage.key), fraction: stage.fraction }; });
       const timerText = computed(() => {
         const minutes = Math.floor(sessionState.remainingSeconds / 60);
         const seconds = String(sessionState.remainingSeconds % 60).padStart(2, '0');
@@ -258,7 +239,7 @@ async function bootstrap() {
         if (sessionState.ended) return;
         if (pauseOpen.value) { pauseOpen.value = false; session.resume(); } else { session.pause(); pauseOpen.value = true; }
       }
-      function restartSession() { session.restart(); summaryOpen.value = false; dispatch({ type: 'REPLAY' }); }
+      function restartSession() { session.restart(); summaryOpen.value = false; controller.resetAdaptive(); dispatch({ type: 'REPLAY' }); }
       function closeSessionSummary() { summaryOpen.value = false; }
 
       function persistSettings() {
@@ -282,6 +263,7 @@ async function bootstrap() {
         session.setDuration(settings.classroomTurnSeconds);
         session.restart();
         summaryOpen.value = false;
+        controller.resetAdaptive();
         persistSettings();
       }
 
@@ -306,6 +288,7 @@ async function bootstrap() {
       function completeHandoff() {
         handoffOpen.value = false;
         session.restart();
+        controller.resetAdaptive();
         dispatch({ type: 'REPLAY' });
       }
 
@@ -437,6 +420,7 @@ async function bootstrap() {
         window.clearTimeout(splitFlashTimer);
         window.clearTimeout(dropFlashTimer);
         window.clearTimeout(scoreCountTimer);
+        disposeMilestone();
         unsubscribe();
         controller.dispose();
         sound.dispose();
@@ -446,7 +430,7 @@ async function bootstrap() {
       return {
         attemptsText, anyBasketHasFruit, basketCounts, baskets: animatedBaskets, config, dispatch, feedbackIcon, fruitsFor, guidedMove,
         activeProfile, characterAvatars, characterSpritesheets, changeGrade, clearLocalProgress, collectionItems, collectionOpen, createPlayerProfile, guideFrame, hostFrame, itemAssets,
-        activeChapter, closeSessionSummary, completeHandoff, continueNextRound, displayedRoundScore, fruitAssetFor, fruitLabelFor, replayCurrentRound, hallOpen, handoffOpen, madeTopTen, pauseOpen, persistSettings, playerProfiles, profileDraftName, profileOpen, progress, renameActiveProfile, resetTurnSeconds, restartSession, roundRank, roundScore, sceneTitle, selectChapter, selectPlayerProfile, sessionState, settings, settingsOpen, settingsTab, summaryOpen, timerText, togglePause,
+        activeChapter, closeSessionSummary, collectionTeaser, completeHandoff, difficultyGauge, continueNextRound, displayedRoundScore, fruitAssetFor, fruitLabelFor, replayCurrentRound, hallOpen, handoffOpen, madeTopTen, milestoneOpen, mission, pauseOpen, persistSettings, playerProfiles, profileDraftName, profileOpen, progress, renameActiveProfile, resetTurnSeconds, restartSession, roundRank, roundScore, sceneTitle, scenarioFruit, scenarioFruitLabel, selectChapter, selectPlayerProfile, sessionState, settings, settingsOpen, settingsTab, summaryOpen, timerText, togglePause,
         fruitBundles, hasMovedFruit, locked, pickFruitBundle, placeFruit, placeSelectedFruits, beginFruitDrag, finishFruitDrag, returnDrop, returnSelectedToSource, beginPointerFruit, beginSelectionBox, updateSelectionBox,
         finishSelectionBox, scenario, selectedFruitIds, selectionBox, sourcePileRef, expectedShare, expectedRemainder, inverseSentence, previewAppleCount, remainderMeaning, selfCheck, sourceFruits, state, submit,
         storyOpen, splitBundle, splitFlashIds, dropFlashIds,
@@ -479,7 +463,7 @@ async function bootstrap() {
               label="นารา"
               :frame-index="hostFrame"
             />
-            <span class="apple-crate"><img v-for="index in previewAppleCount" :key="index" :src="itemAssets.apple" alt=""></span>
+            <span class="fruit-crate"><img v-for="index in previewAppleCount" :key="index" :src="scenarioFruit.src" alt=""></span>
             <MonsterSprite
               class="guide-monster"
               :src="characterSpritesheets[scenario.guideCharacterId]"
@@ -489,14 +473,14 @@ async function bootstrap() {
             />
           </div>
           <p class="eyebrow">{{ activeChapter.title }}</p>
-          <h2>ช่วยแบ่งแอปเปิ้ล {{ state.dividend || scenario.dividend }} ผล<br>ให้มอนเมล็ด {{ state.divisor || scenario.divisor }} ตัวเท่า ๆ กัน</h2>
+          <h2>{{ mission.orientLine1 }}<br>{{ mission.orientLine2 }}</h2>
           <p>ทุกตะกร้าต้องได้รับส่วนแบ่งที่ยุติธรรม</p>
           <div class="quest-loop" aria-label="เป้าหมายและวงจรการเล่น">
             <div><span>1</span><strong>ช่วยนารา</strong><small>เตรียมเทศกาลในสวน</small></div>
             <div><span>2</span><strong>แบ่งให้เท่ากัน</strong><small>ลากผลไม้จนทุกตะกร้ายุติธรรม</small></div>
             <div><span>3</span><strong>ฟื้นฟูเส้นทาง</strong><small>ผ่านแล้วเปิดโจทย์ถัดไป</small></div>
           </div>
-          <div v-if="settings.showEquation" class="equation-preview"><strong>{{ state.dividend || scenario.dividend }}</strong><span>÷</span><strong>{{ state.divisor || scenario.divisor }}</strong><span>=</span><strong>?</strong></div>
+          <div v-if="settings.showEquation" class="equation-preview" :aria-label="mission.equationAria"><strong>{{ mission.equationPrompt.dividend }}</strong><span>÷</span><strong>{{ mission.equationPrompt.divisor }}</strong><span>=</span><strong>{{ mission.equationPrompt.answer }}</strong></div>
           <button id="start-round" class="primary-button" type="button" @click="dispatch({ type: 'START_ROUND' })"><span aria-hidden="true">{{ icon('start').glyph }}</span> เริ่มแบ่งปัน</button>
           <ShotStrip v-if="settings.showStoryShots && state.phase !== 'manipulating'" :cinematic="state.cinematic" :reduced-sensory="settings.reducedSensory" @skip="dispatch({ type: 'SKIP_SHOT' })" @reflect="dispatch({ type: 'REFLECTION_SHOT' })" />
 
@@ -508,15 +492,16 @@ async function bootstrap() {
 
           <section v-if="state.phase !== 'completed'" class="mission-board" aria-labelledby="mission-title">
             <div><p class="eyebrow">{{ activeChapter.title }} · ภารกิจสวน</p><h2 id="mission-title">แบ่งให้ยุติธรรมเพื่อเปิดเส้นทางถัดไป</h2></div>
-            <div v-if="settings.showEquation" class="equation" :aria-label="state.dividend + ' หาร ' + state.divisor + ' เท่ากับเท่าไร'"><b>{{ state.dividend }}</b><span>÷</span><b>{{ state.divisor }}</b><span>=</span><b>?</b></div>
+            <div v-if="settings.showEquation" class="equation" :aria-label="mission.equationAria"><b>{{ mission.equationPrompt.dividend }}</b><span>÷</span><b>{{ mission.equationPrompt.divisor }}</b><span>=</span><b>{{ mission.equationPrompt.answer }}</b></div>
             <div class="mission-stats" aria-label="สถานะภารกิจ">
               <span><img :src="itemAssets[icon('gardenHeart').srcKey]" alt=""> {{ state.resources.gardenHearts }}</span>
               <span><img :src="itemAssets[icon('dewDrop').srcKey]" alt=""> {{ state.resources.dewDrops }}</span>
               <span>{{ timerText }}</span>
+              <span class="difficulty-pill" :aria-label="'ระดับโจทย์ บทที่ ' + (activeChapter.order + 1) + ' ' + difficultyGauge.label"><span class="difficulty-chapter" aria-hidden="true">บทที่ {{ activeChapter.order + 1 }}</span><span aria-hidden="true">{{ difficultyGauge.glyph }}</span> {{ difficultyGauge.label }}<i class="growth-bar" aria-hidden="true" :style="{ width: (difficultyGauge.fraction * 100) + '%' }"></i></span>
             </div>
             <div class="guide-bubble">
               <MonsterSprite class="guide-avatar mini" :src="characterSpritesheets[scenario.guideCharacterId]" :fallback-src="characterAvatars[scenario.guideCharacterId]" label="ทีโบ" :frame-index="guideFrame" aria-hidden="true" />
-              <p>ใส่ให้ครบตะกร้าละ <strong>{{ expectedShare }}</strong> ผล</p>
+              <p>ใส่ให้ครบ{{ mission.groupWord }}ละ <strong>{{ expectedShare }}</strong> ผล</p>
             </div>
             <div class="status-pill"><span aria-hidden="true">{{ icon('statusPending').glyph }}</span> {{ attemptsText }}</div>
           </section>
@@ -540,11 +525,11 @@ async function bootstrap() {
 
           <OrchardMap v-if="state.phase !== 'completed' && state.phase !== 'manipulating'" :chapters="config.progression.chapters" :progress="progress" :active-chapter-id="state.activeChapterId" :completed="false" :compact="true" @select-chapter="selectChapter" />
 
-          <PhaserStage v-if="state.phase !== 'completed'" :apple-src="itemAssets.apple" :character-src="characterSpritesheets[scenario.guideCharacterId]" :reduced-sensory="settings.reducedSensory" :phase="state.phase" :source-count="sourceFruits.length" :basket-counts="basketCounts" />
+          <PhaserStage v-if="state.phase !== 'completed'" :apple-src="scenarioFruit.src" :character-src="characterSpritesheets[scenario.guideCharacterId]" :reduced-sensory="settings.reducedSensory" :phase="state.phase" :source-count="sourceFruits.length" :basket-counts="basketCounts" />
 
           <section v-if="state.phase !== 'completed'" class="playfield" :class="{ 'many-recipients': baskets.length > 12 }" :aria-busy="locked">
-            <section class="source-zone" aria-label="กองแอปเปิ้ลส่วนกลาง" @click="returnSelectedToSource">
-              <div class="source-heading"><div><p class="eyebrow">กองกลาง</p><h2>แอปเปิ้ลที่ยังไม่แบ่ง</h2></div><div class="source-count"><b>{{ sourceFruits.length }}</b><span>ผล</span></div></div>
+            <section class="source-zone" :aria-label="'กอง' + scenarioFruitLabel + 'ส่วนกลาง'" @click="returnSelectedToSource">
+              <div class="source-heading"><div><p class="eyebrow">กองกลาง</p><h2>{{ scenarioFruitLabel }}ที่ยังไม่แบ่ง</h2></div><div class="source-count"><b>{{ sourceFruits.length }}</b><span>ผล</span></div></div>
               <div
                 ref="sourcePileRef"
                 class="fruit-pile"
@@ -595,18 +580,18 @@ async function bootstrap() {
 
           <section v-if="state.phase === 'feedbackCorrect' || state.phase === 'feedbackWrong'" class="feedback-banner" :class="state.phase" role="status">
             <span class="feedback-icon" aria-hidden="true">{{ feedbackIcon }}</span>
-            <div><h2>{{ state.phase === 'feedbackCorrect' ? 'แบ่งเท่ากันแล้ว!' : 'ยังไม่เท่ากัน ลองอีกนิด' }}</h2><p>{{ state.phase === 'feedbackCorrect' ? 'ทุกตะกร้ามี ' + expectedShare + ' ผล; สูตรคูณย้อนกลับคือ ' + inverseSentence : 'ดูจำนวนบนตะกร้าทั้งหมด แล้วปรับให้เท่ากันก่อนตรวจอีกครั้ง' }}</p></div>
+            <div><h2>{{ state.phase === 'feedbackCorrect' ? 'แบ่งเท่ากันแล้ว!' : 'ยังไม่เท่ากัน ลองอีกนิด' }}</h2><p>{{ state.phase === 'feedbackCorrect' ? mission.feedbackCorrect + '; สูตรคูณย้อนกลับคือ ' + inverseSentence : 'ดูจำนวนบนตะกร้าทั้งหมด แล้วปรับให้เท่ากันก่อนตรวจอีกครั้ง' }}</p></div>
           </section>
 
           <section v-if="state.phase === 'remediation'" class="remediation-card" role="dialog" aria-modal="true" aria-labelledby="remediation-title">
-            <span aria-hidden="true">{{ icon('remediation').glyph }}</span><div><h2 id="remediation-title">มาลองแบ่งทีละรอบ</h2><p>ให้มอนเมล็ดแต่ละตัวคนละ 1 ผล แล้วเริ่มรอบใหม่ จนแอปเปิ้ลหมด</p></div>
+            <span aria-hidden="true">{{ icon('remediation').glyph }}</span><div><h2 id="remediation-title">มาลองแบ่งทีละรอบ</h2><p>ให้มอนเมล็ดแต่ละตัวคนละ 1 ผล แล้วเริ่มรอบใหม่ จน{{ scenarioFruitLabel }}หมด</p></div>
             <button class="primary-button compact" type="button" @click="dispatch({ type: 'ACKNOWLEDGE_SCAFFOLD' })">เข้าใจแล้ว ลองต่อ</button>
           </section>
 
           <section v-if="state.phase === 'completed'" class="completion-card" role="status">
             <div class="bloom" aria-hidden="true">🌼 🌸 🌼</div>
-            <p class="eyebrow">งานเลี้ยงพร้อมแล้ว!</p><h2 v-if="settings.showEquation">{{ state.dividend }} ÷ {{ state.divisor }} = {{ expectedShare }} เศษ {{ expectedRemainder }}</h2><h2 v-else>ตะกร้าละ {{ expectedShare }} ผล</h2>
-            <div class="reflection-card"><strong>คิดย้อนกลับด้วยสูตรคูณ</strong><p>{{ inverseSentence }} จึงแปลว่า {{ state.dividend }} ÷ {{ state.divisor }} = {{ expectedShare }} เศษ {{ expectedRemainder }}</p><small>{{ remainderMeaning }}</small></div>
+            <p class="eyebrow">{{ mission.completionEyebrow }}</p><h2 v-if="settings.showEquation">{{ mission.equationSolved.dividend }} ÷ {{ mission.equationSolved.divisor }} = {{ mission.equationSolved.answer }} เศษ {{ expectedRemainder }}</h2><h2 v-else>{{ mission.completionShort }}</h2>
+            <div class="reflection-card"><strong>คิดย้อนกลับด้วยสูตรคูณ</strong><p>{{ inverseSentence }} จึงแปลว่า {{ mission.reflectionSentence }}</p><small>{{ remainderMeaning }}</small></div>
             <div class="stars" :aria-label="state.reward.stars + ' ดาว'">{{ '★'.repeat(state.reward.stars) }}{{ '☆'.repeat(3 - state.reward.stars) }}</div>
             <div v-if="roundScore !== null" class="round-score" :aria-label="'คะแนนรอบนี้ ' + roundScore + (madeTopTen ? ' ติด 10 อันดับผู้ดูแลยอดเยี่ยม อันดับที่ ' + roundRank : '')">
               <span class="score-plate-label"><span aria-hidden="true">{{ icon('star').glyph }}</span> คะแนนรอบนี้</span>
@@ -661,7 +646,24 @@ async function bootstrap() {
               <div class="collection-title"><span aria-hidden="true">{{ icon('collection').glyph }}</span><div><p class="eyebrow">หลักฐานความเข้าใจ</p><h2 id="collection-modal-title">สมุดสะสมจากการฟื้นฟูสวน</h2></div></div>
               <button class="icon-button" type="button" aria-label="ปิดสมุดสะสม" @click="collectionOpen = false">×</button>
             </div>
-            <div class="collection-scroll"><div class="collection-grid">
+            <div class="collection-scroll">
+              <div class="collection-teaser" v-if="collectionTeaser" role="status" :aria-label="'เป้าหมายถัดไปในสมุดสะสม: ' + collectionTeaser.label">
+                <span class="teaser-silhouette" aria-hidden="true"><img :src="collectionTeaser.src" alt=""></span>
+                <div class="teaser-copy">
+                  <p class="eyebrow">เป้าหมายถัดไป · {{ collectionTeaser.tierLabel }}</p>
+                  <strong>เงาไอเทมลับ: {{ collectionTeaser.label }}</strong>
+                  <small>{{ collectionTeaser.hint }}</small>
+                </div>
+              </div>
+              <div class="collection-teaser complete" v-else role="status" aria-label="สะสมครบทุกชิ้นแล้ว">
+                <span class="teaser-complete-icon" aria-hidden="true">{{ icon('celebrate').glyph }}</span>
+                <div class="teaser-copy">
+                  <p class="eyebrow">สมุดสะสม</p>
+                  <strong>เก็บครบทุกหลักฐานแล้ว!</strong>
+                  <small>สวนฟื้นฟูเต็มที่ ขอบคุณผู้ดูแลสวนทุกคน</small>
+                </div>
+              </div>
+              <div class="collection-grid">
                 <figure v-for="item in collectionItems" :key="item.id" :class="{ locked: !item.unlocked }">
                   <img :src="item.src" alt="">
                   <figcaption><strong>{{ item.unlocked ? item.label : 'ยังไม่ปลดล็อก' }}</strong>
@@ -673,6 +675,7 @@ async function bootstrap() {
           </section>
         </div></Teleport>
         <PauseDialog v-if="pauseOpen" :timer-text="timerText" :sprite-src="characterSpritesheets[scenario.guideCharacterId]" :avatar-src="characterAvatars[scenario.guideCharacterId]" @resume="togglePause" />
+        <SessionMilestoneToast v-if="milestoneOpen" :count="sessionState.milestone?.count ?? 0" />
         <SessionSummaryDialog v-if="summaryOpen" :stats="sessionState" :sprite-src="characterSpritesheets[scenario.hostCharacterId]" :avatar-src="characterAvatars[scenario.hostCharacterId]" @restart="restartSession" @close="closeSessionSummary" />
         <HandoffDialog v-if="handoffOpen" :timer-text="timerText" :resources="state.resources" :assets="itemAssets" @close="handoffOpen = false" @complete="completeHandoff" />
       </main>

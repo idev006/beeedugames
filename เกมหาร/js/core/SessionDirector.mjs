@@ -6,11 +6,15 @@
 // snapshot. The ticker is injectable so unit tests can drive time manually.
 
 export class SessionDirector {
-  constructor({ durationSeconds = 300, ticker = (fn, ms) => setInterval(fn, ms), clearer = (id) => clearInterval(id) } = {}) {
+  constructor({ durationSeconds = 300, milestoneEvery = 3, ticker = (fn, ms) => setInterval(fn, ms), clearer = (id) => clearInterval(id) } = {}) {
     this.ticker = ticker;
     this.clearer = clearer;
     this.timerId = null;
     this.listeners = new Set();
+    // P1-2: mid-session pacing beat — every milestoneEvery-th completed round
+    // raises a deterministic milestone (3, 6, 9…). Purely count-based, no
+    // randomness, never touches the score.
+    this.milestoneEvery = Math.max(1, Math.round(Number(milestoneEvery) || 3));
     this.state = this.#freshState(durationSeconds);
   }
 
@@ -60,6 +64,17 @@ export class SessionDirector {
     this.state.completedRounds += 1;
     this.state.totalStars += stars;
     this.state.totalScore += Math.max(0, Number(score) || 0);
+    if (this.state.completedRounds % this.milestoneEvery === 0) {
+      this.state.milestone = { count: this.state.completedRounds, at: this.state.completedRounds };
+    }
+    this.#emit();
+  }
+
+  // The shell clears a milestone once its celebration has been shown, so a
+  // repeated watch on the same count cannot re-fire it.
+  acknowledgeMilestone() {
+    if (!this.state.milestone) return;
+    this.state.milestone = null;
     this.#emit();
   }
 
@@ -89,6 +104,7 @@ export class SessionDirector {
       completedRounds: 0,
       totalStars: 0,
       totalScore: 0,
+      milestone: null,
     };
   }
 

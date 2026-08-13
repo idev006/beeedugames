@@ -113,10 +113,10 @@ button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.2); }
 .monster-sprite { display: inline-block; flex: 0 0 auto; background-repeat: no-repeat; background-size: 400% 400%; background-color: transparent; /* perf: no filter here — a drop-shadow on a large spritesheet element forces re-rasterization on every subtree change and dominated per-move frame time with many recipients (measured ~74ms/move with 25 baskets). */ }
 .host-monster { width: 104px; height: 128px; object-fit: contain; transform: rotate(-6deg); animation: host-greet 2.5s ease-in-out infinite; }
 .guide-monster { width: 116px; height: 134px; object-fit: contain; transform: rotate(5deg); transform-origin: 50% 90%; animation: guide-wave 2.8s ease-in-out infinite .25s; }
-.apple-crate { padding: 10px; border-bottom: 13px solid #b57d4c; display: flex; gap: 3px; animation: crate-ready 2.6s ease-in-out infinite; }
-.apple-crate img { width: 35px; height: 35px; object-fit: contain; animation: apple-hop 1.8s ease-in-out infinite; }
-.apple-crate img:nth-child(2n) { animation-delay: .18s; }
-.apple-crate img:nth-child(3n) { animation-delay: .34s; }
+.fruit-crate { padding: 10px; border-bottom: 13px solid #b57d4c; display: flex; gap: 3px; animation: crate-ready 2.6s ease-in-out infinite; }
+.fruit-crate img { width: 35px; height: 35px; object-fit: contain; animation: apple-hop 1.8s ease-in-out infinite; }
+.fruit-crate img:nth-child(2n) { animation-delay: .18s; }
+.fruit-crate img:nth-child(3n) { animation-delay: .34s; }
 .eyebrow { margin: 0 0 5px; color: var(--leaf); font-weight: 800; letter-spacing: .04em; }
 .orient-card h2, .completion-card h2 { margin: 8px 0; font-size: clamp(28px, 4.2vw, 52px); line-height: 1.25; }
 .orient-card > p:not(.eyebrow), .completion-card > p:not(.eyebrow) { color: var(--muted); font-size: 19px; }
@@ -143,6 +143,12 @@ button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.2); }
 .mission-board > * { position: relative; z-index: 1; }
 .mission-board h2 { margin: 0; color: #ff3434; font-size: clamp(18px, 2.1vw, 27px); line-height: 1.12; text-shadow: 0 2px 0 white; }
 .mission-board .status-pill { justify-self: end; font-size: 14px; }
+/* P1-1 difficulty gauge: the flow channel as a growth stage with a tiny bar. */
+.difficulty-pill { display: inline-flex; align-items: center; gap: 6px; border: 2px solid #12348d; border-radius: 999px; padding: 5px 10px; background: rgba(255,255,255,.92); color: var(--ink); font-weight: 900; font-size: 13px; box-shadow: 0 2px 0 rgba(18,52,141,.18); }
+.difficulty-pill .difficulty-chapter { background: #dbe7ff; color: #12348d; border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 800; letter-spacing: .02em; }
+.difficulty-pill .growth-bar { width: 34px; height: 6px; border-radius: 999px; overflow: hidden; background: #e4e9f2; display: inline-block; }
+.difficulty-pill .growth-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #26b7ff, #2ec96f); transition: width .4s ease; }
+/* reduced-sensory kills the bar's width transition via the global rule. */
 .mission-stats { justify-self: end; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .mission-stats span { min-height: 34px; padding: 4px 9px; display: inline-flex; align-items: center; gap: 5px; border: 3px solid #12348d; border-radius: 999px; background: #fff; font-weight: 900; box-shadow: 0 3px 0 rgba(18,52,141,.2); }
 .mission-stats img { width: 24px; height: 24px; object-fit: contain; }
@@ -369,6 +375,16 @@ button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.2); }
 .collection-grid strong { color: var(--ink); font-size: 18px; overflow-wrap: anywhere; }
 .collection-grid small { color: var(--muted); font-weight: 800; overflow-wrap: anywhere; }
 .collection-grid em { color: var(--leaf); font-style: normal; font-weight: 900; overflow-wrap: anywhere; }
+/* P2-1: next-goal teaser — a hint of the upcoming item (silhouette + condition). */
+.collection-teaser { margin-bottom: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 14px; border: 3px dashed #12348d; border-radius: 18px; background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(233,244,255,.94)); box-shadow: 0 4px 0 rgba(18,52,141,.14); text-align: left; }
+.collection-teaser.complete { border-style: solid; border-color: var(--leaf); background: linear-gradient(135deg, rgba(255,255,255,.95), rgba(220,250,225,.95)); }
+.teaser-silhouette { width: 76px; height: 76px; flex: none; display: grid; place-items: center; border: 2px solid #12348d; border-radius: 16px; background: #eef3fb; }
+.teaser-silhouette img { width: 58px; height: 58px; object-fit: contain; filter: grayscale(1) brightness(.12); opacity: .32; }
+.teaser-complete-icon { width: 76px; height: 76px; flex: none; display: grid; place-items: center; border-radius: 16px; background: #d9f3dd; font-size: 34px; }
+.teaser-copy { min-width: 0; display: grid; gap: 2px; line-height: 1.25; }
+.teaser-copy .eyebrow { margin: 0; }
+.teaser-copy strong { color: var(--ink); font-size: 17px; }
+.teaser-copy small { color: var(--muted); font-weight: 800; overflow-wrap: anywhere; }
 .settings-modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: rgba(32,56,47,.36); overflow: hidden; }
 .settings-sheet { width: min(560px, 100%); max-height: min(720px, calc(100vh - 36px)); padding: 16px; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 12px; overflow: hidden; }
 .settings-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -383,6 +399,7 @@ button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.2); }
 .settings-sheet label:has(input[type="checkbox"]) { display: flex; align-items: center; justify-content: flex-start; gap: 10px; line-height: 1.25; }
 .settings-sheet input[type="checkbox"] { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--leaf); }
 .settings-note { margin: 0; color: var(--muted); line-height: 1.45; }
+.link-button { padding: 0; border: 0; background: none; color: #1268d8; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
 .fact-table-picker { display: grid; gap: 8px; font-weight: 900; }
 .fact-table-picker > div { display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: 7px; }
 .fact-table-picker button { min-height: 38px; border: 3px solid #12348d; border-radius: 13px; color: var(--ink); background: #fff; font: inherit; font-weight: 900; cursor: pointer; box-shadow: 0 3px 0 rgba(18,52,141,.22); }
@@ -552,6 +569,32 @@ button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.2); }
   .brand small { display: none; }
   .mission-board { padding-block: 6px; }
   .guide-bubble { display: none; }
+/* P1-2 session milestone toast: mid-session "feast table ready" beat. Pure
+   information (role=status); the confetti layer is decorative aria-hidden and
+   every animation is gated by .reduced-sensory and prefers-reduced-motion. */
+.milestone-toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
+  z-index: 30; display: grid; gap: 2px; place-items: center; text-align: center;
+  padding: 13px 26px 12px; border-radius: 18px;
+  background: linear-gradient(180deg, #fff7d6, #ffe9a8);
+  border: 2px solid var(--berry);
+  box-shadow: 0 5px 0 rgba(212, 83, 46, 0.18), 0 10px 24px rgba(0, 0, 0, 0.14);
+  animation: milestone-pop 0.42s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  pointer-events: none;
+  max-width: min(92vw, 340px);
+}
+.milestone-toast .eyebrow { margin: 0; color: var(--berry); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; }
+.milestone-toast strong { font-size: 1.05rem; line-height: 1.3; }
+.milestone-toast p:last-child { margin: 0; font-size: 0.8rem; color: #6b4a2a; }
+.milestone-confetti { position: relative; display: block; height: 14px; width: 100%; }
+.milestone-confetti > span { position: absolute; top: 0; font-size: 0.9rem; animation: confetti-fall 0.9s ease-out both; }
+.milestone-confetti .c1 { left: 8%; animation-delay: 0.12s; }
+.milestone-confetti .c2 { left: 44%; font-size: 1.1rem; animation: confetti-pop 0.5s ease-out both; }
+.milestone-confetti .c3 { right: 8%; animation-delay: 0.2s; }
+@keyframes milestone-pop { from { transform: translateX(-50%) translateY(18px) scale(0.9); opacity: 0; } to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; } }
+@keyframes confetti-pop { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.4); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes confetti-fall { 0% { transform: translateY(-10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
   .phaser-stage { display: none; }
   .basket-zone { min-height: 176px; }
   .recipient-area.many-recipients .basket-zone { min-height: 72px; }

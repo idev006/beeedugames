@@ -1,0 +1,17 @@
+{
+  "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+  "label": "แพร์",
+  "output": "assets/processed/items/blocky-v2/pear-green.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2261,
+  "passed": true
+}

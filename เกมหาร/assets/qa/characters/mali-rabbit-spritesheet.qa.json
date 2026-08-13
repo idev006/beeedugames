@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\characters\\mali-rabbit-spritesheet-keyed.png",
+  "output": "assets\\processed\\characters\\mali-rabbit-spritesheet.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "sampledKey": "#F20CDC",
+  "keptCanvas": true,
+  "clearedBorder": 4,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2461,
+  "passed": true
+}

@@ -1,0 +1,15 @@
+{
+  "output": "assets\\processed\\items\\blocky-v1\\apple-red.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2007,
+  "passed": true
+}

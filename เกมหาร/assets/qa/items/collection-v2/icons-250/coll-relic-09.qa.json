@@ -1,0 +1,25 @@
+{
+  "source": "assets/source/items/collection-reward-sheet-keyed-v2.png",
+  "id": "coll-relic-09",
+  "label": "ใบรับรองเศษศูนย์",
+  "tier": "relic",
+  "output": "assets/processed/items/collection-v2/icons-250/coll-relic-09.png",
+  "outputSize": [
+    250,
+    250
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2297,
+  "componentCleanup": {
+    "components": 4,
+    "keptComponents": 1,
+    "removedComponents": 3,
+    "removedPixels": 252
+  },
+  "passed": true
+}

@@ -1,0 +1,25 @@
+{
+  "source": "assets/source/items/collection-reward-sheet-keyed-v2.png",
+  "id": "coll-charm-02",
+  "label": "ลูกปัดแม่สอง",
+  "tier": "charm",
+  "output": "assets/processed/items/collection-v2/icons-250/coll-charm-02.png",
+  "outputSize": [
+    250,
+    250
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.1959,
+  "componentCleanup": {
+    "components": 2,
+    "keptComponents": 1,
+    "removedComponents": 1,
+    "removedPixels": 47
+  },
+  "passed": true
+}

@@ -1,0 +1,25 @@
+{
+  "source": "assets/source/items/collection-reward-sheet-keyed-v2.png",
+  "id": "coll-fest-02",
+  "label": "หินคิดของทีโบ",
+  "tier": "festival",
+  "output": "assets/processed/items/collection-v2/icons-250/coll-fest-02.png",
+  "outputSize": [
+    250,
+    250
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.198,
+  "componentCleanup": {
+    "components": 2,
+    "keptComponents": 1,
+    "removedComponents": 1,
+    "removedPixels": 1075
+  },
+  "passed": true
+}

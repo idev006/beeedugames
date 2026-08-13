@@ -1,0 +1,24 @@
+{
+  "source": "assets/source/items/collection-reward-sheet-keyed-v3.png",
+  "id": "coll-fest-03",
+  "label": "ดอกไม้ปอมปอม",
+  "tier": "festival",
+  "output": "assets/processed/items/collection-v3/icons-250/coll-fest-03.png",
+  "outputSize": [
+    250,
+    250
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.1818,
+  "componentCleanup": {
+    "components": 1,
+    "removedComponents": 0,
+    "removedPixels": 0
+  },
+  "passed": true
+}

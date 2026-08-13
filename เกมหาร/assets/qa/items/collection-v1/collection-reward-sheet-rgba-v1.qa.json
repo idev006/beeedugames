@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\items\\collection-reward-sheet-keyed-v1.png",
+  "output": "assets\\processed\\items\\collection-v1\\collection-reward-sheet-rgba-v1.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    1254,
+    1254
+  ],
+  "sampledKey": "#FF00FF",
+  "keptCanvas": true,
+  "clearedBorder": 2,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.272,
+  "passed": true
+}

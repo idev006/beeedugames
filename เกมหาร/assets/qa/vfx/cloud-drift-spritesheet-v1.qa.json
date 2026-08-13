@@ -1,0 +1,20 @@
+{
+  "output": "assets/processed/vfx/cloud-drift-spritesheet-v1.png",
+  "outputSize": [
+    1024,
+    128
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.4325,
+  "passed": true,
+  "frames": 4,
+  "frameSize": [
+    256,
+    128
+  ]
+}

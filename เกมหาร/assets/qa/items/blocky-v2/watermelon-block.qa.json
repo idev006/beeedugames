@@ -1,0 +1,17 @@
+{
+  "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+  "label": "แตงโม",
+  "output": "assets/processed/items/blocky-v2/watermelon-block.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2155,
+  "passed": true
+}

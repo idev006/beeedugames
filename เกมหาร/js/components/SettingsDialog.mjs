@@ -12,6 +12,12 @@ export const SettingsDialog = {
       this.settings.selectedFactDivisors = [...selected].sort((a, b) => a - b);
       this.$emit('persist');
     },
+    clearFactDivisors() {
+      // Back to auto: the adaptive flow channel (plus the chapter profile)
+      // picks the divisor range — the same state as a fresh install.
+      this.settings.selectedFactDivisors = null;
+      this.$emit('persist');
+    },
   },
   template: `
     <Teleport to="body">
@@ -37,7 +43,8 @@ export const SettingsDialog = {
             <div class="fact-table-picker" aria-label="เลือกแม่สูตรคูณ">
               <strong>เลือกแม่สูตรคูณสำหรับสุ่มโจทย์</strong>
               <div><button v-for="divisor in factDivisors()" :key="divisor" type="button" :class="{ active: settings.selectedFactDivisors?.includes(divisor) }" :aria-pressed="settings.selectedFactDivisors?.includes(divisor)" @click="toggleFactDivisor(divisor)">แม่ {{ divisor }}</button></div>
-              <p class="settings-note">เกมสุ่มจาก แม่ × ตัวคูณ 2-12 แล้วกลับเป็นโจทย์หาร</p>
+              <p v-if="!settings.selectedFactDivisors" class="settings-note">ระบบเลือกแม่สูตรให้อัตโนมัติตามระดับและความชำนาญ (adaptive) — แตะแม่สูตรเพื่อล็อกเอง</p>
+              <p v-else class="settings-note"><button class="link-button" type="button" @click="clearFactDivisors">กลับสู่ระบบอัตโนมัติ</button></p>
             </div>
             <label><input type="checkbox" v-model="settings.allowRemainderMode" @change="$emit('persist')"> อนุญาตโจทย์หารแบบมีเศษ</label>
             <label class="duration-slider">เวลาการเล่น <input type="range" min="30" max="600" step="30" v-model.number="settings.classroomTurnSeconds" @change="$emit('reset-turn-seconds')" aria-label="เวลาการเล่น"> <output>{{ settings.classroomTurnSeconds }} วินาที</output></label>

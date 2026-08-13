@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\characters\\grandpa-tea-turtle-spritesheet-keyed.png",
+  "output": "assets\\processed\\characters\\grandpa-tea-turtle-spritesheet.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "sampledKey": "#F10EE5",
+  "keptCanvas": true,
+  "clearedBorder": 4,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3867,
+  "passed": true
+}

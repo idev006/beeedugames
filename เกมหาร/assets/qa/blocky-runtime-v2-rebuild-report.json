@@ -1,0 +1,18 @@
+{
+  "batchId": "blocky-runtime-v2",
+  "charactersPassed": true,
+  "itemsPassed": true,
+  "scenePassed": true,
+  "scene": {
+    "output": "assets/processed/scenes/sharing-yard-day-blocky-v2.webp",
+    "sourceSize": [
+      1672,
+      941
+    ],
+    "outputSize": [
+      2048,
+      1152
+    ],
+    "passed": true
+  }
+}

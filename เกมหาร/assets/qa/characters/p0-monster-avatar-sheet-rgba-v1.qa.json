@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\characters\\p0-monster-avatar-sheet-keyed-v1.png",
+  "output": "assets\\processed\\characters\\p0-monster-avatar-sheet-rgba-v1.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    1254,
+    1254
+  ],
+  "sampledKey": "#F905F8",
+  "keptCanvas": true,
+  "clearedBorder": 4,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.232,
+  "passed": true
+}

@@ -1,0 +1,17 @@
+{
+  "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+  "label": "มะม่วง",
+  "output": "assets/processed/items/blocky-v2/mango-gold.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2374,
+  "passed": true
+}

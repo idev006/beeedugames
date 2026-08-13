@@ -1,0 +1,16 @@
+{
+  "output": "assets/processed/characters/bento-pebble-monster-spritesheet-v2.png",
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3737,
+  "passed": true,
+  "sampledKey": "#F106EE"
+}

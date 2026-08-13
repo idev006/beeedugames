@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\characters\\tamo-sunspot-monster-spritesheet-keyed-v1.png",
+  "output": "assets\\processed\\characters\\tamo-sunspot-monster-spritesheet-v1.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "sampledKey": "#EB0AE5",
+  "keptCanvas": true,
+  "clearedBorder": 1,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3242,
+  "passed": true
+}

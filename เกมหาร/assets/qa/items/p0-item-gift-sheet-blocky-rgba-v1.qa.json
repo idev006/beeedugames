@@ -1,0 +1,23 @@
+{
+  "input": "assets\\source\\items\\p0-item-gift-sheet-blocky-keyed-v1.png",
+  "output": "assets\\processed\\items\\p0-item-gift-sheet-blocky-rgba-v1.png",
+  "sourceSize": [
+    1254,
+    1254
+  ],
+  "outputSize": [
+    2048,
+    2048
+  ],
+  "sampledKey": "#FF00FF",
+  "keptCanvas": true,
+  "clearedBorder": 1,
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.3427,
+  "passed": true
+}

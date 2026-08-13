@@ -1,0 +1,17 @@
+{
+  "source": "assets/source/items/fruit-variety-blocky-imagegen-v1.png",
+  "label": "สตรอเบอร์รี่",
+  "output": "assets/processed/items/blocky-v2/strawberry-red.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2201,
+  "passed": true
+}

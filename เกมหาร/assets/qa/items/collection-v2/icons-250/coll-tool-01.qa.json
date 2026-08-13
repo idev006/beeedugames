@@ -1,0 +1,25 @@
+{
+  "source": "assets/source/items/collection-reward-sheet-keyed-v2.png",
+  "id": "coll-tool-01",
+  "label": "ตะกร้าเท่าเทียม",
+  "tier": "tool",
+  "output": "assets/processed/items/collection-v2/icons-250/coll-tool-01.png",
+  "outputSize": [
+    250,
+    250
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.2098,
+  "componentCleanup": {
+    "components": 2,
+    "keptComponents": 1,
+    "removedComponents": 1,
+    "removedPixels": 223
+  },
+  "passed": true
+}

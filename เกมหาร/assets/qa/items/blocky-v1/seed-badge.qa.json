@@ -1,0 +1,15 @@
+{
+  "output": "assets\\processed\\items\\blocky-v1\\seed-badge.png",
+  "outputSize": [
+    512,
+    512
+  ],
+  "alphaCorners": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "subjectCoverage": 0.4945,
+  "passed": true
+}
