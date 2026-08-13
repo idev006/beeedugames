@@ -1,0 +1,59 @@
+# Verify that the deployed เกมหาร build matches the edugame2 source of truth.
+#
+# beeedugames is a build host: ./เกมหาร must be byte-identical (blob-level)
+# to the source at edugame2 `คณิตศาสตร์/เกมหาร`. This guard catches stale
+# or partial deploys before they go live on GitHub Pages.
+#
+# Intended release flow (source of truth first, then build):
+#   1. Commit + push game changes to edugame2 (incl. the cache-buster bump).
+#   2. Push the build to beeedugames (e.g. `npm run sync:build`).
+#   3. This workflow runs on the beeedugames push and fails loudly on mismatch.
+#
+# The comparison uses git blob SHAs (git rev-parse HEAD:<path>), which are
+# content hashes — identical across repos regardless of CRLF/LF checkout
+# settings, so no line-ending noise. Key-file list mirrors
+# tools/sync-build.mjs HASH_KEYS in the edugame2 game folder.
+name: Verify เกมหาร build matches edugame2 source
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-build-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout beeedugames (this repo)
+        uses: actions/checkout@v4
+
+      - name: Checkout edugame2 source
+        uses: actions/checkout@v4
+        with:
+          repository: idev006/edugame2
+          ref: main
+          path: source
+
+      - name: Compare key-file hashes (เกมหาร build vs edugame2 source)
+        run: |
+          set -euo pipefail
+          FAIL=0
+          for f in index.html js/app.mjs css/game.css config/game.config.json README.md; do
+            build_sha=$(git rev-parse "HEAD:เกมหาร/$f" 2>/dev/null || echo MISSING)
+            source_sha=$(git -C source rev-parse "HEAD:คณิตศาสตร์/เกมหาร/$f" 2>/dev/null || echo MISSING)
+            if [ "$build_sha" = "$source_sha" ]; then
+              echo "OK   $f ($build_sha)"
+            else
+              echo "DIFF $f build=$build_sha source=$source_sha"
+              FAIL=1
+            fi
+          done
+          echo "---"
+          if [ "$FAIL" = "1" ]; then
+            echo "::error::เกมหาร build on beeedugames does not match edugame2 source. Commit + push the source to edugame2 first, then re-run the build sync."
+            exit 1
+          fi
+          echo "เกมหาร build matches edugame2 source (5 key files)."
