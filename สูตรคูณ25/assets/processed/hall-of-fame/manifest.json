@@ -2,7 +2,7 @@
   "version": 1,
   "background": {
     "source": "assets/hall-of-fame-background.png",
-    "output": "assets/processed/hall-of-fame/background.png",
+    "output": "assets/processed/hall-of-fame/background.jpg",
     "width": 2560,
     "height": 1440
   },

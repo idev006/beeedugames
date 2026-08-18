@@ -174,7 +174,7 @@
   "assets": {
     "manifest": "assets/processed/asset-manifest.json",
     "hallOfFame": {
-      "background": "assets/processed/hall-of-fame/background.png"
+      "background": "assets/processed/hall-of-fame/background.jpg"
     },
     "backgrounds": [
       { "id": "main", "path": "assets/processed/backgrounds/main-background.jpg", "label": "เมืองแสงลูมินารา" },
