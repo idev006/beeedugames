@@ -1886,55 +1886,55 @@
     "backgrounds":  {
                         "main-background":  {
                                                 "source":  "assets/main-background.png",
-                                                "output":  "assets/processed/backgrounds/main-background.png",
+                                                "output":  "assets/processed/backgrounds/main-background.jpg",
                                                 "width":  2560,
                                                 "height":  1440
                                             },
                         "spark-workshop-gate":  {
                                                     "source":  "assets/spark-workshop-gate.png",
-                                                    "output":  "assets/processed/backgrounds/spark-workshop-gate.png",
+                                                    "output":  "assets/processed/backgrounds/spark-workshop-gate.jpg",
                                                     "width":  2560,
                                                     "height":  1440
                                                 },
                         "crystal-canal":  {
                                               "source":  "assets/crystal-canal.png",
-                                              "output":  "assets/processed/backgrounds/crystal-canal.png",
+                                              "output":  "assets/processed/backgrounds/crystal-canal.jpg",
                                               "width":  2560,
                                               "height":  1440
                                           },
                         "gear-garden":  {
                                             "source":  "assets/gear-garden.png",
-                                            "output":  "assets/processed/backgrounds/gear-garden.png",
+                                            "output":  "assets/processed/backgrounds/gear-garden.jpg",
                                             "width":  2560,
                                             "height":  1440
                                         },
                         "lantern-market":  {
                                                "source":  "assets/lantern-market.png",
-                                               "output":  "assets/processed/backgrounds/lantern-market.png",
+                                               "output":  "assets/processed/backgrounds/lantern-market.jpg",
                                                "width":  2560,
                                                "height":  1440
                                            },
                         "echo-train-depot":  {
                                                  "source":  "assets/echo-train-depot.png",
-                                                 "output":  "assets/processed/backgrounds/echo-train-depot.png",
+                                                 "output":  "assets/processed/backgrounds/echo-train-depot.jpg",
                                                  "width":  2560,
                                                  "height":  1440
                                              },
                         "sky-battery-dock":  {
                                                  "source":  "assets/sky-battery-dock.png",
-                                                 "output":  "assets/processed/backgrounds/sky-battery-dock.png",
+                                                 "output":  "assets/processed/backgrounds/sky-battery-dock.jpg",
                                                  "width":  2560,
                                                  "height":  1440
                                              },
                         "prism-observatory":  {
                                                   "source":  "assets/prism-observatory.png",
-                                                  "output":  "assets/processed/backgrounds/prism-observatory.png",
+                                                  "output":  "assets/processed/backgrounds/prism-observatory.jpg",
                                                   "width":  2560,
                                                   "height":  1440
                                               },
                         "festival-core-plaza":  {
                                                     "source":  "assets/festival-core-plaza.png",
-                                                    "output":  "assets/processed/backgrounds/festival-core-plaza.png",
+                                                    "output":  "assets/processed/backgrounds/festival-core-plaza.jpg",
                                                     "width":  2560,
                                                     "height":  1440
                                                 }

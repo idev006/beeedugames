@@ -177,15 +177,15 @@
       "background": "assets/processed/hall-of-fame/background.png"
     },
     "backgrounds": [
-      { "id": "main", "path": "assets/processed/backgrounds/main-background.png", "label": "เมืองแสงลูมินารา" },
-      { "id": "spark-workshop-gate", "path": "assets/processed/backgrounds/spark-workshop-gate.png", "label": "ประตูโรงช่างประกาย" },
-      { "id": "crystal-canal", "path": "assets/processed/backgrounds/crystal-canal.png", "label": "คลองคริสตัล" },
-      { "id": "gear-garden", "path": "assets/processed/backgrounds/gear-garden.png", "label": "สวนเฟืองกล" },
-      { "id": "lantern-market", "path": "assets/processed/backgrounds/lantern-market.png", "label": "ตลาดโคมพลัง" },
-      { "id": "echo-train-depot", "path": "assets/processed/backgrounds/echo-train-depot.png", "label": "สถานีรถไฟเสียงสะท้อน" },
-      { "id": "sky-battery-dock", "path": "assets/processed/backgrounds/sky-battery-dock.png", "label": "ท่าแบตเตอรี่ลอยฟ้า" },
-      { "id": "prism-observatory", "path": "assets/processed/backgrounds/prism-observatory.png", "label": "หอดูดาวปริซึม" },
-      { "id": "festival-core-plaza", "path": "assets/processed/backgrounds/festival-core-plaza.png", "label": "ลานแกนพลังเทศกาล" }
+      { "id": "main", "path": "assets/processed/backgrounds/main-background.jpg", "label": "เมืองแสงลูมินารา" },
+      { "id": "spark-workshop-gate", "path": "assets/processed/backgrounds/spark-workshop-gate.jpg", "label": "ประตูโรงช่างประกาย" },
+      { "id": "crystal-canal", "path": "assets/processed/backgrounds/crystal-canal.jpg", "label": "คลองคริสตัล" },
+      { "id": "gear-garden", "path": "assets/processed/backgrounds/gear-garden.jpg", "label": "สวนเฟืองกล" },
+      { "id": "lantern-market", "path": "assets/processed/backgrounds/lantern-market.jpg", "label": "ตลาดโคมพลัง" },
+      { "id": "echo-train-depot", "path": "assets/processed/backgrounds/echo-train-depot.jpg", "label": "สถานีรถไฟเสียงสะท้อน" },
+      { "id": "sky-battery-dock", "path": "assets/processed/backgrounds/sky-battery-dock.jpg", "label": "ท่าแบตเตอรี่ลอยฟ้า" },
+      { "id": "prism-observatory", "path": "assets/processed/backgrounds/prism-observatory.jpg", "label": "หอดูดาวปริซึม" },
+      { "id": "festival-core-plaza", "path": "assets/processed/backgrounds/festival-core-plaza.jpg", "label": "ลานแกนพลังเทศกาล" }
     ],
     "characters": {
       "lumin": "assets/processed/characters/lumin/lumin-spritesheet.png",

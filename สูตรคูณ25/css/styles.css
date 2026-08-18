@@ -160,7 +160,7 @@ button {
   overflow: hidden;
   background-image:
     linear-gradient(rgba(9, 36, 80, 0.05), rgba(9, 36, 80, 0.24)),
-    url("../assets/processed/backgrounds/main-background.png");
+    url("../assets/processed/backgrounds/main-background.jpg");
   background-size: cover;
   background-position: center;
   box-shadow: var(--shadow);
