@@ -44,3 +44,4 @@ export function mergeLeaderboardEntries(...collections) {
   });
   return rankLeaderboardEntries([...unique.values()]);
 }
+
